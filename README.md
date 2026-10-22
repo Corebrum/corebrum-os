@@ -12,6 +12,21 @@ Phase 0 and Phase 1 are in the tree. The operator reported a successful base ins
 
 Phase 4 installed the `corebrum` command on this machine. Phase 4 is not accepted until the fresh Ubuntu VM procedure in `docs/installation/cli.md`. Phase 5 installed ROS 2 Jazzy and one Zenoh router on this machine. A topic, a service, an action, and a router restart passed, and `corebrum doctor` passed. Phase 5 is not accepted until a second machine exchanges messages. See `docs/installation/ros.md`.
 
+## First console
+
+A fresh server does not have this repository yet. Install `git`, then clone it. The base profile runs `apt-get update` and installs `curl`, `ca-certificates`, `tmux`, and `nano`. `--enable-ssh` installs OpenSSH and enables the `ssh` service. `hostname -I` prints an address you can connect to.
+
+```bash
+sudo apt update
+sudo apt install -y git ca-certificates
+git clone https://github.com/Corebrum/corebrum-os.git
+cd corebrum-os
+sudo ./scripts/install.sh --profile base --enable-ssh
+hostname -I
+```
+
+The Cursor agent install, `agent login`, and a `PATH` line in `~/.bashrc` stay on your account. The installer does not write a home directory and does not install Cursor. The editor in the base profile is `nano`.
+
 ## Preview the base install
 
 On Ubuntu 24.04 or 26.04 x86-64:

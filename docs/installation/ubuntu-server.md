@@ -16,7 +16,16 @@ Use the Ubuntu Server 24.04 LTS x86-64 ISO, or another process you have already 
 multipass launch 24.04 --name corebrum-base --disk 20G --memory 4G --cpus 2
 ```
 
-Copy this repository onto the VM. Do not pipe the installer from the network.
+Copy this repository onto the VM. Do not pipe the installer from the network. On a server that does not have `git` yet:
+
+```bash
+sudo apt update
+sudo apt install -y git ca-certificates
+git clone https://github.com/Corebrum/corebrum-os.git
+cd corebrum-os
+```
+
+The base profile then installs `curl`, `tmux`, and `nano`, and updates APT again. OpenSSH is the `--enable-ssh` flag below, which also runs `systemctl enable --now ssh`. After that, `hostname -I` shows an address for the connection. Cursor's agent installer, `agent login`, and edits to `~/.bashrc` are not part of this profile.
 
 ## Dry-run
 
@@ -24,7 +33,7 @@ Copy this repository onto the VM. Do not pipe the installer from the network.
 ./scripts/install.sh --profile base --dry-run
 ```
 
-The command checks architecture, Ubuntu 24.04, free disk, and a TCP connection to `archive.ubuntu.com` port 80. It prints the `apt-get` install it would run. It must not install packages or write `/etc` or `/var`.
+The command checks architecture, Ubuntu `noble` or `resolute`, free disk, and a TCP connection to `archive.ubuntu.com` port 80. It prints the `apt-get` install it would run. It must not install packages or write `/etc` or `/var`.
 
 ## Install
 
