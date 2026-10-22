@@ -21,9 +21,14 @@ fi
 require "/usr/local/bin/corebrum-terminal"
 require "fullscreen"
 require "togglespecialworkspace, agent"
+require "/usr/local/bin/corebrum-lock"
 require "workspace, 1"
 require "/usr/local/bin/corebrum-grid"
 require "/usr/local/bin/corebrum-launcher"
+if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the AI Agents entry" >&2
+  exit 1
+fi
 if ! grep -q '/usr/local/bin/corebrum-chromium-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the Chromium entry" >&2
   exit 1
@@ -61,12 +66,38 @@ if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-
   exit 1
 fi
 if ! grep -q "agreety --cmd /usr/local/bin/corebrum-session" "${ROOT}/config/greetd/config.toml"; then
-  echo "FAIL: greetd does not start the Corebrum session" >&2
+  echo "FAIL: the text greeter does not start the Corebrum session" >&2
   exit 1
 fi
-if ! grep -q '^vt = 7$' "${ROOT}/config/greetd/config.toml"; then
-  echo "FAIL: greetd should stay on VT 7 so VT 1 remains a text console" >&2
+if ! grep -q "corebrum-greeter" "${ROOT}/config/greetd/gtkgreet.toml"; then
+  echo "FAIL: gtkgreet does not start the Corebrum greeter" >&2
   exit 1
 fi
+if ! grep -q -- "--command /usr/local/bin/corebrum-session" "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
+  echo "FAIL: gtkgreet does not start the Corebrum session" >&2
+  exit 1
+fi
+if ! grep -q 'hyprlock --config /etc/corebrum/hypr/hyprlock.conf' "${ROOT}/scripts/desktop/corebrum-lock.sh"; then
+  echo "FAIL: the lock command does not use the system hyprlock config" >&2
+  exit 1
+fi
+if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/hypr/hyprlock.conf"; then
+  echo "FAIL: the lock screen does not use the Hyprland wallpaper" >&2
+  exit 1
+fi
+if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/greetd/gtkgreet.css"; then
+  echo "FAIL: the login screen does not use the Hyprland wallpaper" >&2
+  exit 1
+fi
+if ! grep -q 'hyprlock gtkgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider hyprlock, gtkgreet, and cage" >&2
+  exit 1
+fi
+for greet in "${ROOT}/config/greetd/config.toml" "${ROOT}/config/greetd/gtkgreet.toml"; do
+  if ! grep -q '^vt = 7$' "$greet"; then
+    echo "FAIL: ${greet} should stay on VT 7 so VT 1 remains a text console" >&2
+    exit 1
+  fi
+done
 
 echo "ok: desktop-config"

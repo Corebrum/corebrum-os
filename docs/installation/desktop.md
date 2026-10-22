@@ -2,7 +2,7 @@
 
 Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Hyprland with dwindle tiling, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, Mako, and a greetd login.
 
-The greeter is `agreety`, the text greeter shipped inside Ubuntu's `greetd` package. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`.
+On Ubuntu 26.04 the greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. Super+Escape locks the screen with `hyprlock`. Ubuntu 24.04 does not publish `gtkgreet` or `hyprlock`, so that release keeps `agreety`, the text greeter inside `greetd`. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decision is `docs/decisions/0015-hyprlock-gtkgreet.md`.
 
 ## Hyprland source
 
@@ -45,6 +45,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+S | Agent scratchpad terminal |
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
+| Super+Escape | Lock the screen with hyprlock |
 | Super+Shift+E | Leave Hyprland and return to the greeter |
 | Print | Copy a selected area |
 | Super+C | Clipboard history |
@@ -62,6 +63,8 @@ Firefox is Ubuntu's transitional snap package. Installing the desktop profile in
 
 Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium`.
 
+Super+Space also lists AI Agents. Each CLI says `install` until its command is present. Choosing it installs that CLI, or launches it in a terminal when it is already installed. The list is Antigravity CLI, Claude Code CLI, Codex CLI, Cursor CLI, Grok CLI, Hermes CLI, and OpenClaw. Gemini CLI is not listed: since June 18, 2026 it no longer signs in Gemini Code Assist for individuals, and Antigravity CLI is the replacement. The desktop profile does not install them. See `docs/decisions/0016-agent-menu.md`.
+
 ## Node.js
 
 The desktop profile installs Node.js 26.x, the npm that ships with that build, and pnpm. nvm `v0.40.8` lives at `/usr/local/nvm`. Ubuntu 26.04 publishes Node.js 22, so this does not come from apt and it does not add a repository. The decision is `docs/decisions/0012-node-nvm.md`.
@@ -78,7 +81,7 @@ sudo systemctl set-default multi-user.target
 sudo reboot
 ```
 
-A broken Hyprland config sends you back to the greeter, because greetd restarts `agreety` when the session exits. Edit `/etc/corebrum/hypr/hyprland.conf` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
+A broken Hyprland config sends you back to the greeter, because greetd starts it again when the session exits. On Ubuntu 26.04 that greeter is gtkgreet. On Ubuntu 24.04 it is agreety. Edit `/etc/corebrum/hypr/hyprland.conf` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
 
 ## Removal
 

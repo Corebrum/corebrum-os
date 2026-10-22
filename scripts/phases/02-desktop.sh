@@ -28,6 +28,17 @@ corebrum_phase_desktop() {
   else
     corebrum_log "hyprland-backgrounds is not in the archive; skipping the split wallpaper package"
   fi
+  # hyprlock and gtkgreet are in Ubuntu 26.04. Ubuntu 24.04 publishes neither,
+  # and that release keeps the agreety greeter.
+  for pkg in hyprlock gtkgreet cage; do
+    candidate="$(corebrum_archive_candidate "$pkg")"
+    if corebrum_candidate_installable "$candidate"; then
+      corebrum_log "${pkg} candidate ${candidate}"
+      packages+=("$pkg")
+    else
+      corebrum_log "${pkg} is not in the archive; skipping"
+    fi
+  done
   corebrum_apt_install --no-install-recommends "${packages[@]}"
   corebrum_install_desktop_files
   corebrum_install_node

@@ -1,0 +1,12 @@
+window {
+    background-color: #1c1c1c;
+    background-image: url("file:///usr/share/hypr/wall2.png");
+    background-size: cover;
+    background-position: center;
+}
+
+box#body {
+    background-color: rgba(28, 28, 28, 0.72);
+    border-radius: 10px;
+    padding: 48px;
+}

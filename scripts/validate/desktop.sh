@@ -28,6 +28,10 @@ done
 
 for path in \
   /etc/corebrum/hypr/hyprland.conf \
+  /etc/corebrum/hypr/hyprlock.conf \
+  /etc/corebrum/greetd/gtkgreet.css \
+  /usr/local/bin/corebrum-greeter \
+  /usr/local/bin/corebrum-lock \
   /etc/corebrum/waybar/config.json \
   /etc/corebrum/waybar/style.css \
   /etc/corebrum/kitty/kitty.conf \
@@ -43,6 +47,8 @@ for path in \
   /usr/local/bin/corebrum-ros-menu \
   /usr/local/bin/corebrum-realsense-menu \
   /usr/local/bin/corebrum-chromium-menu \
+  /usr/local/bin/corebrum-agents-menu \
+  /etc/corebrum/agents.conf \
   /etc/corebrum/ros-tools.conf
 do
   if [[ -f "$path" ]]; then
@@ -73,6 +79,34 @@ for cmd in waybar kitty fuzzel wofi agreety; do
     failed=1
   fi
 done
+
+for pkg in hyprlock gtkgreet cage; do
+  policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"
+  candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$policy")"
+  if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then
+    status="$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)"
+    if [[ "$status" == "install ok installed" ]]; then
+      corebrum_log "ok: ${pkg}"
+    else
+      corebrum_log "missing: ${pkg}"
+      failed=1
+    fi
+  fi
+done
+
+if command -v gtkgreet >/dev/null 2>&1 && command -v cage >/dev/null 2>&1; then
+  if grep -q 'corebrum-greeter' /etc/greetd/config.toml; then
+    corebrum_log "ok: gtkgreet login"
+  else
+    corebrum_log "missing: gtkgreet login"
+    failed=1
+  fi
+elif grep -q 'agreety --cmd /usr/local/bin/corebrum-session' /etc/greetd/config.toml; then
+  corebrum_log "ok: agreety login"
+else
+  corebrum_log "missing: login command"
+  failed=1
+fi
 
 if command -v Hyprland >/dev/null 2>&1 || command -v hyprland >/dev/null 2>&1; then
   corebrum_log "ok: command Hyprland"

@@ -1,0 +1,10 @@
+# Managed by Corebrum OS. A previous file is backed up under /var/log/corebrum/backups.
+# VT 7 is the greeter. VT 1 remains a text console.
+# cage exits when gtkgreet exits. greetd then starts the user session.
+
+[terminal]
+vt = 7
+
+[default_session]
+command = "env XCURSOR_THEME=DMZ-White XCURSOR_SIZE=24 cage -s -d -- /usr/local/bin/corebrum-greeter"
+user = "_greetd"

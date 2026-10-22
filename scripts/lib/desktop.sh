@@ -51,6 +51,8 @@ corebrum_desktop_plan() {
 corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
   corebrum_install_file "${root}/config/hypr/hyprland.conf" /etc/corebrum/hypr/hyprland.conf 644
+  corebrum_install_file "${root}/config/hypr/hyprlock.conf" /etc/corebrum/hypr/hyprlock.conf 644
+  corebrum_install_file "${root}/config/greetd/gtkgreet.css" /etc/corebrum/greetd/gtkgreet.css 644
   corebrum_install_file "${root}/config/waybar/config.json" /etc/corebrum/waybar/config.json 644
   corebrum_install_file "${root}/config/waybar/style.css" /etc/corebrum/waybar/style.css 644
   corebrum_install_file "${root}/config/kitty/kitty.conf" /etc/corebrum/kitty/kitty.conf 644
@@ -61,23 +63,41 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/apps/dashboard/tiles.conf" /etc/corebrum/dashboard/tiles.conf 644
   corebrum_install_file "${root}/scripts/lib/grid.sh" /usr/local/lib/corebrum/grid.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-greeter.sh" /usr/local/bin/corebrum-greeter 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.sh" /usr/local/bin/corebrum-launcher 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-chromium-menu.sh" /usr/local/bin/corebrum-chromium-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
+  corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
 }
 
+# gtkgreet needs cage. Ubuntu 24.04 has neither gtkgreet nor hyprlock.
+corebrum_graphical_login_available() {
+  local gtkgreet cage
+  gtkgreet="$(corebrum_archive_candidate gtkgreet)"
+  cage="$(corebrum_archive_candidate cage)"
+  corebrum_candidate_installable "$gtkgreet" && corebrum_candidate_installable "$cage"
+}
+
 corebrum_install_greetd_config() {
   local src="${COREBRUM_ROOT}/config/greetd/config.toml"
   local dest="/etc/greetd/config.toml"
+  if corebrum_graphical_login_available; then
+    src="${COREBRUM_ROOT}/config/greetd/gtkgreet.toml"
+    corebrum_log "login greeter: gtkgreet in cage"
+  else
+    corebrum_log "login greeter: agreety"
+  fi
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
-    corebrum_log "dry-run: install ${dest} and keep the first backup of the packaged file"
+    corebrum_log "dry-run: install ${dest} from ${src} and keep the first backup of the packaged file"
     return 0
   fi
   corebrum_install_file "$src" "$dest" 644
@@ -108,6 +128,8 @@ corebrum_enable_desktop_login() {
 corebrum_desktop_managed_paths() {
   cat <<'EOF'
 /etc/corebrum/hypr/hyprland.conf
+/etc/corebrum/hypr/hyprlock.conf
+/etc/corebrum/greetd/gtkgreet.css
 /etc/corebrum/waybar/config.json
 /etc/corebrum/waybar/style.css
 /etc/corebrum/kitty/kitty.conf
@@ -118,12 +140,16 @@ corebrum_desktop_managed_paths() {
 /etc/corebrum/dashboard/tiles.conf
 /usr/local/lib/corebrum/grid.sh
 /usr/local/bin/corebrum-session
+/usr/local/bin/corebrum-greeter
+/usr/local/bin/corebrum-lock
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid
 /usr/local/bin/corebrum-launcher
 /usr/local/bin/corebrum-ros-menu
 /usr/local/bin/corebrum-realsense-menu
 /usr/local/bin/corebrum-chromium-menu
+/usr/local/bin/corebrum-agents-menu
+/etc/corebrum/agents.conf
 /usr/local/lib/corebrum/realsense-install.sh
 /etc/corebrum/ros-tools.conf
 /usr/local/bin/corebrum-ros-shell
