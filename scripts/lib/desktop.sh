@@ -40,7 +40,7 @@ corebrum_desktop_plan() {
   if [[ -n "$hyprland_ubuntu" ]]; then
     corebrum_log "hyprland candidate ${hyprland_ubuntu} from the Ubuntu archive"
   else
-    corebrum_log "hyprland is not in the Ubuntu 24.04 archive; using ppa:cppiber/hyprland for Hyprland and the libraries it requires. Other packages from that archive stay pinned below Ubuntu"
+    corebrum_log "hyprland is not in the Ubuntu archive; using ppa:cppiber/hyprland for Hyprland and the libraries it requires. Other packages from that archive stay pinned below Ubuntu"
   fi
 }
 

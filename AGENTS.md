@@ -2,7 +2,7 @@
 
 Instructions for coding agents working on Corebrum OS.
 
-Corebrum OS is an open-source Ubuntu Server 24.04 environment for Physical AI. It is inspired by [Omarchy](https://github.com/omacom/omarchy) (Hyprland tiling, Quickshell menu, and app grid) and implemented with APT, not Arch or pacman. Read `COREBRUM_BUILD_PLAN.md` and `docs/decisions/` before changing the system.
+Corebrum OS is an open-source Ubuntu Server 24.04 and 26.04 environment for Physical AI. It is inspired by [Omarchy](https://github.com/omacom/omarchy) (Hyprland tiling, Quickshell menu, and app grid) and implemented with APT, not Arch or pacman. Read `COREBRUM_BUILD_PLAN.md` and `docs/decisions/` before changing the system.
 
 ## Engineering rules
 
@@ -30,9 +30,9 @@ The root installer (`scripts/install.sh`) orchestrates phase scripts. It must su
 
 ## Current boundary
 
-Phase 5 is in progress: ROS 2 Jazzy and `rmw_zenoh_cpp`. The operator continued after Phase 4 installed the `corebrum` command. `corebrum install ros` installs the base profile and the Zenoh router. It does not install the desktop. The command does not write `~/.config`. See `docs/decisions/0009-ros-jazzy-zenoh.md`.
+Phase 5 is in progress: ROS 2 and `rmw_zenoh_cpp`. The operator continued after Phase 4 installed the `corebrum` command. `corebrum install ros` installs the base profile and the Zenoh router. It does not install the desktop. The command does not write `~/.config`. The installer reads `VERSION_CODENAME`: noble selects Jazzy, and resolute selects Lyrical Luth. Jammy is not supported. See `docs/decisions/0009-ros-jazzy-zenoh.md` and `docs/decisions/0010-ubuntu-2604-packages.md`.
 
-The desktop session is Hyprland dwindle tiling, Waybar, Fuzzel, and a Corebrum app grid, plus a scratchpad for an agent terminal. Quickshell is not in the Ubuntu 24.04 archive. Hyprland is installed from `ppa:cppiber/hyprland` when the Ubuntu archive has no `hyprland` package. That archive is pinned so only Hyprland and the libraries it requires come from it. See `docs/decisions/0006-hyprland-ppa.md`. Do not add any third-party repository other than that pinned PPA and, for the ros profile, the official ROS 2 apt repository.
+The desktop session is Hyprland dwindle tiling, Waybar, Fuzzel, and a Corebrum app grid, plus a scratchpad for an agent terminal. Quickshell is not in the Ubuntu 24.04 or 26.04 archive. Hyprland is installed from `ppa:cppiber/hyprland` on noble when the Ubuntu archive has no `hyprland` package. That archive is pinned so only Hyprland and the libraries it requires come from it. resolute uses the archive `hyprland` package and does not add the PPA. See `docs/decisions/0006-hyprland-ppa.md` and `docs/decisions/0010-ubuntu-2604-packages.md`. Do not add any third-party repository other than that pinned PPA and, for the ros profile, the official ROS 2 apt repository. Do not upgrade a running machine to 26.04 from the installer.
 
 Phase 3 installs NetworkManager, Bluetooth, PipeWire, and the related Ubuntu tools as part of `--profile desktop`. It does not edit existing Netplan files and it does not switch the Ethernet renderer. Wi-Fi is managed by NetworkManager. Ethernet stays on the existing Netplan renderer. See `docs/decisions/0007-workstation-services.md`.
 

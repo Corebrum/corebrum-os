@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Host checks for Ubuntu Server 24.04 x86-64. Source this file; do not execute it.
+# Host checks for Ubuntu noble or resolute on x86-64. Source this file; do not execute it.
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   echo "source scripts/lib/preflight.sh from another script" >&2
   exit 1
@@ -22,7 +22,7 @@ corebrum_read_os_release_field() {
 }
 
 corebrum_supported_ubuntu() {
-  [[ "$1" == "24.04" ]]
+  [[ "$1" == "noble" || "$1" == "resolute" ]]
 }
 
 corebrum_supported_arch() {
@@ -45,13 +45,14 @@ corebrum_can_reach_archive() {
 
 corebrum_preflight() {
   local os_release="/etc/os-release"
-  local version_id arch free_kib
-  [[ -f "$os_release" ]] || corebrum_die "missing ${os_release}; Corebrum OS requires Ubuntu 24.04"
-  version_id="$(corebrum_read_os_release_field "$os_release" VERSION_ID || true)"
-  [[ -n "$version_id" ]] || corebrum_die "VERSION_ID is missing from ${os_release}"
-  if ! corebrum_supported_ubuntu "$version_id"; then
-    corebrum_die "Corebrum OS requires Ubuntu 24.04 (found VERSION_ID=${version_id})"
+  local codename version_id arch free_kib
+  [[ -f "$os_release" ]] || corebrum_die "missing ${os_release}; Corebrum OS requires Ubuntu noble or resolute"
+  codename="$(corebrum_read_os_release_field "$os_release" VERSION_CODENAME || true)"
+  [[ -n "$codename" ]] || corebrum_die "VERSION_CODENAME is missing from ${os_release}"
+  if ! corebrum_supported_ubuntu "$codename"; then
+    corebrum_die "Corebrum OS requires Ubuntu noble or resolute (found VERSION_CODENAME=${codename})"
   fi
+  version_id="$(corebrum_read_os_release_field "$os_release" VERSION_ID || true)"
   arch="$(uname -m)"
   if ! corebrum_supported_arch "$arch"; then
     corebrum_die "Corebrum OS currently supports x86_64 only (found ${arch})"
@@ -60,7 +61,7 @@ corebrum_preflight() {
   if ! corebrum_disk_is_sufficient "$free_kib" "$COREBRUM_MIN_FREE_KIB"; then
     corebrum_die "need at least ${COREBRUM_MIN_FREE_KIB} KiB free on / (have ${free_kib})"
   fi
-  corebrum_log "preflight: Ubuntu ${version_id} ${arch}, ${free_kib} KiB free on /"
+  corebrum_log "preflight: Ubuntu ${codename} ${version_id:-unknown} ${arch}, ${free_kib} KiB free on /"
   if corebrum_can_reach_archive; then
     corebrum_log "preflight: archive.ubuntu.com:80 is reachable"
   else

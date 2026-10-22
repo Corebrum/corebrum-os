@@ -1,10 +1,16 @@
 # shellcheck shell=bash
 # Managed by Corebrum OS.
 # Login shells source this file. It does not write to the home directory.
-if [[ -f /opt/ros/jazzy/setup.bash ]]; then
-  set +u
+if [[ -f /usr/local/lib/corebrum/ros-env.sh ]]; then
   # shellcheck disable=SC1091
-  source /opt/ros/jazzy/setup.bash
+  source /usr/local/lib/corebrum/ros-env.sh
+  _corebrum_ros_setup="$(corebrum_ros_setup_file || true)"
+  if [[ -n "${_corebrum_ros_setup}" ]]; then
+    set +u
+    # shellcheck disable=SC1090
+    source "${_corebrum_ros_setup}"
+  fi
+  unset _corebrum_ros_setup
 fi
 if [[ -f /etc/corebrum/ros/rmw ]]; then
   _corebrum_rmw="$(tr -d '[:space:]' < /etc/corebrum/ros/rmw)"

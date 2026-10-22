@@ -30,18 +30,20 @@ Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh]
 
   --profile base      Install the Ubuntu Server foundation
   --profile desktop   Install the base profile, the Hyprland desktop, and workstation services
-  --profile ros       Install the base profile, ROS 2 Jazzy, and the Zenoh router
+  --profile ros       Install the base profile, ROS 2, and the Zenoh router
   --dry-run           Print intended actions without changing the system
   --enable-ssh        Also install and enable OpenSSH server
   -h, --help          Show this help
 
 A real install must be run as root. --dry-run may be run as a normal user.
 The product command is: corebrum install base|desktop|ros
-When hyprland is not in the Ubuntu archive, the desktop profile adds
-ppa:cppiber/hyprland and pins it so only Hyprland and the libraries it
-requires are installed from there.
+The installer reads VERSION_CODENAME. On noble, when hyprland is not in the
+Ubuntu archive, the desktop profile adds ppa:cppiber/hyprland and pins it so
+only Hyprland and the libraries it requires are installed from there. resolute
+uses the hyprland package from the Ubuntu archive and does not add that PPA.
 Workstation services come from the Ubuntu archive. The ros profile adds the
-official ROS 2 apt repository and does not install the desktop.
+official ROS 2 apt repository and does not install the desktop. noble installs
+ROS 2 Jazzy. resolute installs ROS 2 Lyrical Luth.
 The installer does not edit existing Netplan files or run netplan apply.
 EOF
 }

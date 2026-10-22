@@ -54,6 +54,10 @@ corebrum_install_hyprland_ppa() {
     corebrum_log "hyprland ${ubuntu_version} is in the Ubuntu archive; not adding ppa:cppiber/hyprland"
     return 0
   fi
+  codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
+  if [[ "$codename" != "noble" ]]; then
+    corebrum_die "hyprland is not in the Ubuntu archive on ${codename:-unknown}; ppa:cppiber/hyprland is only used on noble"
+  fi
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: install signing key ${COREBRUM_HYPRLAND_PPA_FINGERPRINT} for ppa:cppiber/hyprland"
     corebrum_log "dry-run: write ${COREBRUM_HYPRLAND_SOURCE}"

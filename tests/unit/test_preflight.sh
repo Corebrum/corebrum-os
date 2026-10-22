@@ -22,17 +22,25 @@ assert_eq "$quoted" "24.04" "quoted VERSION_ID"
 unquoted="$(corebrum_read_os_release_field "${ROOT}/tests/unit/fixtures/os-release-unquoted" VERSION_ID)"
 assert_eq "$unquoted" "24.04" "unquoted VERSION_ID"
 
-if ! corebrum_supported_ubuntu "24.04"; then
-  echo "FAIL: 24.04 should be supported" >&2
+if ! corebrum_supported_ubuntu "noble"; then
+  echo "FAIL: noble should be supported" >&2
   exit 1
 fi
-if corebrum_supported_ubuntu "22.04"; then
-  echo "FAIL: 22.04 should be rejected" >&2
+if ! corebrum_supported_ubuntu "resolute"; then
+  echo "FAIL: resolute should be supported" >&2
   exit 1
 fi
-jammy="$(corebrum_read_os_release_field "${ROOT}/tests/unit/fixtures/os-release-2204" VERSION_ID)"
+if corebrum_supported_ubuntu "jammy"; then
+  echo "FAIL: jammy should be rejected" >&2
+  exit 1
+fi
+if corebrum_supported_ubuntu "24.04"; then
+  echo "FAIL: a version number should be rejected" >&2
+  exit 1
+fi
+jammy="$(corebrum_read_os_release_field "${ROOT}/tests/unit/fixtures/os-release-2204" VERSION_CODENAME)"
 if corebrum_supported_ubuntu "$jammy"; then
-  echo "FAIL: fixture 22.04 should be rejected" >&2
+  echo "FAIL: fixture jammy should be rejected" >&2
   exit 1
 fi
 

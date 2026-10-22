@@ -74,11 +74,11 @@ if ! grep -Eq 'quickshell is not in the Ubuntu archive|quickshell candidate ' <<
   echo "FAIL: desktop dry-run did not record the Quickshell decision" >&2
   exit 1
 fi
-if ! grep -Eq 'hyprland is not in the Ubuntu 24.04 archive|hyprland candidate ' <<<"$desktop_output"; then
+if ! grep -Eq 'hyprland is not in the Ubuntu archive|hyprland candidate ' <<<"$desktop_output"; then
   echo "FAIL: desktop dry-run did not record the Hyprland decision" >&2
   exit 1
 fi
-if grep -q 'hyprland is not in the Ubuntu 24.04 archive' <<<"$desktop_output"; then
+if grep -q 'hyprland is not in the Ubuntu archive' <<<"$desktop_output"; then
   if ! grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then
     echo "FAIL: desktop dry-run did not name the Hyprland PPA" >&2
     exit 1

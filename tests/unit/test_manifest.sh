@@ -102,4 +102,24 @@ if [[ "$found_base" -ne 1 || "$found_zenoh" -ne 1 || "$found_dds" -ne 1 ]]; then
   exit 1
 fi
 
+lyrical=()
+corebrum_load_manifest "${ROOT}/manifests/packages/ros-lyrical.txt" lyrical
+assert_eq "${#lyrical[@]}" "6" "lyrical package count"
+found_lyrical_base=0
+found_lyrical_zenoh=0
+for pkg in "${lyrical[@]}"; do
+  case "$pkg" in
+    ros-lyrical-desktop | ros-lyrical-rviz2 | ros-jazzy-*)
+      echo "FAIL: lyrical manifest includes ${pkg}" >&2
+      exit 1
+      ;;
+  esac
+  [[ "$pkg" == "ros-lyrical-ros-base" ]] && found_lyrical_base=1
+  [[ "$pkg" == "ros-lyrical-rmw-zenoh-cpp" ]] && found_lyrical_zenoh=1
+done
+if [[ "$found_lyrical_base" -ne 1 || "$found_lyrical_zenoh" -ne 1 ]]; then
+  echo "FAIL: lyrical manifest is missing ros-base or rmw-zenoh-cpp" >&2
+  exit 1
+fi
+
 echo "ok: manifest"

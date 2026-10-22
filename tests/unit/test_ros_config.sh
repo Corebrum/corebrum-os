@@ -31,8 +31,30 @@ if ! grep -q 'f31d84adf5054c7d60ded0e82c0f776a77ea33af53d08f40b9ad7c94cca55296' 
   echo "FAIL: ROS apt source checksum is not pinned" >&2
   exit 1
 fi
+if ! grep -q 'e70bc980395f4a3b366b9c5e7f8f9b4d63a4064fb115f6ff3bc52f7faa02ef69' "${ROOT}/scripts/lib/ros.sh"; then
+  echo "FAIL: Resolute ROS apt source checksum is not pinned" >&2
+  exit 1
+fi
 if ! grep -q 'C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' "${ROOT}/manifests/versions/ros.txt"; then
   echo "FAIL: versions file does not record the ROS key fingerprint" >&2
+  exit 1
+fi
+
+export COREBRUM_ROOT="$ROOT"
+# shellcheck source=../../scripts/lib/log.sh
+source "${ROOT}/scripts/lib/log.sh"
+# shellcheck source=../../scripts/lib/ros.sh
+source "${ROOT}/scripts/lib/ros.sh"
+if [[ "$(corebrum_ros_distro_for_codename noble)" != "jazzy" ]]; then
+  echo "FAIL: noble should select ROS 2 Jazzy" >&2
+  exit 1
+fi
+if [[ "$(corebrum_ros_distro_for_codename resolute)" != "lyrical" ]]; then
+  echo "FAIL: resolute should select ROS 2 Lyrical" >&2
+  exit 1
+fi
+if corebrum_ros_distro_for_codename jammy >/dev/null; then
+  echo "FAIL: jammy should not select a ROS distro" >&2
   exit 1
 fi
 

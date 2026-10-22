@@ -1,8 +1,8 @@
 # Corebrum OS
 
-The operating environment for Physical AI. Corebrum OS runs on Ubuntu Server 24.04 LTS (x86-64). It is not a new kernel or a new package manager.
+The operating environment for Physical AI. Corebrum OS runs on Ubuntu Server 24.04 or 26.04 LTS (x86-64). It is not a new kernel or a new package manager.
 
-The desktop follows [Omarchy](https://github.com/omacom/omarchy): a keyboard-first Hyprland session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, and Gazebo, and later AgenticROS and Corebrum Mesh, are tiles in that grid. Quickshell is not in Ubuntu 24.04, so this phase uses Waybar, Fuzzel, and `corebrum-grid`.
+The desktop follows [Omarchy](https://github.com/omacom/omarchy): a keyboard-first Hyprland session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, and Gazebo, and later AgenticROS and Corebrum Mesh, are tiles in that grid. Quickshell is not in Ubuntu 24.04 or 26.04, so the session uses Waybar, Fuzzel, and `corebrum-grid`. Ubuntu 24.04 installs Hyprland from a pinned personal archive. Ubuntu 26.04 installs the Hyprland package from the Ubuntu archive. ROS 2 is Jazzy on 24.04 and Lyrical Luth on 26.04.
 
 Original Corebrum code in this repository is under the MIT license in `LICENSE`. Third-party components keep their own licenses. The MIT choice is subject to license review.
 
@@ -14,7 +14,7 @@ Phase 4 installed the `corebrum` command on this machine. Phase 4 is not accepte
 
 ## Preview the base install
 
-On Ubuntu 24.04 x86-64:
+On Ubuntu 24.04 or 26.04 x86-64:
 
 ```bash
 ./scripts/install.sh --profile base --dry-run

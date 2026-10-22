@@ -73,7 +73,7 @@ corebrum_cmd_status() {
   if corebrum_pkg_installed network-manager && [[ -f /etc/xdg/xdg-desktop-portal/hyprland-portals.conf ]]; then
     services=1
   fi
-  if corebrum_pkg_installed ros-jazzy-ros-base && [[ -f /etc/corebrum/ros/rmw ]]; then
+  if { corebrum_pkg_installed ros-jazzy-ros-base || corebrum_pkg_installed ros-lyrical-ros-base; } && [[ -f /etc/corebrum/ros/rmw ]]; then
     ros=1
   fi
   corebrum_profile_line base "$base"
@@ -155,7 +155,7 @@ corebrum_cmd_doctor() {
     corebrum_log "next: sudo corebrum install desktop"
     failed=1
   fi
-  if [[ -f /etc/corebrum/ros/rmw ]] || corebrum_pkg_installed ros-jazzy-ros-base; then
+  if [[ -f /etc/corebrum/ros/rmw ]] || corebrum_pkg_installed ros-jazzy-ros-base || corebrum_pkg_installed ros-lyrical-ros-base; then
     if ! corebrum_run_check ros "${COREBRUM_ROOT}/scripts/validate/ros.sh" \
       "sudo corebrum install ros"; then
       failed=1
@@ -210,7 +210,7 @@ Usage: corebrum install base|headless|desktop|ros [--dry-run] [--enable-ssh]
 
   base, headless   Ubuntu Server foundation. headless is the base profile
   desktop          Base, Hyprland session, and workstation services
-  ros              Base, ROS 2 Jazzy, and the Zenoh router. Not the desktop
+  ros              Base, ROS 2, and the Zenoh router. Jazzy on noble, Lyrical on resolute. Not the desktop
   --dry-run        Print the plan without changing the system
   --enable-ssh     Optional OpenSSH server
 

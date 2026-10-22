@@ -14,10 +14,29 @@ failed=0
 packages=()
 rmw=""
 count=""
+distro=""
+manifest=""
 sources="/etc/apt/sources.list.d/ros2.sources"
 fingerprint="C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654"
 
-corebrum_load_manifest "${COREBRUM_ROOT}/manifests/packages/ros.txt" packages
+if [[ -f /etc/corebrum/ros/distro ]]; then
+  distro="$(tr -d '[:space:]' < /etc/corebrum/ros/distro)"
+elif [[ -x /opt/ros/lyrical/bin/ros2 ]]; then
+  distro="lyrical"
+elif [[ -x /opt/ros/jazzy/bin/ros2 ]]; then
+  distro="jazzy"
+fi
+case "$distro" in
+  jazzy) manifest="${COREBRUM_ROOT}/manifests/packages/ros.txt" ;;
+  lyrical) manifest="${COREBRUM_ROOT}/manifests/packages/ros-lyrical.txt" ;;
+  *)
+    corebrum_log "missing: ROS distro"
+    failed=1
+    ;;
+esac
+if [[ -n "$manifest" ]]; then
+  corebrum_load_manifest "$manifest" packages
+fi
 
 for pkg in "${packages[@]}"; do
   status="$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)"
@@ -29,7 +48,10 @@ for pkg in "${packages[@]}"; do
   fi
 done
 
-for pkg in ros-jazzy-desktop ros-jazzy-rviz2 ros-jazzy-gazebo-ros-pkgs ros-jazzy-realsense2-camera; do
+for pkg in \
+  ros-jazzy-desktop ros-jazzy-rviz2 ros-jazzy-gazebo-ros-pkgs ros-jazzy-realsense2-camera \
+  ros-lyrical-desktop ros-lyrical-rviz2 ros-lyrical-gazebo-ros-pkgs ros-lyrical-realsense2-camera
+do
   status="$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)"
   if [[ "$status" == "install ok installed" ]]; then
     corebrum_log "unexpected: ${pkg} is outside Phase 5"
@@ -95,7 +117,7 @@ else
   failed=1
 fi
 
-if [[ -x /opt/ros/jazzy/bin/ros2 ]]; then
+if [[ -n "$distro" && -x "/opt/ros/${distro}/bin/ros2" ]]; then
   corebrum_log "ok: command ros2"
 else
   corebrum_log "missing: command ros2"

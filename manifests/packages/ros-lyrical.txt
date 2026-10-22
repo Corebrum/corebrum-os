@@ -1,0 +1,8 @@
+# ROS 2 Lyrical Luth from packages.ros.org on Ubuntu 26.04. Not the Ubuntu archive.
+# ros-lyrical-desktop and ros-lyrical-rviz2 are a later phase. Do not add them here.
+ros-lyrical-ros-base
+ros-lyrical-rmw-zenoh-cpp
+ros-lyrical-rmw-fastrtps-cpp
+ros-lyrical-demo-nodes-cpp
+ros-lyrical-action-tutorials-cpp
+ros-dev-tools

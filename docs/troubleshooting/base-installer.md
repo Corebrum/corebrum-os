@@ -2,7 +2,7 @@
 
 ## Preflight failures
 
-`Ubuntu 24.04` is required. `/etc/os-release` must contain `VERSION_ID=24.04`. Other Ubuntu releases stop before any package is installed.
+Ubuntu `noble` or `resolute` is required. `/etc/os-release` must contain `VERSION_CODENAME=noble` or `VERSION_CODENAME=resolute`. Other Ubuntu releases, including jammy, stop before any package is installed.
 
 `x86_64` is the only architecture in this phase. ARM64 is a later phase.
 

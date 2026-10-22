@@ -13,17 +13,63 @@ source "${COREBRUM_ROOT}/scripts/lib/system.sh"
 source "${COREBRUM_ROOT}/scripts/lib/files.sh"
 # shellcheck source=manifest.sh
 source "${COREBRUM_ROOT}/scripts/lib/manifest.sh"
+# shellcheck source=preflight.sh
+source "${COREBRUM_ROOT}/scripts/lib/preflight.sh"
+# shellcheck source=../ros/ros-env.sh
+source "${COREBRUM_ROOT}/scripts/ros/ros-env.sh"
 
-# Open Robotics key shipped in ros2-apt-source 1.3.0 noble.
+# Open Robotics key shipped in ros2-apt-source 1.3.0. The same key signs Noble and Resolute.
 COREBRUM_ROS_KEY_FINGERPRINT="C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654"
-COREBRUM_ROS_APT_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.3.0/ros2-apt-source_1.3.0.noble_all.deb"
-COREBRUM_ROS_APT_SHA256="f31d84adf5054c7d60ded0e82c0f776a77ea33af53d08f40b9ad7c94cca55296"
+COREBRUM_ROS_APT_URL=""
+COREBRUM_ROS_APT_SHA256=""
+COREBRUM_ROS_DISTRO=""
+COREBRUM_ROS_CODENAME=""
 COREBRUM_ROS_KEYRING="/usr/share/keyrings/ros2-archive-keyring.gpg"
 COREBRUM_ROS_SOURCES="/etc/apt/sources.list.d/ros2.sources"
 COREBRUM_ROS_RMW="/etc/corebrum/ros/rmw"
 COREBRUM_ROS_PROFILE="/etc/profile.d/corebrum-ros.sh"
 COREBRUM_ROS_UNIT="corebrum-zenoh-router.service"
 COREBRUM_ROS_TILE='ROS|kitty /usr/local/bin/corebrum-ros-shell'
+
+corebrum_ros_distro_for_codename() {
+  case "$1" in
+    noble) printf 'jazzy\n' ;;
+    resolute) printf 'lyrical\n' ;;
+    *) return 1 ;;
+  esac
+}
+
+corebrum_ros_select_release() {
+  local version_id
+  COREBRUM_ROS_CODENAME="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
+  COREBRUM_ROS_DISTRO="$(corebrum_ros_distro_for_codename "$COREBRUM_ROS_CODENAME" || true)"
+  if [[ -z "$COREBRUM_ROS_DISTRO" ]]; then
+    corebrum_die "no ROS 2 release is selected for Ubuntu ${COREBRUM_ROS_CODENAME:-unknown}"
+  fi
+  version_id="$(corebrum_read_os_release_field /etc/os-release VERSION_ID || true)"
+  case "$COREBRUM_ROS_CODENAME" in
+    noble)
+      COREBRUM_ROS_APT_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.3.0/ros2-apt-source_1.3.0.noble_all.deb"
+      COREBRUM_ROS_APT_SHA256="f31d84adf5054c7d60ded0e82c0f776a77ea33af53d08f40b9ad7c94cca55296"
+      ;;
+    resolute)
+      COREBRUM_ROS_APT_URL="https://github.com/ros-infrastructure/ros-apt-source/releases/download/1.3.0/ros2-apt-source_1.3.0.resolute_all.deb"
+      COREBRUM_ROS_APT_SHA256="e70bc980395f4a3b366b9c5e7f8f9b4d63a4064fb115f6ff3bc52f7faa02ef69"
+      ;;
+    *)
+      corebrum_die "no ROS apt source package is pinned for ${COREBRUM_ROS_CODENAME}"
+      ;;
+  esac
+  corebrum_log "ROS 2 ${COREBRUM_ROS_DISTRO} for Ubuntu ${COREBRUM_ROS_CODENAME} (${version_id:-unknown})"
+}
+
+corebrum_ros_manifest_path() {
+  case "$1" in
+    jazzy) printf '%s\n' "${COREBRUM_ROOT}/manifests/packages/ros.txt" ;;
+    lyrical) printf '%s\n' "${COREBRUM_ROOT}/manifests/packages/ros-lyrical.txt" ;;
+    *) return 1 ;;
+  esac
+}
 
 corebrum_ros_require_fingerprint() {
   local key="$1" fingerprint
@@ -35,11 +81,13 @@ corebrum_ros_require_fingerprint() {
 }
 
 corebrum_ros_require_suites() {
-  local sources="/etc/apt/sources.list.d/ubuntu.sources"
-  if [[ ! -f "$sources" ]] || ! grep -q 'noble-updates' "$sources" || ! grep -q 'universe' "$sources"; then
-    corebrum_die "Ubuntu sources must include noble-updates and universe before ROS 2. Not editing ${sources}"
+  local sources="/etc/apt/sources.list.d/ubuntu.sources" updates
+  [[ -n "$COREBRUM_ROS_CODENAME" ]] || corebrum_ros_select_release
+  updates="${COREBRUM_ROS_CODENAME}-updates"
+  if [[ ! -f "$sources" ]] || ! grep -q "$updates" "$sources" || ! grep -q 'universe' "$sources"; then
+    corebrum_die "Ubuntu sources must include ${updates} and universe before ROS 2. Not editing ${sources}"
   fi
-  corebrum_log "Ubuntu sources include noble-updates and universe"
+  corebrum_log "Ubuntu sources include ${updates} and universe"
 }
 
 corebrum_ros_install_apt_source() {
@@ -52,8 +100,12 @@ corebrum_ros_install_apt_source() {
     corebrum_log "dry-run: require ${COREBRUM_ROS_SOURCES} to point at the ROS apt source"
     return 0
   fi
+  [[ -n "$COREBRUM_ROS_APT_URL" ]] || corebrum_ros_select_release
   version="$(dpkg-query -W -f='${Version}' ros2-apt-source 2>/dev/null || true)"
   if [[ -n "$version" ]]; then
+    if [[ "$version" != *"$COREBRUM_ROS_CODENAME"* ]]; then
+      corebrum_die "ros2-apt-source ${version} does not match Ubuntu ${COREBRUM_ROS_CODENAME}"
+    fi
     corebrum_ros_require_fingerprint "$COREBRUM_ROS_KEYRING"
     if [[ ! -L "$COREBRUM_ROS_SOURCES" ]]; then
       corebrum_die "ROS apt source is not linked at ${COREBRUM_ROS_SOURCES}"
@@ -198,9 +250,23 @@ corebrum_ros_remove_tile() {
   corebrum_log "removed ROS tile from ${tiles}"
 }
 
+corebrum_ros_install_distro_file() {
+  local work
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: install /etc/corebrum/ros/distro with ${COREBRUM_ROS_DISTRO}"
+    return 0
+  fi
+  work="$(mktemp)"
+  printf '%s\n' "$COREBRUM_ROS_DISTRO" >"$work"
+  corebrum_install_file "$work" /etc/corebrum/ros/distro 644
+  rm -f "$work"
+}
+
 corebrum_phase_ros() {
-  local manifest="${COREBRUM_ROOT}/manifests/packages/ros.txt"
+  local manifest
   local -a packages=()
+  corebrum_ros_select_release
+  manifest="$(corebrum_ros_manifest_path "$COREBRUM_ROS_DISTRO")"
   corebrum_ros_require_suites
   corebrum_log "not changing existing Netplan files or running netplan apply"
   corebrum_log "not running apt upgrade"
@@ -208,6 +274,8 @@ corebrum_phase_ros() {
   corebrum_load_manifest "$manifest" packages
   corebrum_apt_install "${packages[@]}"
   corebrum_ros_install_rmw_default
+  corebrum_ros_install_distro_file
+  corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/ros-env.sh" /usr/local/lib/corebrum/ros-env.sh 644
   corebrum_install_file "${COREBRUM_ROOT}/config/ros/profile.sh" "$COREBRUM_ROS_PROFILE" 644
   corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/with-ros.sh" /usr/local/lib/corebrum/with-ros.sh 755
   corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/zenoh-router.sh" /usr/local/lib/corebrum/zenoh-router.sh 755
@@ -253,8 +321,10 @@ corebrum_uninstall_ros() {
     "$COREBRUM_ROS_PROFILE" \
     /usr/local/lib/corebrum/with-ros.sh \
     /usr/local/lib/corebrum/zenoh-router.sh \
+    /usr/local/lib/corebrum/ros-env.sh \
     /usr/local/bin/corebrum-ros-shell \
-    "$COREBRUM_ROS_RMW"
+    "$COREBRUM_ROS_RMW" \
+    /etc/corebrum/ros/distro
   do
     if [[ -e "$path" ]]; then
       corebrum_backup_file "$path"
@@ -300,9 +370,11 @@ EOF
 }
 
 corebrum_cmd_ros_status() {
-  local rmw="unset" router="inactive" version=""
-  if [[ -f /opt/ros/jazzy/setup.bash ]]; then
-    printf 'ros distro: jazzy\n'
+  local rmw="unset" router="inactive" version="" setup="" distro=""
+  setup="$(corebrum_ros_setup_file || true)"
+  if [[ -n "$setup" ]]; then
+    distro="$(basename "$(dirname "$setup")")"
+    printf 'ros distro: %s\n' "$distro"
   else
     printf 'ros distro: not installed\n'
   fi
@@ -313,7 +385,9 @@ corebrum_cmd_ros_status() {
   printf 'domain: %s\n' "${ROS_DOMAIN_ID:-0}"
   router="$(systemctl is-active "$COREBRUM_ROS_UNIT" 2>/dev/null || true)"
   printf 'zenoh router: %s\n' "${router:-inactive}"
-  version="$(dpkg-query -W -f='${Version}' ros-jazzy-rmw-zenoh-cpp 2>/dev/null || true)"
+  if [[ -n "$distro" ]]; then
+    version="$(dpkg-query -W -f='${Version}' "ros-${distro}-rmw-zenoh-cpp" 2>/dev/null || true)"
+  fi
   if [[ -n "$version" ]]; then
     printf 'rmw_zenoh_cpp: %s\n' "$version"
   fi
@@ -321,7 +395,8 @@ corebrum_cmd_ros_status() {
 
 corebrum_cmd_ros_topics() {
   local with="${COREBRUM_ROOT}/scripts/ros/with-ros.sh"
-  [[ -x "$with" && -f /opt/ros/jazzy/setup.bash ]] || corebrum_die "ROS 2 Jazzy is not installed"
+  [[ -x "$with" ]] || corebrum_die "ROS 2 is not installed"
+  corebrum_ros_setup_file >/dev/null || corebrum_die "ROS 2 is not installed"
   "$with" timeout 15 ros2 topic list
 }
 

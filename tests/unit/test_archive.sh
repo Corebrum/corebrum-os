@@ -100,4 +100,39 @@ if [[ "$found_hyprland" -ne 1 || "$found_input" -ne 1 || "$found_xkb" -ne 1 || "
 fi
 assert_eq "$COREBRUM_HYPRLAND_PPA_FINGERPRINT" "A54D23B62FF3FCC76EFF71E8FDBAAA1CF0CCF48E" "recorded PPA fingerprint"
 
+set +e
+resolute_err="$(
+  corebrum_ubuntu_archive_version() { printf ''; }
+  corebrum_read_os_release_field() { printf 'resolute'; }
+  DRY_RUN=1
+  corebrum_install_hyprland_ppa 2>&1
+)"
+resolute_status=$?
+noble_err="$(
+  corebrum_ubuntu_archive_version() { printf ''; }
+  corebrum_read_os_release_field() { printf 'noble'; }
+  DRY_RUN=1
+  corebrum_install_hyprland_ppa 2>&1
+)"
+noble_status=$?
+archive_err="$(
+  corebrum_ubuntu_archive_version() { printf '0.53.3+ds-4\n'; }
+  DRY_RUN=1
+  corebrum_install_hyprland_ppa 2>&1
+)"
+archive_status=$?
+set -e
+if [[ "$resolute_status" -eq 0 ]] || ! grep -q 'ppa:cppiber/hyprland is only used on noble' <<<"$resolute_err"; then
+  echo "FAIL: Ubuntu 26.04 should refuse the Hyprland PPA when the archive has no hyprland" >&2
+  exit 1
+fi
+if [[ "$noble_status" -ne 0 ]] || ! grep -q 'ppa:cppiber/hyprland' <<<"$noble_err"; then
+  echo "FAIL: Ubuntu 24.04 should still plan the Hyprland PPA when the archive has no hyprland" >&2
+  exit 1
+fi
+if [[ "$archive_status" -ne 0 ]] || ! grep -q 'not adding ppa:cppiber/hyprland' <<<"$archive_err"; then
+  echo "FAIL: an archive hyprland package should skip the PPA" >&2
+  exit 1
+fi
+
 echo "ok: archive"
