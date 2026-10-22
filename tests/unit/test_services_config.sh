@@ -20,13 +20,25 @@ fi
 
 python3 - "$waybar" <<'PY'
 import json, sys
-cfg = json.load(open(sys.argv[1], encoding="utf-8"))
+loaded = json.load(open(sys.argv[1], encoding="utf-8"))
+bars = loaded if isinstance(loaded, list) else [loaded]
+cfg = next((bar for bar in bars if "modules-right" in bar), None)
+if cfg is None:
+    raise SystemExit("FAIL: waybar has no top bar")
 right = cfg.get("modules-right", [])
-for name in ("network", "pulseaudio", "bluetooth", "battery", "tray"):
+for name in ("network", "pulseaudio", "battery", "tray"):
     if name not in right:
         raise SystemExit(f"FAIL: waybar modules-right missing {name}")
     if name not in cfg:
         raise SystemExit(f"FAIL: waybar missing {name} settings")
+if "bluetooth" in right or "bluetooth" in cfg:
+    raise SystemExit("FAIL: waybar still shows a Bluetooth status beside the Blueman tray icon")
+tagline = next((bar for bar in bars if bar.get("name") == "tagline"), None)
+if tagline is None:
+    raise SystemExit("FAIL: waybar has no tagline bar")
+text = tagline.get("custom/tagline", {}).get("format", "")
+if text != "Corebrum: The Physical AI Operating System":
+    raise SystemExit(f"FAIL: tagline text is {text!r}")
 PY
 
 echo "ok: services-config"

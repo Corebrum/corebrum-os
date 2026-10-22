@@ -19,6 +19,12 @@ if grep -Eq '^[[:space:]]*pseudotile[[:space:]]*=' "$conf"; then
   exit 1
 fi
 require "/usr/local/bin/corebrum-terminal"
+require "bind = \$mainMod SHIFT, Return, exec, firefox"
+require "bind = \$mainMod, W, killactive"
+if grep -q 'bind = $mainMod, Q, killactive' "$conf"; then
+  echo "FAIL: Super+Q still closes the focused window" >&2
+  exit 1
+fi
 require "fullscreen"
 require "togglespecialworkspace, agent"
 require "/usr/local/bin/corebrum-lock"
@@ -33,6 +39,14 @@ if ! grep -q '/usr/local/bin/corebrum-chromium-menu refresh' "${ROOT}/scripts/de
   echo "FAIL: Super+Space does not refresh the Chromium entry" >&2
   exit 1
 fi
+if ! grep -q '/usr/local/bin/corebrum-waypaper-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Waypaper entry" >&2
+  exit 1
+fi
+if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Keybindings entry" >&2
+  exit 1
+fi
 if ! grep -q '/usr/local/bin/corebrum-realsense-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the RealSense entry" >&2
   exit 1
@@ -42,6 +56,12 @@ if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$
   exit 1
 fi
 require "waybar --config /etc/corebrum/waybar/config.json"
+require "disable_splash_rendering = true"
+require 'bin="$HOME/.local/bin/waypaper"'
+if ! grep -q 'Corebrum: The Physical AI Operating System' "${ROOT}/config/waybar/config.json"; then
+  echo "FAIL: the desktop tagline is missing from Waybar" >&2
+  exit 1
+fi
 require "/usr/libexec/polkit-mate-authentication-agent-1"
 require "nm-applet --indicator"
 require "blueman-applet"

@@ -53,6 +53,17 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-chromium-menu open$' "$desktop"; the
   echo "FAIL: desktop entry does not open the Chromium menu" >&2
   fail=1
 fi
+for id in chromium_chromium.desktop chromium_daemon.desktop; do
+  hidden="${runtime}/corebrum/applications/${id}"
+  if ! grep -q '^NoDisplay=true$' "$hidden"; then
+    echo "FAIL: ${id} is still listed beside Corebrum's Chromium entry" >&2
+    fail=1
+  fi
+done
+if ! grep -q '^filter-desktop=yes$' "${ROOT}/config/fuzzel/fuzzel.ini"; then
+  echo "FAIL: Super+Space does not filter OnlyShowIn desktop entries" >&2
+  fail=1
+fi
 
 output="$(COREBRUM_CHROMIUM_READY=0 bash "$menu" open)"
 if [[ "$output" != *'snap install chromium'* ]]; then

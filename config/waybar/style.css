@@ -17,10 +17,15 @@ window#waybar {
 #memory,
 #network,
 #pulseaudio,
-#bluetooth,
 #battery,
 #tray,
 #clock,
 #window {
     padding: 0 8px;
+}
+
+window#waybar.tagline {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 15px;
 }

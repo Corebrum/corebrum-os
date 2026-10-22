@@ -48,6 +48,8 @@ for path in \
   /usr/local/bin/corebrum-realsense-menu \
   /usr/local/bin/corebrum-chromium-menu \
   /usr/local/bin/corebrum-agents-menu \
+  /usr/local/bin/corebrum-waypaper-menu \
+  /usr/local/bin/corebrum-keys-menu \
   /etc/corebrum/agents.conf \
   /etc/corebrum/ros-tools.conf
 do

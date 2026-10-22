@@ -31,11 +31,29 @@ corebrum_chromium_menu_data_dir() {
   printf '%s\n' "${root}/corebrum"
 }
 
+# The Chromium snap also publishes these desktop IDs. Fuzzel lists both beside
+# Corebrum's entry: chromium_chromium.desktop launches the browser, and
+# chromium_daemon.desktop is named the same but runs /usr/bin/false.
+corebrum_chromium_menu_hide_snap_entries() {
+  local dir="$1"
+  local id
+  for id in chromium_chromium.desktop chromium_daemon.desktop; do
+    cat >"${dir}/${id}" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Chromium Web Browser
+Exec=/bin/true
+NoDisplay=true
+EOF
+  done
+}
+
 corebrum_chromium_menu_refresh() {
   local dir name
   dir="$(corebrum_chromium_menu_data_dir)/applications"
   name="$(corebrum_chromium_menu_entry_name)"
   mkdir -p "$dir"
+  corebrum_chromium_menu_hide_snap_entries "$dir"
   cat >"${dir}/corebrum-chromium.desktop" <<EOF
 [Desktop Entry]
 Type=Application

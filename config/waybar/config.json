@@ -1,3 +1,4 @@
+[
 {
   "layer": "top",
   "position": "top",
@@ -5,7 +6,7 @@
   "spacing": 8,
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["cpu", "memory", "network", "pulseaudio", "bluetooth", "battery", "tray", "clock"],
+  "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "tray", "clock"],
   "hyprland/workspaces": {
     "format": "{id}",
     "all-outputs": true
@@ -34,11 +35,6 @@
     "scroll-step": 5,
     "on-click": "pavucontrol"
   },
-  "bluetooth": {
-    "format": "bt {status}",
-    "format-connected": "bt {num_connections}",
-    "on-click": "blueman-manager"
-  },
   "battery": {
     "format": "{capacity}%",
     "format-charging": "{capacity}%",
@@ -50,4 +46,19 @@
   "tray": {
     "spacing": 8
   }
+},
+{
+  "name": "tagline",
+  "layer": "bottom",
+  "position": "bottom",
+  "height": 32,
+  "exclusive": false,
+  "passthrough": true,
+  "margin-bottom": 16,
+  "modules-center": ["custom/tagline"],
+  "custom/tagline": {
+    "format": "Corebrum: The Physical AI Operating System",
+    "tooltip": false
+  }
 }
+]
