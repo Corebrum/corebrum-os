@@ -60,6 +60,8 @@ That script checks packages, config files, that greetd is enabled, and that `Hyp
 
 Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap.
 
+Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium`.
+
 ## Node.js
 
 The desktop profile installs Node.js 26.x, the npm that ships with that build, and pnpm. nvm `v0.40.8` lives at `/usr/local/nvm`. Ubuntu 26.04 publishes Node.js 22, so this does not come from apt and it does not add a repository. The decision is `docs/decisions/0012-node-nvm.md`.

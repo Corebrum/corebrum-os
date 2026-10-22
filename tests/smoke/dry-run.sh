@@ -167,6 +167,10 @@ if grep -q 'forbidden command' <<<"$uninstall_output"; then
   echo "FAIL: desktop uninstall dry-run invoked a mutating command" >&2
   exit 1
 fi
+if ! grep -q 'dry-run: remove /etc/apt/sources.list.d/corebrum-librealsense.sources' <<<"$uninstall_output"; then
+  echo "FAIL: desktop uninstall dry-run did not plan to remove the RealSense apt source" >&2
+  exit 1
+fi
 if ! grep -q 'dry-run: remove /usr/local/nvm when .corebrum-managed is present' <<<"$uninstall_output"; then
   echo "FAIL: desktop uninstall dry-run did not plan to remove the nvm checkout" >&2
   exit 1

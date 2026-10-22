@@ -32,7 +32,7 @@ if ! grep -q 'QT_QPA_PLATFORM=xcb ros2 launch ros_gz_sim' "$catalog"; then
   exit 1
 fi
 if grep -Eq 'ros-jazzy-desktop|ros-lyrical-desktop|realsense' "$catalog"; then
-  echo "FAIL: ROS tool list includes a package this menu does not install" >&2
+  echo "FAIL: ROS tool list includes RealSense or a ROS desktop metapackage" >&2
   exit 1
 fi
 

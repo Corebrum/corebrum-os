@@ -24,6 +24,14 @@ require "togglespecialworkspace, agent"
 require "workspace, 1"
 require "/usr/local/bin/corebrum-grid"
 require "/usr/local/bin/corebrum-launcher"
+if ! grep -q '/usr/local/bin/corebrum-chromium-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Chromium entry" >&2
+  exit 1
+fi
+if ! grep -q '/usr/local/bin/corebrum-realsense-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the RealSense entry" >&2
+  exit 1
+fi
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space launcher does not start Fuzzel with a blank search field" >&2
   exit 1

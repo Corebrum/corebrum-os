@@ -101,12 +101,17 @@ corebrum_ros_menu_entry_name() {
   fi
 }
 
-corebrum_ros_menu_line() {
-  local pkg="$1" label="$2"
-  if corebrum_ros_menu_pkg_installed "$pkg"; then
-    printf '%s\n' "$label"
+corebrum_ros_menu_tool_ready() {
+  local i="$1"
+  corebrum_ros_menu_pkg_installed "${ROS_MENU_PKGS[$i]}"
+}
+
+corebrum_ros_menu_choice_label() {
+  local i="$1"
+  if corebrum_ros_menu_tool_ready "$i"; then
+    printf '%s\n' "${ROS_MENU_LABELS[$i]}"
   else
-    printf '%s%s\n' "$label" "$COREBRUM_ROS_INSTALL_MARK"
+    printf '%s%s\n' "${ROS_MENU_LABELS[$i]}" "$COREBRUM_ROS_INSTALL_MARK"
   fi
 }
 
@@ -114,7 +119,7 @@ corebrum_ros_menu_labels() {
   local i
   corebrum_ros_menu_load
   for i in "${!ROS_MENU_IDS[@]}"; do
-    corebrum_ros_menu_line "${ROS_MENU_PKGS[$i]}" "${ROS_MENU_LABELS[$i]}"
+    corebrum_ros_menu_choice_label "$i"
   done
 }
 
@@ -204,7 +209,7 @@ corebrum_ros_menu_open_tools() {
   local -a lines=()
   corebrum_ros_menu_load
   for i in "${!ROS_MENU_IDS[@]}"; do
-    line="$(corebrum_ros_menu_line "${ROS_MENU_PKGS[$i]}" "${ROS_MENU_LABELS[$i]}")"
+    line="$(corebrum_ros_menu_choice_label "$i")"
     lines+=("$line")
   done
   if [[ "${COREBRUM_ROS_MENU_STUB:-0}" == 1 ]]; then
@@ -220,7 +225,7 @@ corebrum_ros_menu_open_tools() {
   [[ -n "$choice" ]] || return 0
   for i in "${!lines[@]}"; do
     if [[ "$choice" == "${lines[$i]}" ]]; then
-      if corebrum_ros_menu_pkg_installed "${ROS_MENU_PKGS[$i]}"; then
+      if corebrum_ros_menu_tool_ready "$i"; then
         corebrum_ros_menu_launch "${ROS_MENU_CMDS[$i]}"
       else
         corebrum_ros_menu_install_pkg "${ROS_MENU_PKGS[$i]}"

@@ -1,0 +1,14 @@
+component: realsense
+ubuntu: 24.04 noble and 26.04 resolute
+arch: x86_64
+librealsense: 2.59.1 from https://librealsense.realsenseai.com/Debian/apt-repo
+librealsense_noble: 2.59.1-0~realsense.20270
+librealsense_resolute: 2.59.1-0~realsense.20271
+librealsense_key: 5381411D24E659FB18195FA5FB0B24895113F120
+viewer: /usr/bin/realsense-viewer from librealsense2-utils
+realsense_ros_noble: ros-jazzy-librealsense2 2.58.4-1noble.20260831.015923 and ros-jazzy-realsense2-camera 4.58.4-1noble.20260920.235447
+realsense_ros_resolute: ros-lyrical-librealsense2 2.58.4-1resolute.20260830.174711 and ros-lyrical-realsense2-camera 4.58.4-1resolute.20260915.142707
+pyrealsense2: 2.59.1.11053 from https://pypi.org/project/pyrealsense2/
+python: system python3 when it is 3.10, 3.11, 3.12, 3.13, or 3.14
+python_verified: Ubuntu 26.04 python3 3.14.4 and the cp314 manylinux1_x86_64 wheel, 2026-10-22
+notes: The ROS librealsense deb does not ship realsense-viewer. noble also installs librealsense2-dkms 1.3.33-noble. resolute does not publish that dkms package. These packages are not part of corebrum install ros.

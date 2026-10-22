@@ -2,7 +2,7 @@
 
 Phase 5 installs one ROS 2 release and one Zenoh router. Ubuntu noble gets Jazzy. Ubuntu resolute gets Lyrical Luth. The decisions are `docs/decisions/0009-ros-jazzy-zenoh.md` and `docs/decisions/0010-ubuntu-2604-packages.md`. This profile does not install the Hyprland desktop, RViz, Gazebo, Nav2, MoveIt, or RealSense.
 
-On a desktop install, Super+Space lists `ROS 2   install` before this profile is installed. Choosing it runs the command below in a terminal. After it finishes, Super+Space lists `ROS`. That entry opens RViz, Gazebo, Nav2, and MoveIt. A tool that is not installed yet is marked `install` and choosing it installs that package. A tool that is installed launches. See `docs/decisions/0011-ros-launcher-menu.md`.
+On a desktop install, Super+Space lists `ROS 2   install` before this profile is installed. Choosing it runs the command below in a terminal. After it finishes, Super+Space lists `ROS`. That entry opens RViz, Gazebo, Nav2, and MoveIt. A tool that is not installed yet is marked `install` and choosing it installs that package. A tool that is installed launches. RealSense is a separate Super+Space entry. It installs librealsense with `realsense-viewer`, the ROS camera packages, and `pyrealsense2` for the system Python. After that install, the entry opens a submenu: RealSense Viewer launches the viewer, and RealSense ROS opens a terminal running `ros2 launch realsense2_camera rs_launch.py`. See `docs/decisions/0011-ros-launcher-menu.md` and `docs/decisions/0013-realsense-menu.md`.
 
 Preview:
 

@@ -41,6 +41,8 @@ for path in \
   /usr/local/bin/corebrum-grid \
   /usr/local/bin/corebrum-launcher \
   /usr/local/bin/corebrum-ros-menu \
+  /usr/local/bin/corebrum-realsense-menu \
+  /usr/local/bin/corebrum-chromium-menu \
   /etc/corebrum/ros-tools.conf
 do
   if [[ -f "$path" ]]; then
