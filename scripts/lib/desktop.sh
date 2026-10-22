@@ -72,8 +72,12 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-chromium-menu.sh" /usr/local/bin/corebrum-chromium-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
-  corebrum_install_file "${root}/scripts/desktop/corebrum-waypaper-menu.sh" /usr/local/bin/corebrum-waypaper-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-keys-menu.sh" /usr/local/bin/corebrum-keys-menu 755
+  corebrum_install_file "${root}/config/systemd/user/hyprpaper.service.d/corebrum.conf" /etc/systemd/user/hyprpaper.service.d/corebrum.conf 644
+  if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
+    rm -f /usr/local/bin/corebrum-waypaper-menu
+  fi
   corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
@@ -151,8 +155,10 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-realsense-menu
 /usr/local/bin/corebrum-chromium-menu
 /usr/local/bin/corebrum-agents-menu
+/usr/local/bin/corebrum-wallpaper-menu
 /usr/local/bin/corebrum-waypaper-menu
 /usr/local/bin/corebrum-keys-menu
+/etc/systemd/user/hyprpaper.service.d/corebrum.conf
 /etc/corebrum/agents.conf
 /usr/local/lib/corebrum/realsense-install.sh
 /etc/corebrum/ros-tools.conf

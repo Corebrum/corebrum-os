@@ -39,8 +39,12 @@ if ! grep -q '/usr/local/bin/corebrum-chromium-menu refresh' "${ROOT}/scripts/de
   echo "FAIL: Super+Space does not refresh the Chromium entry" >&2
   exit 1
 fi
-if ! grep -q '/usr/local/bin/corebrum-waypaper-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
-  echo "FAIL: Super+Space does not refresh the Waypaper entry" >&2
+if ! grep -q '/usr/local/bin/corebrum-wallpaper-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Wallpaper entry" >&2
+  exit 1
+fi
+if grep -q 'corebrum-waypaper-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space still refreshes Waypaper" >&2
   exit 1
 fi
 if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -57,7 +61,12 @@ if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$
 fi
 require "waybar --config /etc/corebrum/waybar/config.json"
 require "disable_splash_rendering = true"
-require 'bin="$HOME/.local/bin/waypaper"'
+require 'cmd=$(command -v hyprpaper)'
+require 'corebrum/hyprpaper.conf'
+if grep -q 'waypaper --restore' "$conf"; then
+  echo "FAIL: the session still restores Waypaper" >&2
+  exit 1
+fi
 if ! grep -q 'Corebrum: The Physical AI Operating System' "${ROOT}/config/waybar/config.json"; then
   echo "FAIL: the desktop tagline is missing from Waybar" >&2
   exit 1

@@ -1,7 +1,7 @@
 # 0018. Waypaper is a Super+Space install
 
 Date: 2026-10-22
-Status: Accepted
+Status: Superseded by 0020
 
 ## Context
 
