@@ -10,7 +10,7 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 Phase 0 and Phase 1 are in the tree. The operator reported a successful base install, validation, and reboot on Ubuntu Server 24.04.
 
-Phase 2 booted to Hyprland on this machine. Phase 3 is started and not accepted. The desktop profile adds workstation services from the Ubuntu archive and leaves the existing Netplan Ethernet configuration in place. See `docs/installation/desktop.md` and `docs/installation/services.md`.
+Phase 3 installed workstation services on this machine. Phase 4 installed the `corebrum` command on this machine. `make check` passed, `corebrum doctor` passed, and a second `corebrum install desktop` left configuration and the existing Netplan file unchanged. Phase 4 is not accepted until the fresh Ubuntu VM procedure in `docs/installation/cli.md`.
 
 ## Preview the base install
 

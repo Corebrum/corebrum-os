@@ -29,6 +29,7 @@ require "/usr/libexec/polkit-mate-authentication-agent-1"
 require "nm-applet --indicator"
 require "blueman-applet"
 require "systemctl --user start thunar.service"
+# shellcheck disable=SC2016
 require 'ln -sfn "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE" "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE"'
 require "wl-paste --watch cliphist store"
 if grep -q 'grimshot' "$conf"; then

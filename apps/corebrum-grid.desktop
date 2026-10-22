@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Corebrum
+GenericName=Application grid
+Comment=Open the Corebrum application grid
+Exec=/usr/local/bin/corebrum-grid
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=System;Utility;
+StartupNotify=false

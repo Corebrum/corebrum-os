@@ -12,7 +12,7 @@ The root filesystem needs 8 GiB free. `df -Pk /` reports the value the installer
 
 ## Installer stops midway
 
-Read `/var/log/corebrum/install-latest.log`. Re-run `sudo ./scripts/install.sh --profile base`. APT and the locale steps are safe to repeat. Files the installer edits are copied to `/var/log/corebrum/backups/` first.
+Read `/var/log/corebrum/install-latest.log` and run `corebrum doctor`. Re-run `sudo corebrum install base`. APT and the locale steps are safe to repeat. Files the installer edits are copied to `/var/log/corebrum/backups/` first.
 
 ## Validation fails after install
 

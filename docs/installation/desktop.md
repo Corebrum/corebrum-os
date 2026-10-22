@@ -24,6 +24,8 @@ Apply it with:
 sudo ./scripts/install.sh --profile desktop
 ```
 
+The same install from the checkout is `sudo ./scripts/corebrum.sh install desktop`. After the command is linked, that is `sudo corebrum install desktop`. See `docs/installation/cli.md`.
+
 That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. If the Ubuntu archive later contains `hyprland`, this command does not add the PPA.
 
 ## After a successful install

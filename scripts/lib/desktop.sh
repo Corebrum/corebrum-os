@@ -59,6 +59,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
+  corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
 }
 
 corebrum_install_greetd_config() {
@@ -108,6 +109,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-session
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid
+/usr/local/share/applications/corebrum-grid.desktop
 EOF
 }
 
@@ -123,7 +125,7 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: disable greetd.service when the unit exists"
     corebrum_log "dry-run: restore /etc/greetd/config.toml from the recorded backup when present"
     corebrum_log "dry-run: restore the previous default target when one was recorded"
-    corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, and /usr/local/lib/corebrum"
+    corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
     corebrum_remove_hyprland_ppa
     corebrum_log "desktop uninstall dry-run complete"
     return 0
@@ -171,6 +173,7 @@ corebrum_uninstall_desktop() {
     /etc/corebrum/dashboard \
     /etc/corebrum \
     /usr/local/lib/corebrum \
+    /usr/local/share/applications \
     2>/dev/null || true
   corebrum_log "desktop uninstall complete; Ubuntu packages were left installed; reboot to leave the graphical login"
 }

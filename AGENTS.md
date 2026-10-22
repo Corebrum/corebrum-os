@@ -30,7 +30,7 @@ The root installer (`scripts/install.sh`) orchestrates phase scripts. It must su
 
 ## Current boundary
 
-Phase 3 is in progress: workstation services on the Hyprland desktop. The operator continued after Phase 2 booted to Hyprland and showed Waybar.
+Phase 4 is in progress: the `corebrum` command. The operator continued after Phase 3 installed workstation services. `corebrum install desktop` is the desktop profile. `corebrum install base` is the headless profile. The command does not write `~/.config`. See `docs/decisions/0008-corebrum-command.md`.
 
 The desktop session is Hyprland dwindle tiling, Waybar, Fuzzel, and a Corebrum app grid, plus a scratchpad for an agent terminal. Quickshell is not in the Ubuntu 24.04 archive. Hyprland is installed from `ppa:cppiber/hyprland` when the Ubuntu archive has no `hyprland` package. That archive is pinned so only Hyprland and the libraries it requires come from it. See `docs/decisions/0006-hyprland-ppa.md`. Do not add any other third-party repository.
 

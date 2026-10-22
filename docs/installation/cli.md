@@ -1,0 +1,57 @@
+# Corebrum command
+
+Phase 4 is the `corebrum` command. It installs the profiles from Phases 1–3, reports what is present, and diagnoses a broken install. The decision is `docs/decisions/0008-corebrum-command.md`.
+
+From a checkout:
+
+```bash
+./scripts/corebrum.sh version
+./scripts/corebrum.sh install desktop --dry-run
+sudo ./scripts/corebrum.sh install desktop
+```
+
+After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in this checkout.
+
+| Command | Effect |
+| --- | --- |
+| `corebrum version` | Print the version from `VERSION` |
+| `corebrum status` | Say whether base, desktop, and services are installed |
+| `corebrum doctor` | Run the validators and print the next command if one fails |
+| `corebrum config` | List `/etc/corebrum`, logs, and backups |
+| `corebrum install base` | Headless Ubuntu foundation |
+| `corebrum install headless` | Same as `base` |
+| `corebrum install desktop` | Base, Hyprland, and workstation services |
+| `corebrum install desktop --enable-ssh` | Also install OpenSSH |
+| `corebrum uninstall desktop` | Remove Corebrum desktop files, not Ubuntu packages |
+
+`--dry-run` prints the plan and does not change the system. A real install must be root. It does not write `~/.config` and it does not edit existing Netplan files. A second install copies a file again only when the checkout copy differs, and it keeps the first recorded state value.
+
+The app grid is the Corebrum menu. Fuzzel's prompt is Corebrum. The desktop entry is `/usr/local/share/applications/corebrum-grid.desktop`.
+
+Logs and backups:
+
+```text
+/var/log/corebrum/install-latest.log
+/var/log/corebrum/backups/
+```
+
+If an install stops, read that log and run `corebrum doctor`.
+
+## Fresh virtual machine
+
+`make check` does not install Corebrum onto the machine that runs it. To accept Phase 4 on a clean Ubuntu Server 24.04 VM:
+
+1. Install Ubuntu Server 24.04 x86-64 and clone this checkout.
+2. Run `./scripts/corebrum.sh install desktop --dry-run` and confirm it exits 0.
+3. Run `sudo ./scripts/corebrum.sh install desktop`.
+4. Reboot, log in on VT 7, and run `corebrum doctor`.
+5. Run `sudo ./scripts/corebrum.sh install desktop` again. `corebrum doctor` should still pass, and `/etc/corebrum/desktop.state` should not gain a second copy of an existing key.
+6. Confirm `corebrum config` lists `/etc/corebrum` and that the user home has no Corebrum Hyprland config.
+
+## Removal
+
+```bash
+sudo corebrum uninstall desktop
+```
+
+This is the desktop uninstall from `docs/installation/desktop.md`. `corebrum uninstall base` refuses to remove Ubuntu packages.

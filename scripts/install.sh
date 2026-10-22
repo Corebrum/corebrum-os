@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Corebrum OS installer. Profiles: base (Phase 1), desktop (Phases 2 and 3).
+# The product command is scripts/corebrum.sh.
 set -eEuo pipefail
 
 COREBRUM_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -15,6 +16,8 @@ source "${COREBRUM_ROOT}/scripts/lib/preflight.sh"
 source "${COREBRUM_ROOT}/scripts/lib/apt.sh"
 # shellcheck source=lib/system.sh
 source "${COREBRUM_ROOT}/scripts/lib/system.sh"
+# shellcheck source=lib/cli.sh
+source "${COREBRUM_ROOT}/scripts/lib/cli.sh"
 
 DRY_RUN=0
 ENABLE_SSH=0
@@ -32,6 +35,7 @@ Usage: scripts/install.sh --profile base|desktop [--dry-run] [--enable-ssh]
   -h, --help          Show this help
 
 A real install must be run as root. --dry-run may be run as a normal user.
+The product command is: corebrum install base|desktop
 When hyprland is not in the Ubuntu archive, the desktop profile adds
 ppa:cppiber/hyprland and pins it so only Hyprland and the libraries it
 requires are installed from there.
@@ -89,6 +93,7 @@ elif [[ "$PROFILE" == "base" ]]; then
 fi
 
 corebrum_preflight
+corebrum_install_command
 
 if [[ "$PROFILE" == "desktop" ]]; then
   # shellcheck source=lib/desktop.sh
