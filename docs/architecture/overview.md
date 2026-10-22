@@ -8,7 +8,7 @@ Ubuntu Server 24.04
   Hyprland + Waybar + Fuzzel + app grid         Phase 2, Hyprland from ppa:cppiber/hyprland
   NetworkManager, PipeWire, portals, disks     Phase 3, Ubuntu archive, Ethernet stays on Netplan
   corebrum install, status, doctor, config     Phase 4
-  ROS 2 Jazzy + Zenoh RMW                       later
+  ROS 2 Jazzy + rmw_zenoh_cpp                   Phase 5, official ROS apt repository
   RViz, Gazebo, RealSense                       later
   AgenticROS, Corebrum Mesh                     later
 ```

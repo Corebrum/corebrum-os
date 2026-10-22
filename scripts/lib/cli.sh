@@ -61,7 +61,7 @@ corebrum_profile_line() {
 }
 
 corebrum_cmd_status() {
-  local base=0 desktop=0 services=0
+  local base=0 desktop=0 services=0 ros=0
   corebrum_cmd_version
   printf 'checkout: %s\n' "$COREBRUM_ROOT"
   if corebrum_pkg_installed ca-certificates && corebrum_pkg_installed systemd-timesyncd; then
@@ -73,9 +73,13 @@ corebrum_cmd_status() {
   if corebrum_pkg_installed network-manager && [[ -f /etc/xdg/xdg-desktop-portal/hyprland-portals.conf ]]; then
     services=1
   fi
+  if corebrum_pkg_installed ros-jazzy-ros-base && [[ -f /etc/corebrum/ros/rmw ]]; then
+    ros=1
+  fi
   corebrum_profile_line base "$base"
   corebrum_profile_line desktop "$desktop"
   corebrum_profile_line services "$services"
+  corebrum_profile_line ros "$ros"
   if [[ -L /var/log/corebrum/install-latest.log || -f /var/log/corebrum/install-latest.log ]]; then
     printf 'log: /var/log/corebrum/install-latest.log\n'
   else
@@ -94,6 +98,8 @@ corebrum_cmd_config() {
   printf 'grid: /etc/corebrum/dashboard/tiles.conf\n'
   printf 'launcher: /etc/corebrum/fuzzel/fuzzel.ini\n'
   printf 'menu: %s\n' "$COREBRUM_LAUNCHER_PATH"
+  printf 'ros: /etc/corebrum/ros\n'
+  printf 'zenoh router: corebrum-zenoh-router.service\n'
   printf 'user home: not written\n'
   printf 'netplan: existing files are not edited\n'
   if [[ -d /etc/corebrum ]]; then
@@ -149,6 +155,15 @@ corebrum_cmd_doctor() {
     corebrum_log "next: sudo corebrum install desktop"
     failed=1
   fi
+  if [[ -f /etc/corebrum/ros/rmw ]] || corebrum_pkg_installed ros-jazzy-ros-base; then
+    if ! corebrum_run_check ros "${COREBRUM_ROOT}/scripts/validate/ros.sh" \
+      "sudo corebrum install ros"; then
+      failed=1
+    fi
+  else
+    corebrum_log "doctor: ros is not installed"
+    corebrum_log "optional: sudo corebrum install ros"
+  fi
   duplicates="$(corebrum_state_duplicates || true)"
   if [[ -n "$duplicates" ]]; then
     corebrum_log "doctor: duplicate state keys: ${duplicates}"
@@ -176,7 +191,7 @@ corebrum_cmd_install() {
   local -a args=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      base | desktop)
+      base | desktop | ros)
         profile="$1"
         ;;
       headless)
@@ -191,10 +206,11 @@ corebrum_cmd_install() {
         ;;
       -h | --help)
         cat <<'EOF'
-Usage: corebrum install base|headless|desktop [--dry-run] [--enable-ssh]
+Usage: corebrum install base|headless|desktop|ros [--dry-run] [--enable-ssh]
 
   base, headless   Ubuntu Server foundation. headless is the base profile
   desktop          Base, Hyprland session, and workstation services
+  ros              Base, ROS 2 Jazzy, and the Zenoh router. Not the desktop
   --dry-run        Print the plan without changing the system
   --enable-ssh     Optional OpenSSH server
 
@@ -209,7 +225,7 @@ EOF
     esac
     shift
   done
-  [[ -n "$profile" ]] || corebrum_die "missing profile (expected: base, headless, or desktop)"
+  [[ -n "$profile" ]] || corebrum_die "missing profile (expected: base, headless, desktop, or ros)"
   args=(--profile "$profile")
   if [[ "$dry" -eq 1 ]]; then
     args+=(--dry-run)
@@ -236,6 +252,9 @@ corebrum_cmd_uninstall() {
       desktop)
         profile="desktop"
         ;;
+      ros)
+        profile="ros"
+        ;;
       base | headless)
         profile="base"
         ;;
@@ -244,11 +263,12 @@ corebrum_cmd_uninstall() {
         ;;
       -h | --help)
         cat <<'EOF'
-Usage: corebrum uninstall desktop [--dry-run]
+Usage: corebrum uninstall desktop|ros [--dry-run]
 
-Removes Corebrum desktop files and disables greetd. It does not remove
-Ubuntu packages. corebrum uninstall base refuses, because the base profile
-is ordinary Ubuntu packages.
+desktop removes Corebrum desktop files and disables greetd. ros disables the
+Zenoh router and removes Corebrum ROS files. Neither command removes apt
+packages. corebrum uninstall base refuses, because the base profile is
+ordinary Ubuntu packages.
 EOF
         return 0
         ;;
@@ -258,7 +278,7 @@ EOF
     esac
     shift
   done
-  [[ -n "$profile" ]] || corebrum_die "missing profile (expected: desktop)"
+  [[ -n "$profile" ]] || corebrum_die "missing profile (expected: desktop or ros)"
   args=(--profile "$profile")
   if [[ "$dry" -eq 1 ]]; then
     args+=(--dry-run)

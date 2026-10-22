@@ -1,5 +1,5 @@
 SHELL := bash
-.PHONY: lint test dry-run check validate-base validate-desktop validate-services doctor
+.PHONY: lint test dry-run check validate-base validate-desktop validate-services validate-ros doctor
 
 SCRIPTS := $(shell find scripts tests -type f -name '*.sh' | sort)
 
@@ -16,6 +16,7 @@ test:
 dry-run:
 	./scripts/install.sh --profile base --dry-run
 	./scripts/install.sh --profile desktop --dry-run
+	./scripts/install.sh --profile ros --dry-run
 
 validate-base:
 	./scripts/validate/base.sh
@@ -25,6 +26,9 @@ validate-desktop:
 
 validate-services:
 	./scripts/validate/services.sh
+
+validate-ros:
+	./scripts/validate/ros.sh
 
 doctor:
 	./scripts/corebrum.sh doctor

@@ -40,6 +40,14 @@ fi
 python3 -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' \
   "${ROOT}/config/waybar/config.json"
 
+if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
+  echo "FAIL: the session does not source the ROS profile when it is installed" >&2
+  exit 1
+fi
+if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-terminal.sh"; then
+  echo "FAIL: a new terminal does not source the ROS profile" >&2
+  exit 1
+fi
 if ! grep -q "agreety --cmd /usr/local/bin/corebrum-session" "${ROOT}/config/greetd/config.toml"; then
   echo "FAIL: greetd does not start the Corebrum session" >&2
   exit 1

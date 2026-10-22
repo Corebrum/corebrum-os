@@ -59,6 +59,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
+  corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
 }
 
@@ -109,6 +110,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-session
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid
+/usr/local/bin/corebrum-ros-shell
 /usr/local/share/applications/corebrum-grid.desktop
 EOF
 }

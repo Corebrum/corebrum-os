@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Corebrum OS installer. Profiles: base (Phase 1), desktop (Phases 2 and 3).
+# Corebrum OS installer. Profiles: base (Phase 1), desktop (Phases 2 and 3), ros (Phase 5).
 # The product command is scripts/corebrum.sh.
 set -eEuo pipefail
 
@@ -26,21 +26,23 @@ export DRY_RUN ENABLE_SSH
 
 usage() {
   cat <<'EOF'
-Usage: scripts/install.sh --profile base|desktop [--dry-run] [--enable-ssh]
+Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh]
 
   --profile base      Install the Ubuntu Server foundation
   --profile desktop   Install the base profile, the Hyprland desktop, and workstation services
+  --profile ros       Install the base profile, ROS 2 Jazzy, and the Zenoh router
   --dry-run           Print intended actions without changing the system
   --enable-ssh        Also install and enable OpenSSH server
   -h, --help          Show this help
 
 A real install must be run as root. --dry-run may be run as a normal user.
-The product command is: corebrum install base|desktop
+The product command is: corebrum install base|desktop|ros
 When hyprland is not in the Ubuntu archive, the desktop profile adds
 ppa:cppiber/hyprland and pins it so only Hyprland and the libraries it
 requires are installed from there.
-Workstation services come from the Ubuntu archive. The installer does not
-edit existing Netplan files or run netplan apply.
+Workstation services come from the Ubuntu archive. The ros profile adds the
+official ROS 2 apt repository and does not install the desktop.
+The installer does not edit existing Netplan files or run netplan apply.
 EOF
 }
 
@@ -71,12 +73,12 @@ done
 
 export DRY_RUN ENABLE_SSH
 
-[[ -n "$PROFILE" ]] || corebrum_die "missing --profile (expected: base or desktop)"
+[[ -n "$PROFILE" ]] || corebrum_die "missing --profile (expected: base, desktop, or ros)"
 
 case "$PROFILE" in
-  base | desktop) ;;
+  base | desktop | ros) ;;
   *)
-    corebrum_die "profile '${PROFILE}' is not available (expected: base or desktop)"
+    corebrum_die "profile '${PROFILE}' is not available (expected: base, desktop, or ros)"
     ;;
 esac
 
@@ -88,7 +90,7 @@ trap 'corebrum_log "failed at ${BASH_SOURCE[0]}:${LINENO}: ${BASH_COMMAND}"' ERR
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
   corebrum_log "dry-run: no packages, services, or files will be changed"
-elif [[ "$PROFILE" == "base" ]]; then
+elif [[ "$PROFILE" == "base" || "$PROFILE" == "ros" ]]; then
   corebrum_init_log
 fi
 
@@ -116,4 +118,10 @@ if [[ "$PROFILE" == "desktop" ]]; then
   # shellcheck source=phases/03-services.sh
   source "${COREBRUM_ROOT}/scripts/phases/03-services.sh"
   corebrum_phase_services
+fi
+
+if [[ "$PROFILE" == "ros" ]]; then
+  # shellcheck source=phases/05-ros.sh
+  source "${COREBRUM_ROOT}/scripts/phases/05-ros.sh"
+  corebrum_phase_ros
 fi

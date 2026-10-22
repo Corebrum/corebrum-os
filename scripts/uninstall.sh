@@ -16,9 +16,10 @@ export DRY_RUN
 
 usage() {
   cat <<'EOF'
-Usage: scripts/uninstall.sh [--profile base|desktop] [--dry-run]
+Usage: scripts/uninstall.sh [--profile base|desktop|ros] [--dry-run]
 
   --profile desktop   Disable greetd and remove Corebrum desktop files
+  --profile ros       Disable the Zenoh router and remove Corebrum ROS files
   --profile base      Refuses. The base profile is ordinary Ubuntu packages
   --dry-run           Print intended actions without changing the system
   -h, --help          Show this help
@@ -69,8 +70,13 @@ case "$PROFILE" in
     source "${COREBRUM_ROOT}/scripts/lib/desktop.sh"
     corebrum_uninstall_desktop
     ;;
+  ros)
+    # shellcheck source=lib/ros.sh
+    source "${COREBRUM_ROOT}/scripts/lib/ros.sh"
+    corebrum_uninstall_ros
+    ;;
   *)
-    echo "uninstall: profile '${PROFILE}' is not available (expected: base or desktop)" >&2
+    echo "uninstall: profile '${PROFILE}' is not available (expected: base, desktop, or ros)" >&2
     exit 1
     ;;
 esac

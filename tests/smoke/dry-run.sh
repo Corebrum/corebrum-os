@@ -101,6 +101,33 @@ if ! grep -q 'workstation services dry-run complete' <<<"$desktop_output"; then
   echo "FAIL: dry-run did not finish workstation services" >&2
   exit 1
 fi
+if grep -q 'ros-jazzy-ros-base' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run listed ROS packages" >&2
+  exit 1
+fi
+
+ros_output="$(assert_dry_run --profile ros --dry-run)"
+if ! grep -q 'ros profile dry-run complete' <<<"$ros_output"; then
+  printf '%s\n' "$ros_output" >&2
+  echo "FAIL: dry-run did not finish the ros profile" >&2
+  exit 1
+fi
+if ! grep -q 'ros-jazzy-rmw-zenoh-cpp' <<<"$ros_output"; then
+  echo "FAIL: ros dry-run did not list the Zenoh RMW" >&2
+  exit 1
+fi
+if ! grep -q 'not changing existing Netplan files or running netplan apply' <<<"$ros_output"; then
+  echo "FAIL: ros dry-run did not promise to leave existing Netplan files unchanged" >&2
+  exit 1
+fi
+if ! grep -q 'not running apt upgrade' <<<"$ros_output"; then
+  echo "FAIL: ros dry-run did not refuse apt upgrade" >&2
+  exit 1
+fi
+if grep -Eq 'ros-jazzy-desktop|ros-jazzy-rviz2|releases/latest' <<<"$ros_output"; then
+  echo "FAIL: ros dry-run floated the apt source or listed a later-phase package" >&2
+  exit 1
+fi
 
 set +e
 uninstall_output="$(PATH="${shim_dir}:${PATH}" "${ROOT}/scripts/uninstall.sh" --profile desktop --dry-run 2>&1)"

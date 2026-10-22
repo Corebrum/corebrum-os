@@ -30,10 +30,10 @@ The root installer (`scripts/install.sh`) orchestrates phase scripts. It must su
 
 ## Current boundary
 
-Phase 4 is in progress: the `corebrum` command. The operator continued after Phase 3 installed workstation services. `corebrum install desktop` is the desktop profile. `corebrum install base` is the headless profile. The command does not write `~/.config`. See `docs/decisions/0008-corebrum-command.md`.
+Phase 5 is in progress: ROS 2 Jazzy and `rmw_zenoh_cpp`. The operator continued after Phase 4 installed the `corebrum` command. `corebrum install ros` installs the base profile and the Zenoh router. It does not install the desktop. The command does not write `~/.config`. See `docs/decisions/0009-ros-jazzy-zenoh.md`.
 
-The desktop session is Hyprland dwindle tiling, Waybar, Fuzzel, and a Corebrum app grid, plus a scratchpad for an agent terminal. Quickshell is not in the Ubuntu 24.04 archive. Hyprland is installed from `ppa:cppiber/hyprland` when the Ubuntu archive has no `hyprland` package. That archive is pinned so only Hyprland and the libraries it requires come from it. See `docs/decisions/0006-hyprland-ppa.md`. Do not add any other third-party repository.
+The desktop session is Hyprland dwindle tiling, Waybar, Fuzzel, and a Corebrum app grid, plus a scratchpad for an agent terminal. Quickshell is not in the Ubuntu 24.04 archive. Hyprland is installed from `ppa:cppiber/hyprland` when the Ubuntu archive has no `hyprland` package. That archive is pinned so only Hyprland and the libraries it requires come from it. See `docs/decisions/0006-hyprland-ppa.md`. Do not add any third-party repository other than that pinned PPA and, for the ros profile, the official ROS 2 apt repository.
 
 Phase 3 installs NetworkManager, Bluetooth, PipeWire, and the related Ubuntu tools as part of `--profile desktop`. It does not edit existing Netplan files and it does not switch the Ethernet renderer. Wi-Fi is managed by NetworkManager. Ethernet stays on the existing Netplan renderer. See `docs/decisions/0007-workstation-services.md`.
 
-Do not install ROS 2, Zenoh, RViz, Gazebo, RealSense, AgenticROS, or Corebrum Mesh until a later phase is explicitly approved.
+Do not install RViz, Gazebo, RealSense, AgenticROS, or Corebrum Mesh until a later phase is explicitly approved.

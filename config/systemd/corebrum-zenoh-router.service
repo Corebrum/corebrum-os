@@ -1,0 +1,16 @@
+# Managed by Corebrum OS.
+[Unit]
+Description=Corebrum Zenoh router for ROS 2
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=RMW_IMPLEMENTATION=rmw_zenoh_cpp
+Environment=ROS_DOMAIN_ID=0
+ExecStart=/usr/local/lib/corebrum/zenoh-router.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

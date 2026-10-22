@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Corebrum command. Profiles: base (headless) and desktop.
+# Corebrum command. Profiles: base (headless), desktop, and ros.
 set -euo pipefail
 
 source_path="$(readlink -f "${BASH_SOURCE[0]}")"
@@ -10,6 +10,8 @@ export COREBRUM_ROOT
 source "${COREBRUM_ROOT}/scripts/lib/log.sh"
 # shellcheck source=lib/cli.sh
 source "${COREBRUM_ROOT}/scripts/lib/cli.sh"
+# shellcheck source=lib/ros.sh
+source "${COREBRUM_ROOT}/scripts/lib/ros.sh"
 
 usage() {
   cat <<'EOF'
@@ -19,11 +21,14 @@ Usage: corebrum <command> [arguments]
   status                   Show which profiles are installed
   doctor                   Check an install and print the next action
   config                   Show configuration paths
-  install <profile>        Install base (headless) or desktop
-  uninstall <profile>      Remove Corebrum desktop files
+  install <profile>        Install base (headless), desktop, or ros
+  uninstall <profile>      Remove Corebrum desktop or ROS files
+  ros status|topics|rmw    Inspect ROS 2 or select Zenoh or Fast DDS
+  zenoh status|peers       Inspect the Zenoh router
   help                     Show this help
 
-install profiles are base, headless, and desktop. headless is the base profile.
+install profiles are base, headless, desktop, and ros. headless is the base profile.
+The ros profile does not install the desktop.
 Optional install flag: --enable-ssh. --dry-run prints the plan only.
 
 The command does not write ~/.config. A real install does not edit existing
@@ -55,6 +60,12 @@ case "$command_name" in
     ;;
   uninstall)
     corebrum_cmd_uninstall "$@"
+    ;;
+  ros)
+    corebrum_cmd_ros "$@"
+    ;;
+  zenoh)
+    corebrum_cmd_zenoh "$@"
     ;;
   "" | -h | --help | help)
     usage

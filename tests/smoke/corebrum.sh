@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CMD="${ROOT}/scripts/corebrum.sh"
 
 version="$("$CMD" version)"
-if [[ "$version" != "corebrum 0.4.0" ]]; then
+if [[ "$version" != "corebrum 0.5.0" ]]; then
   echo "FAIL: version printed ${version}" >&2
   exit 1
 fi
@@ -41,6 +41,14 @@ if ! grep -q 'profile base:' <<<"$status"; then
   echo "FAIL: status did not report the base profile" >&2
   exit 1
 fi
+if ! grep -q 'profile ros:' <<<"$status"; then
+  echo "FAIL: status did not report the ros profile" >&2
+  exit 1
+fi
+if ! "$CMD" ros status >/dev/null; then
+  echo "FAIL: ros status should succeed before ROS is required" >&2
+  exit 1
+fi
 
 desktop="$("$CMD" install desktop --dry-run 2>&1)"
 if ! grep -q 'workstation services dry-run complete' <<<"$desktop"; then
@@ -54,6 +62,10 @@ if ! grep -q 'link /usr/local/bin/corebrum' <<<"$desktop"; then
 fi
 if ! grep -q 'not changing existing Netplan files or running netplan apply' <<<"$desktop"; then
   echo "FAIL: dry-run did not keep the Netplan promise" >&2
+  exit 1
+fi
+if grep -q 'ros-jazzy-ros-base' <<<"$desktop"; then
+  echo "FAIL: desktop dry-run listed ROS packages" >&2
   exit 1
 fi
 
@@ -70,6 +82,25 @@ fi
 again="$("$CMD" install desktop --dry-run 2>&1)"
 if ! grep -q 'workstation services dry-run complete' <<<"$again"; then
   echo "FAIL: second desktop dry-run did not finish" >&2
+  exit 1
+fi
+
+ros="$("$CMD" install ros --dry-run 2>&1)"
+if ! grep -q 'ros profile dry-run complete' <<<"$ros"; then
+  printf '%s\n' "$ros" >&2
+  echo "FAIL: ros dry-run did not finish" >&2
+  exit 1
+fi
+if ! grep -q 'ros-jazzy-rmw-zenoh-cpp' <<<"$ros"; then
+  echo "FAIL: ros dry-run did not list the Zenoh RMW" >&2
+  exit 1
+fi
+if ! grep -q 'not running apt upgrade' <<<"$ros"; then
+  echo "FAIL: ros dry-run did not refuse apt upgrade" >&2
+  exit 1
+fi
+if grep -Eq 'ros-jazzy-desktop|ros-jazzy-rviz2' <<<"$ros"; then
+  echo "FAIL: ros dry-run listed RViz or the ROS desktop metapackage" >&2
   exit 1
 fi
 

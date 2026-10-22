@@ -10,7 +10,7 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 Phase 0 and Phase 1 are in the tree. The operator reported a successful base install, validation, and reboot on Ubuntu Server 24.04.
 
-Phase 3 installed workstation services on this machine. Phase 4 installed the `corebrum` command on this machine. `make check` passed, `corebrum doctor` passed, and a second `corebrum install desktop` left configuration and the existing Netplan file unchanged. Phase 4 is not accepted until the fresh Ubuntu VM procedure in `docs/installation/cli.md`.
+Phase 4 installed the `corebrum` command on this machine. Phase 4 is not accepted until the fresh Ubuntu VM procedure in `docs/installation/cli.md`. Phase 5 installed ROS 2 Jazzy and one Zenoh router on this machine. A topic, a service, an action, and a router restart passed, and `corebrum doctor` passed. Phase 5 is not accepted until a second machine exchanges messages. See `docs/installation/ros.md`.
 
 ## Preview the base install
 

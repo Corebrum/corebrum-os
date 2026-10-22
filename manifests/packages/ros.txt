@@ -1,0 +1,8 @@
+# ROS 2 Jazzy from packages.ros.org. Not the Ubuntu archive.
+# ros-jazzy-desktop and ros-jazzy-rviz2 are Phase 6. Do not add them here.
+ros-jazzy-ros-base
+ros-jazzy-rmw-zenoh-cpp
+ros-jazzy-rmw-fastrtps-cpp
+ros-jazzy-demo-nodes-cpp
+ros-jazzy-action-tutorials-cpp
+ros-dev-tools

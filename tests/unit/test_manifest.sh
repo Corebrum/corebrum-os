@@ -78,4 +78,28 @@ if [[ "$found_nm" -ne 1 || "$found_pipewire" -ne 1 || "$found_mate" -ne 1 ]]; th
   exit 1
 fi
 
+ros=()
+corebrum_load_manifest "${ROOT}/manifests/packages/ros.txt" ros
+assert_eq "${#ros[@]}" "6" "ros package count"
+for pkg in "${ros[@]}"; do
+  case "$pkg" in
+    ros-jazzy-desktop | ros-jazzy-rviz2 | ros-jazzy-gazebo-ros-pkgs | ros-jazzy-realsense2-camera)
+      echo "FAIL: ros manifest includes ${pkg}" >&2
+      exit 1
+      ;;
+  esac
+done
+found_zenoh=0
+found_base=0
+found_dds=0
+for pkg in "${ros[@]}"; do
+  [[ "$pkg" == "ros-jazzy-ros-base" ]] && found_base=1
+  [[ "$pkg" == "ros-jazzy-rmw-zenoh-cpp" ]] && found_zenoh=1
+  [[ "$pkg" == "ros-jazzy-rmw-fastrtps-cpp" ]] && found_dds=1
+done
+if [[ "$found_base" -ne 1 || "$found_zenoh" -ne 1 || "$found_dds" -ne 1 ]]; then
+  echo "FAIL: ros manifest is missing ros-base, rmw-zenoh-cpp, or rmw-fastrtps-cpp" >&2
+  exit 1
+fi
+
 echo "ok: manifest"
