@@ -60,4 +60,49 @@ if ! grep -q 'openssh-server' <<<"$ssh_output"; then
   exit 1
 fi
 
+desktop_output="$(assert_dry_run --profile desktop --dry-run)"
+if ! grep -q 'desktop profile dry-run complete' <<<"$desktop_output"; then
+  printf '%s\n' "$desktop_output" >&2
+  echo "FAIL: dry-run did not finish the desktop profile" >&2
+  exit 1
+fi
+if ! grep -q 'waybar' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not list waybar" >&2
+  exit 1
+fi
+if ! grep -Eq 'quickshell is not in the Ubuntu archive|quickshell candidate ' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the Quickshell decision" >&2
+  exit 1
+fi
+if ! grep -Eq 'hyprland is not in the Ubuntu 24.04 archive|hyprland candidate ' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the Hyprland decision" >&2
+  exit 1
+fi
+if grep -q 'hyprland is not in the Ubuntu 24.04 archive' <<<"$desktop_output"; then
+  if ! grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then
+    echo "FAIL: desktop dry-run did not name the Hyprland PPA" >&2
+    exit 1
+  fi
+fi
+
+set +e
+uninstall_output="$(PATH="${shim_dir}:${PATH}" "${ROOT}/scripts/uninstall.sh" --profile desktop --dry-run 2>&1)"
+uninstall_status=$?
+set -e
+if [[ "$uninstall_status" -ne 0 ]]; then
+  printf '%s\n' "$uninstall_output" >&2
+  echo "FAIL: desktop uninstall dry-run exited ${uninstall_status}" >&2
+  exit 1
+fi
+if grep -q 'forbidden command' <<<"$uninstall_output"; then
+  printf '%s\n' "$uninstall_output" >&2
+  echo "FAIL: desktop uninstall dry-run invoked a mutating command" >&2
+  exit 1
+fi
+if ! grep -q 'desktop uninstall dry-run complete' <<<"$uninstall_output"; then
+  printf '%s\n' "$uninstall_output" >&2
+  echo "FAIL: desktop uninstall dry-run did not finish" >&2
+  exit 1
+fi
+
 echo "ok: dry-run"

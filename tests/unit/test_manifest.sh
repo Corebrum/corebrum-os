@@ -37,4 +37,21 @@ if (corebrum_load_manifest "${ROOT}/tests/unit/fixtures/packages-bad.txt" packag
   exit 1
 fi
 
+desktop=()
+corebrum_load_manifest "${ROOT}/manifests/packages/desktop.txt" desktop
+assert_eq "${#desktop[@]}" "20" "desktop package count"
+assert_eq "${desktop[0]}" "hyprland" "desktop manifest starts with hyprland"
+found_waybar=0
+found_greetd=0
+found_mako=0
+for pkg in "${desktop[@]}"; do
+  [[ "$pkg" == "waybar" ]] && found_waybar=1
+  [[ "$pkg" == "greetd" ]] && found_greetd=1
+  [[ "$pkg" == "mako-notifier" ]] && found_mako=1
+done
+if [[ "$found_waybar" -ne 1 || "$found_greetd" -ne 1 || "$found_mako" -ne 1 ]]; then
+  echo "FAIL: desktop manifest is missing waybar, greetd, or mako-notifier" >&2
+  exit 1
+fi
+
 echo "ok: manifest"

@@ -2,19 +2,15 @@
 
 The operating environment for Physical AI. Corebrum OS runs on Ubuntu Server 24.04 LTS (x86-64). It is not a new kernel or a new package manager.
 
-The desktop, added in a later phase, follows [Omarchy](https://github.com/omacom/omarchy): a keyboard-first Hyprland session and a Quickshell app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, and Gazebo, and later AgenticROS and Corebrum Mesh, are tiles in that grid. This repository currently contains the base installer only.
+The desktop follows [Omarchy](https://github.com/omacom/omarchy): a keyboard-first Hyprland session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, and Gazebo, and later AgenticROS and Corebrum Mesh, are tiles in that grid. Quickshell is not in Ubuntu 24.04, so this phase uses Waybar, Fuzzel, and `corebrum-grid`.
 
 Original Corebrum code in this repository is under the MIT license in `LICENSE`. Third-party components keep their own licenses. The MIT choice is subject to license review.
 
 ## Current status
 
-Phase 0 and Phase 1 are implemented in this tree:
+Phase 0 and Phase 1 are in the tree. The operator reported a successful base install, validation, and reboot on Ubuntu Server 24.04.
 
-- Repository layout, agent instructions, and architecture decisions
-- Idempotent Ubuntu Server 24.04 base installer with `--dry-run`
-- ShellCheck, unit tests, a dry-run smoke test, and GitHub Actions
-
-A fresh virtual machine install, reboot, and second install are still required before Phase 1 is accepted. See `docs/installation/ubuntu-server.md`.
+Phase 2 is started and not accepted. The desktop profile installs Hyprland from `ppa:cppiber/hyprland` when Ubuntu 24.04 has no `hyprland` package, and pins that archive so Waybar, Fuzzel, and PipeWire stay on Ubuntu. See `docs/installation/desktop.md`.
 
 ## Preview the base install
 
@@ -39,10 +35,18 @@ OpenSSH is opt-in:
 sudo ./scripts/install.sh --profile base --enable-ssh
 ```
 
+## Preview the desktop install
+
+```bash
+./scripts/install.sh --profile desktop --dry-run
+```
+
+`--dry-run` prints the desktop actions and the Hyprland source it will use. It does not install packages or write configuration. A real install is `sudo ./scripts/install.sh --profile desktop`. The steps are in `docs/installation/desktop.md`.
+
 ## Checks
 
 ```bash
 make check
 ```
 
-`make check` runs ShellCheck, unit tests, and the base dry-run. Development requirements are in `docs/development/requirements.md`.
+`make check` runs ShellCheck, unit tests, and dry-runs of the base and desktop profiles. Development requirements are in `docs/development/requirements.md`.

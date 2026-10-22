@@ -1,5 +1,5 @@
 SHELL := bash
-.PHONY: lint test dry-run check validate-base
+.PHONY: lint test dry-run check validate-base validate-desktop
 
 SCRIPTS := $(shell find scripts tests -type f -name '*.sh' | sort)
 
@@ -15,8 +15,12 @@ test:
 
 dry-run:
 	./scripts/install.sh --profile base --dry-run
+	./scripts/install.sh --profile desktop --dry-run
 
 validate-base:
 	./scripts/validate/base.sh
+
+validate-desktop:
+	./scripts/validate/desktop.sh
 
 check: lint test dry-run

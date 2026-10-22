@@ -30,8 +30,8 @@ The root installer (`scripts/install.sh`) orchestrates phase scripts. It must su
 
 ## Current boundary
 
-Phases 0 and 1 only: repository infrastructure and the Ubuntu base profile.
+Phase 2 is in progress: the Hyprland desktop profile. Phase 1 was reported accepted by the operator after install, validation, and reboot.
 
-Do not install Hyprland, Quickshell, Waybar, ROS 2, Zenoh, RViz, Gazebo, RealSense, AgenticROS, or Corebrum Mesh until a later phase is explicitly approved.
+The desktop session is Hyprland dwindle tiling, Waybar, Fuzzel, and a Corebrum app grid, plus a scratchpad for an agent terminal. Quickshell is not in the Ubuntu 24.04 archive. Hyprland is installed from `ppa:cppiber/hyprland` when the Ubuntu archive has no `hyprland` package. That archive is pinned so only Hyprland and the libraries it requires come from it. See `docs/decisions/0006-hyprland-ppa.md`. Do not add any other third-party repository.
 
-The intended desktop is an Omarchy-style session: Hyprland dwindle tiling, a Quickshell app grid whose tiles launch robotics tools, and a scratchpad for an agent terminal. Phase 2 must verify Quickshell on Ubuntu 24.04 before adopting it. If that check fails, use Waybar and Fuzzel and still ship an app grid.
+Do not install ROS 2, Zenoh, RViz, Gazebo, RealSense, AgenticROS, or Corebrum Mesh until a later phase is explicitly approved.

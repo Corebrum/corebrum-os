@@ -8,6 +8,7 @@ fi
 corebrum_backup_file() {
   local path="$1"
   local stamp dest
+  COREBRUM_LAST_BACKUP=""
   [[ -e "$path" ]] || return 0
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: backup ${path}"
@@ -17,6 +18,8 @@ corebrum_backup_file() {
   dest="/var/log/corebrum/backups/${stamp}-$(basename "$path")"
   mkdir -p /var/log/corebrum/backups
   cp -a "$path" "$dest"
+  COREBRUM_LAST_BACKUP="$dest"
+  export COREBRUM_LAST_BACKUP
   corebrum_log "backed up ${path} to ${dest}"
 }
 

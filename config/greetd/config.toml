@@ -1,0 +1,9 @@
+# Managed by Corebrum OS. A previous file is backed up under /var/log/corebrum/backups.
+# VT 7 is the greeter. VT 1 remains a text console.
+
+[terminal]
+vt = 7
+
+[default_session]
+command = "/usr/sbin/agreety --cmd /usr/local/bin/corebrum-session"
+user = "_greetd"

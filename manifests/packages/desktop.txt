@@ -1,0 +1,28 @@
+# Corebrum desktop profile
+# Ubuntu 24.04 (noble) official archive only.
+# One package name per line. Blank lines and # comments are ignored.
+# hyprland has no noble candidate as of 2026-10-22. The installer stops
+# before changing the system when apt-cache has no hyprland candidate.
+# quickshell is not listed: it is not in noble, and this phase has no
+# Quickshell configuration. See docs/decisions/0005-desktop-packages-on-noble.md.
+
+hyprland
+waybar
+kitty
+fuzzel
+wofi
+greetd
+thunar
+firefox
+mako-notifier
+fonts-noto
+fonts-noto-mono
+fonts-noto-color-emoji
+adwaita-icon-theme
+papirus-icon-theme
+dmz-cursor-theme
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
+xwayland
+dbus-user-session

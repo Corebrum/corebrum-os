@@ -24,4 +24,4 @@ SSH is installed only with `--enable-ssh`. The installer enables `ssh.service` a
 
 ## Removal
 
-`scripts/uninstall.sh` refuses to remove packages. The base profile uses ordinary Ubuntu packages, and uninstalling them can remove tools the rest of the system needs.
+`scripts/uninstall.sh` with no profile, and `scripts/uninstall.sh --profile base`, refuse to remove packages. The base profile uses ordinary Ubuntu packages, and uninstalling them can remove tools the rest of the system needs. Desktop removal is separate and is documented in `docs/installation/desktop.md`.

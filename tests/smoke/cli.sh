@@ -9,8 +9,13 @@ if ! "$INSTALL" --help >/dev/null; then
   exit 1
 fi
 
-if "$INSTALL" --profile desktop --dry-run >/dev/null 2>&1; then
-  echo "FAIL: desktop profile should be rejected" >&2
+if ! "$INSTALL" --profile desktop --dry-run >/dev/null; then
+  echo "FAIL: desktop dry-run should succeed" >&2
+  exit 1
+fi
+
+if "$INSTALL" --profile robotics --dry-run >/dev/null 2>&1; then
+  echo "FAIL: robotics profile should be rejected" >&2
   exit 1
 fi
 
@@ -28,6 +33,16 @@ fi
 
 if "${ROOT}/scripts/uninstall.sh" >/dev/null 2>&1; then
   echo "FAIL: uninstall should refuse to remove packages" >&2
+  exit 1
+fi
+
+if "${ROOT}/scripts/uninstall.sh" --profile base >/dev/null 2>&1; then
+  echo "FAIL: base uninstall should refuse to remove packages" >&2
+  exit 1
+fi
+
+if ! "${ROOT}/scripts/uninstall.sh" --profile desktop --dry-run >/dev/null; then
+  echo "FAIL: desktop uninstall dry-run should succeed" >&2
   exit 1
 fi
 

@@ -1,0 +1,7 @@
+component: desktop
+ubuntu: 24.04
+arch: x86_64
+source: archive.ubuntu.com noble
+packages: manifests/packages/desktop.txt
+pin: Ubuntu 24.04 archive versions at install time
+notes: Ubuntu 24.04 archive packages are pinned at install time except Hyprland. On 2026-10-22 noble had no hyprland or quickshell candidate. Hyprland comes from ppa:cppiber/hyprland, package hyprland 0.56.2-1ppa2, signing key A54D23B62FF3FCC76EFF71E8FDBAAA1CF0CCF48E, origin LP-PPA-cppiber-hyprland. The allowlist is manifests/packages/hyprland-ppa.txt. Waybar 0.9.24, Kitty 0.32.2, Fuzzel 1.9.2, wofi 1.4.1, greetd 0.9.0, and mako-notifier 1.8.0 stay on the Ubuntu archive. The greeter is agreety from the greetd package because tuigreet is not in noble. Firefox is the Ubuntu transitional snap package 1:1snap1-0ubuntu5.

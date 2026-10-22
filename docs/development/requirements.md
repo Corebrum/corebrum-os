@@ -8,7 +8,7 @@ Phase 0 and Phase 1 checks need:
 - `timeout` from coreutils
 - Outbound TCP to `archive.ubuntu.com` port 80 for `scripts/install.sh`, including `--dry-run`
 
-`make check` runs ShellCheck, the unit tests, and `./scripts/install.sh --profile base --dry-run`. The dry-run still executes host preflight, so the machine running it must be Ubuntu 24.04 x86-64 with at least 8 GiB free on `/`. GitHub Actions uses `ubuntu-24.04` for that reason.
+`make check` runs ShellCheck, the unit tests, and dry-runs of the base and desktop profiles. The dry-run still executes host preflight, so the machine running it must be Ubuntu 24.04 x86-64 with at least 8 GiB free on `/` (12 GiB for the desktop dry-run's own disk check). GitHub Actions uses `ubuntu-24.04` for that reason. The desktop dry-run exits 0 when `hyprland` is missing and prints that a real install would stop.
 
 A real install additionally needs root and systemd (`timedatectl`). Do not point the real installer at a machine whose networking or disk layout you cannot restore. The acceptance target is a fresh virtual machine, documented in `docs/installation/ubuntu-server.md`.
 
