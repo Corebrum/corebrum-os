@@ -6,6 +6,11 @@ export XDG_CURRENT_DESKTOP=Hyprland
 export XDG_SESSION_DESKTOP=Hyprland
 export XDG_SESSION_TYPE=wayland
 
+if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/corebrum-node.sh || echo "corebrum-session: node profile failed" >&2
+fi
+
 if [[ -f /etc/profile.d/corebrum-ros.sh ]]; then
   # shellcheck disable=SC1091
   source /etc/profile.d/corebrum-ros.sh || echo "corebrum-session: ROS profile failed" >&2

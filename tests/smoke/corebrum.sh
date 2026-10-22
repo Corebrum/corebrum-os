@@ -104,12 +104,20 @@ if grep -Eq 'ros-jazzy-desktop|ros-jazzy-rviz2' <<<"$ros"; then
   exit 1
 fi
 
-if ! grep -q '^prompt=Corebrum ' "${ROOT}/config/fuzzel/fuzzel.ini"; then
-  echo "FAIL: fuzzel prompt is not Corebrum" >&2
+if grep -q '^prompt=' "${ROOT}/config/fuzzel/fuzzel.ini"; then
+  echo "FAIL: Super+Space fuzzel.ini sets a search prompt" >&2
+  exit 1
+fi
+if ! grep -q -- "--prompt ''" "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space search prompt is not blank" >&2
   exit 1
 fi
 if ! grep -q '^Name=Corebrum$' "${ROOT}/apps/corebrum-grid.desktop"; then
   echo "FAIL: application menu entry is not named Corebrum" >&2
+  exit 1
+fi
+if ! grep -q '^NoDisplay=true$' "${ROOT}/apps/corebrum-grid.desktop"; then
+  echo "FAIL: the app grid is listed in Fuzzel as well as Super+Alt+Space" >&2
   exit 1
 fi
 

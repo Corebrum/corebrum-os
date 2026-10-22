@@ -58,4 +58,13 @@ if corebrum_ros_distro_for_codename jammy >/dev/null; then
   exit 1
 fi
 
+if ! grep -q 'action_tutorials_interfaces/action/Fibonacci' "${ROOT}/scripts/validate/ros-graph.sh"; then
+  echo "FAIL: the graph check dropped the Jazzy Fibonacci action type" >&2
+  exit 1
+fi
+if ! grep -q 'example_interfaces/action/Fibonacci' "${ROOT}/scripts/validate/ros-graph.sh"; then
+  echo "FAIL: the graph check does not accept Lyrical's Fibonacci action type" >&2
+  exit 1
+fi
+
 echo "ok: ros-config"

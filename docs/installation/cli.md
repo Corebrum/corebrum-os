@@ -20,13 +20,13 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | `corebrum config` | List `/etc/corebrum`, logs, and backups |
 | `corebrum install base` | Headless Ubuntu foundation |
 | `corebrum install headless` | Same as `base` |
-| `corebrum install desktop` | Base, Hyprland, and workstation services |
+| `corebrum install desktop` | Base, Hyprland, workstation services, and Node.js 26.x with npm and pnpm |
 | `corebrum install desktop --enable-ssh` | Also install OpenSSH |
 | `corebrum uninstall desktop` | Remove Corebrum desktop files, not Ubuntu packages |
 
 `--dry-run` prints the plan and does not change the system. A real install must be root. It does not write `~/.config` and it does not edit existing Netplan files. A second install copies a file again only when the checkout copy differs, and it keeps the first recorded state value.
 
-The app grid is the Corebrum menu. Fuzzel's prompt is Corebrum. The desktop entry is `/usr/local/share/applications/corebrum-grid.desktop`.
+Super+Space opens Fuzzel with a blank search field. The app grid opens with Super+Alt+Space, and that grid's prompt is Corebrum. The grid's desktop entry is `/usr/local/share/applications/corebrum-grid.desktop`, and `NoDisplay=true` keeps that entry out of the Super+Space list.
 
 Logs and backups:
 

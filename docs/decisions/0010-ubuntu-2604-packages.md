@@ -22,3 +22,7 @@ The Hyprland session file was checked on 0.56 from the 24.04 PPA. It does not se
 ## Consequences
 
 A 24.04 install behaves as it does today: Hyprland comes from the pinned PPA, and ROS 2 is Jazzy. A 26.04 install uses the Ubuntu `hyprland` package and ROS 2 Lyrical. Quickshell is still not installed. RViz, Gazebo, and RealSense stay out of both package lists. The 26.04 desktop has not been booted, so Hyprland 0.53 still needs a session check on that release before the desktop profile is called accepted there.
+
+Lyrical's `ros-lyrical-action-tutorials-cpp` depends on `example_interfaces` and serves `example_interfaces/action/Fibonacci`. Jazzy still serves `action_tutorials_interfaces/action/Fibonacci`. The graph check uses the tutorials interface when that package is installed, and the example interface otherwise.
+
+Ubuntu 26.04 publishes the default Hyprland wallpaper as `hyprland-backgrounds` (`/usr/share/hypr/wall0.png`, `wall1.png`, and `wall2.png`). The `hyprland` package does not depend on it, and the desktop install uses `--no-install-recommends`, so the profile installs `hyprland-backgrounds` when `apt-cache` has a candidate. Ubuntu 24.04 and `ppa:cppiber/hyprland` do not publish that package. Hyprland reads those images when the session starts. A running session stays blank until the next login.

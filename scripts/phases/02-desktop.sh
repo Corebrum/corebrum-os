@@ -18,8 +18,19 @@ corebrum_phase_desktop() {
     corebrum_log "hyprland candidate ${candidate}"
   fi
   corebrum_load_manifest "$manifest" packages
+  # Ubuntu splits the default wallpaper out of hyprland. noble's PPA build does
+  # not publish this package; resolute does, and --no-install-recommends will
+  # not pull it in on its own.
+  candidate="$(corebrum_archive_candidate hyprland-backgrounds)"
+  if corebrum_candidate_installable "$candidate"; then
+    corebrum_log "hyprland-backgrounds candidate ${candidate}; installing the default wallpaper assets"
+    packages+=(hyprland-backgrounds)
+  else
+    corebrum_log "hyprland-backgrounds is not in the archive; skipping the split wallpaper package"
+  fi
   corebrum_apt_install --no-install-recommends "${packages[@]}"
   corebrum_install_desktop_files
+  corebrum_install_node
   corebrum_install_greetd_config
   corebrum_enable_desktop_login
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then

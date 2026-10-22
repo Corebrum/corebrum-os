@@ -78,6 +78,10 @@ if ! grep -Eq 'hyprland is not in the Ubuntu archive|hyprland candidate ' <<<"$d
   echo "FAIL: desktop dry-run did not record the Hyprland decision" >&2
   exit 1
 fi
+if ! grep -Eq 'hyprland-backgrounds candidate |hyprland-backgrounds is not in the archive' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the wallpaper asset decision" >&2
+  exit 1
+fi
 if grep -q 'hyprland is not in the Ubuntu archive' <<<"$desktop_output"; then
   if ! grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then
     echo "FAIL: desktop dry-run did not name the Hyprland PPA" >&2
@@ -94,6 +98,26 @@ if grep -Eq 'run: netplan apply|dry-run: netplan apply' <<<"$desktop_output"; th
 fi
 if ! grep -q 'network-manager' <<<"$desktop_output"; then
   echo "FAIL: desktop dry-run did not list network-manager" >&2
+  exit 1
+fi
+if ! grep -q 'clone nvm v0.40.8 (a885b885fef16fac4bc544188fb25e9e37ae83e8) into /usr/local/nvm' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not plan the nvm checkout" >&2
+  exit 1
+fi
+if ! grep -q 'install Node.js 26.x' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not plan Node.js 26.x" >&2
+  exit 1
+fi
+if ! grep -q 'npm install -g --allow-scripts=pnpm pnpm@12.15.0' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not plan pnpm" >&2
+  exit 1
+fi
+if ! grep -q 'dry-run: install /etc/profile.d/corebrum-node.sh' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not plan the Node.js profile" >&2
+  exit 1
+fi
+if grep -q '\.nvm' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run would write a home-directory nvm checkout" >&2
   exit 1
 fi
 if ! grep -q 'workstation services dry-run complete' <<<"$desktop_output"; then
@@ -141,6 +165,10 @@ fi
 if grep -q 'forbidden command' <<<"$uninstall_output"; then
   printf '%s\n' "$uninstall_output" >&2
   echo "FAIL: desktop uninstall dry-run invoked a mutating command" >&2
+  exit 1
+fi
+if ! grep -q 'dry-run: remove /usr/local/nvm when .corebrum-managed is present' <<<"$uninstall_output"; then
+  echo "FAIL: desktop uninstall dry-run did not plan to remove the nvm checkout" >&2
   exit 1
 fi
 if ! grep -q 'desktop uninstall dry-run complete' <<<"$uninstall_output"; then

@@ -38,7 +38,10 @@ for path in \
   /etc/greetd/config.toml \
   /usr/local/bin/corebrum-session \
   /usr/local/bin/corebrum-terminal \
-  /usr/local/bin/corebrum-grid
+  /usr/local/bin/corebrum-grid \
+  /usr/local/bin/corebrum-launcher \
+  /usr/local/bin/corebrum-ros-menu \
+  /etc/corebrum/ros-tools.conf
 do
   if [[ -f "$path" ]]; then
     corebrum_log "ok: ${path}"
@@ -47,6 +50,18 @@ do
     failed=1
   fi
 done
+
+bg_policy="$(apt-cache policy hyprland-backgrounds 2>/dev/null || true)"
+bg_candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$bg_policy")"
+if [[ -n "$bg_candidate" && "$bg_candidate" != "(none)" ]]; then
+  status="$(dpkg-query -W -f='${Status}' hyprland-backgrounds 2>/dev/null || true)"
+  if [[ "$status" == "install ok installed" ]]; then
+    corebrum_log "ok: hyprland-backgrounds"
+  else
+    corebrum_log "missing: hyprland-backgrounds"
+    failed=1
+  fi
+fi
 
 for cmd in waybar kitty fuzzel wofi agreety; do
   if command -v "$cmd" >/dev/null 2>&1; then
@@ -86,6 +101,28 @@ if [[ "$(systemctl get-default 2>/dev/null || true)" == "graphical.target" ]]; t
   corebrum_log "ok: default target graphical.target"
 else
   corebrum_log "missing: default target graphical.target"
+  failed=1
+fi
+
+node_version="$(bash --noprofile --norc -c 'set +u; . /etc/profile.d/corebrum-node.sh; node -v' 2>/dev/null || true)"
+npm_version="$(bash --noprofile --norc -c 'set +u; . /etc/profile.d/corebrum-node.sh; npm -v' 2>/dev/null || true)"
+pnpm_version="$(bash --noprofile --norc -c 'set +u; . /etc/profile.d/corebrum-node.sh; pnpm -v' 2>/dev/null || true)"
+if [[ "$node_version" == v26.* ]]; then
+  corebrum_log "ok: node ${node_version}"
+else
+  corebrum_log "missing: node 26.x (${node_version:-not installed})"
+  failed=1
+fi
+if [[ -n "$npm_version" ]]; then
+  corebrum_log "ok: npm ${npm_version}"
+else
+  corebrum_log "missing: npm"
+  failed=1
+fi
+if [[ -n "$pnpm_version" ]]; then
+  corebrum_log "ok: pnpm ${pnpm_version}"
+else
+  corebrum_log "missing: pnpm"
   failed=1
 fi
 

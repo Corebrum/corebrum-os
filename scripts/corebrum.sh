@@ -29,6 +29,8 @@ Usage: corebrum <command> [arguments]
 
 install profiles are base, headless, desktop, and ros. headless is the base profile.
 The ros profile does not install the desktop.
+The desktop profile installs Node.js 26.x, npm, and pnpm with nvm under
+/usr/local/nvm. It does not write ~/.nvm or ~/.bashrc.
 Optional install flag: --enable-ssh. --dry-run prints the plan only.
 
 The command does not write ~/.config. A real install does not edit existing

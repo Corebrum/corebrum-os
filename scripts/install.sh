@@ -45,6 +45,8 @@ Workstation services come from the Ubuntu archive. The ros profile adds the
 official ROS 2 apt repository and does not install the desktop. noble installs
 ROS 2 Jazzy. resolute installs ROS 2 Lyrical Luth.
 The installer does not edit existing Netplan files or run netplan apply.
+The desktop profile installs Node.js 26.x, npm, and pnpm with nvm under
+/usr/local/nvm. It does not write ~/.nvm or ~/.bashrc.
 EOF
 }
 

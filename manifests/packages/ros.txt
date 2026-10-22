@@ -1,6 +1,7 @@
 # ROS 2 Jazzy from packages.ros.org on Ubuntu 24.04. Not the Ubuntu archive.
 # Ubuntu 26.04 uses manifests/packages/ros-lyrical.txt.
-# ros-jazzy-desktop and ros-jazzy-rviz2 are Phase 6. Do not add them here.
+# ros-jazzy-desktop, rviz2, ros-gz, nav2-bringup, and moveit stay out of this
+# profile. The Super+Space ROS menu installs those on request.
 ros-jazzy-ros-base
 ros-jazzy-rmw-zenoh-cpp
 ros-jazzy-rmw-fastrtps-cpp

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Kitty with the Corebrum system config. Hyprland binds this command.
-# A new terminal is not a login shell, so source the ROS profile here.
+# A new terminal is not a login shell, so source the desktop profiles here.
 set -euo pipefail
+if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/corebrum-node.sh || echo "corebrum-terminal: node profile failed" >&2
+fi
 if [[ -f /etc/profile.d/corebrum-ros.sh ]]; then
   # shellcheck disable=SC1091
   source /etc/profile.d/corebrum-ros.sh || echo "corebrum-terminal: ROS profile failed" >&2

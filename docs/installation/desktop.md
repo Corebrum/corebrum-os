@@ -28,6 +28,8 @@ The same install from the checkout is `sudo ./scripts/corebrum.sh install deskto
 
 That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. If the Ubuntu archive later contains `hyprland`, this command does not add the PPA.
 
+When the archive publishes `hyprland-backgrounds`, the same command installs it. That package holds the default Hyprland wallpaper. Ubuntu 26.04 splits it out of `hyprland`, and `--no-install-recommends` does not pull it in otherwise. Ubuntu 24.04 does not publish it. Hyprland loads the image at session start, so a desktop that is already running shows it after the next login.
+
 ## After a successful install
 
 Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hyprland starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/hypr/hyprland.conf`.
@@ -38,7 +40,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Q | Close the focused window |
 | Super+F | Fullscreen |
 | Super+V | Float or tile |
-| Super+Space | Fuzzel launcher |
+| Super+Space | Fuzzel launcher. ROS 2 is listed there as `ROS 2   install` until `corebrum install ros` has been run, then as `ROS` |
 | Super+Alt+Space | App grid |
 | Super+S | Agent scratchpad terminal |
 | Super+1 … Super+5 | Workspaces |
@@ -58,6 +60,12 @@ That script checks packages, config files, that greetd is enabled, and that `Hyp
 
 Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap.
 
+## Node.js
+
+The desktop profile installs Node.js 26.x, the npm that ships with that build, and pnpm. nvm `v0.40.8` lives at `/usr/local/nvm`. Ubuntu 26.04 publishes Node.js 22, so this does not come from apt and it does not add a repository. The decision is `docs/decisions/0012-node-nvm.md`.
+
+A Corebrum terminal is a login shell, so `node`, `npm`, `pnpm`, and `nvm` are on `PATH`. The installer does not write `~/.nvm` or `~/.bashrc`. A terminal that was already open before the install picks them up the next time it starts. Installing another Node version with `nvm install` needs root, because the checkout is root-owned. A second desktop install leaves an existing Node 26.x and an existing pnpm in place.
+
 ## Recovery
 
 From the text console on VT 1:
@@ -76,7 +84,7 @@ A broken Hyprland config sends you back to the greeter, because greetd restarts 
 sudo ./scripts/uninstall.sh --profile desktop
 ```
 
-This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes the Hyprland PPA source, pin, and key. It does not remove Hyprland, libinput, Waybar, Firefox, or other packages. Reboot afterward.
+This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes the Hyprland PPA source, pin, and key. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. It does not remove Hyprland, libinput, Waybar, Firefox, or other packages. Reboot afterward.
 
 `./scripts/uninstall.sh --profile base` still refuses to remove the base packages.
 

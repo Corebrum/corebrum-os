@@ -17,7 +17,7 @@ A fresh virtual-machine install is the acceptance check for a machine that does 
 - `corebrum status`, `corebrum doctor`, `corebrum config`, and `corebrum version` are read-only.
 - `corebrum doctor` runs the base, desktop, and services validators when those pieces are present and prints the next install command when one fails. It also rejects duplicate keys in `/etc/corebrum/desktop.state`.
 - Configuration copies still go through the existing backup helper. State keys are recorded once. The command does not write `~/.config`.
-- The branded menu is the app grid, named Corebrum, with Fuzzel's prompt set to Corebrum and a desktop entry at `/usr/local/share/applications/corebrum-grid.desktop`.
+- The branded menu is the app grid, named Corebrum, with a desktop entry at `/usr/local/share/applications/corebrum-grid.desktop`. That entry sets `NoDisplay=true`, so Super+Space does not list it beside the same apps. Super+Space opens Fuzzel with a blank search prompt. Super+Alt+Space still opens the grid, and that grid's prompt is Corebrum.
 - Install logs stay in `/var/log/corebrum`. A failed install tells you to read `install-latest.log` and run `corebrum doctor`.
 - The VM procedure is documented in `docs/installation/cli.md`. It is not part of `make check`.
 

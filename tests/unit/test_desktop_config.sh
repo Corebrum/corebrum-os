@@ -23,7 +23,11 @@ require "fullscreen"
 require "togglespecialworkspace, agent"
 require "workspace, 1"
 require "/usr/local/bin/corebrum-grid"
-require "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini"
+require "/usr/local/bin/corebrum-launcher"
+if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space launcher does not start Fuzzel with a blank search field" >&2
+  exit 1
+fi
 require "waybar --config /etc/corebrum/waybar/config.json"
 require "/usr/libexec/polkit-mate-authentication-agent-1"
 require "nm-applet --indicator"

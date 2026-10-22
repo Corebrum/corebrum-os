@@ -97,13 +97,22 @@ if ! grep -Eq 'sum[=:][[:space:]]*3' <<<"$service_out"; then
 fi
 corebrum_log "ok: Zenoh service add_two_ints"
 
+# Jazzy publishes action_tutorials_interfaces/action/Fibonacci. Lyrical's
+# tutorial server uses example_interfaces/action/Fibonacci instead.
+if "$WITH" ros2 interface show action_tutorials_interfaces/action/Fibonacci >/dev/null 2>&1; then
+  action_type="action_tutorials_interfaces/action/Fibonacci"
+elif "$WITH" ros2 interface show example_interfaces/action/Fibonacci >/dev/null 2>&1; then
+  action_type="example_interfaces/action/Fibonacci"
+else
+  corebrum_die "neither Fibonacci action type is installed"
+fi
 "$WITH" ros2 run action_tutorials_cpp fibonacci_action_server >"${dir}/action.log" 2>&1 &
 action_pid=$!
 if ! wait_name action /fibonacci; then
   cat "${dir}/action.log" >&2 || true
   corebrum_die "fibonacci action did not appear"
 fi
-action_out="$("$WITH" timeout 40 ros2 action send_goal /fibonacci action_tutorials_interfaces/action/Fibonacci '{order: 5}' 2>&1 || true)"
+action_out="$("$WITH" timeout 40 ros2 action send_goal /fibonacci "$action_type" '{order: 5}' 2>&1 || true)"
 if ! grep -q 'SUCCEEDED' <<<"$action_out"; then
   printf '%s\n' "$action_out" >&2
   corebrum_die "fibonacci action did not succeed"

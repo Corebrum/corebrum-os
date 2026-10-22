@@ -13,6 +13,8 @@ source "${COREBRUM_ROOT}/scripts/lib/files.sh"
 source "${COREBRUM_ROOT}/scripts/lib/ppa.sh"
 # shellcheck source=preflight.sh
 source "${COREBRUM_ROOT}/scripts/lib/preflight.sh"
+# shellcheck source=node.sh
+source "${COREBRUM_ROOT}/scripts/lib/node.sh"
 
 # 12 GiB. The desktop profile adds a compositor, a browser, and fonts on top of the base profile.
 COREBRUM_DESKTOP_MIN_FREE_KIB=12582912
@@ -59,6 +61,9 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.sh" /usr/local/bin/corebrum-launcher 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
+  corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
 }
@@ -110,8 +115,13 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-session
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid
+/usr/local/bin/corebrum-launcher
+/usr/local/bin/corebrum-ros-menu
+/etc/corebrum/ros-tools.conf
 /usr/local/bin/corebrum-ros-shell
 /usr/local/share/applications/corebrum-grid.desktop
+/etc/profile.d/corebrum-node.sh
+/etc/corebrum/node/versions
 EOF
 }
 
@@ -124,6 +134,7 @@ corebrum_uninstall_desktop() {
   source "${COREBRUM_ROOT}/scripts/lib/services.sh"
   corebrum_uninstall_services
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_uninstall_node
     corebrum_log "dry-run: disable greetd.service when the unit exists"
     corebrum_log "dry-run: restore /etc/greetd/config.toml from the recorded backup when present"
     corebrum_log "dry-run: restore the previous default target when one was recorded"
@@ -158,6 +169,7 @@ corebrum_uninstall_desktop() {
     systemctl set-default "$previous"
   fi
   corebrum_remove_hyprland_ppa
+  corebrum_uninstall_node
   if systemctl cat greetd.service >/dev/null 2>&1; then
     corebrum_log "run: systemctl disable greetd.service"
     systemctl disable greetd.service
@@ -173,6 +185,7 @@ corebrum_uninstall_desktop() {
     /etc/corebrum/mako \
     /etc/corebrum/wofi \
     /etc/corebrum/dashboard \
+    /etc/corebrum/node \
     /etc/corebrum \
     /usr/local/lib/corebrum \
     /usr/local/share/applications \
