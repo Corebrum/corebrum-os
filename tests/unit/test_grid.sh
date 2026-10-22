@@ -38,5 +38,11 @@ if ! grep -qx 'Files' <<<"$list"; then
   echo "FAIL: shipped grid did not list Files" >&2
   exit 1
 fi
+for tile in Audio Network Bluetooth Display; do
+  if ! grep -qx "$tile" <<<"$list"; then
+    echo "FAIL: shipped grid did not list ${tile}" >&2
+    exit 1
+  fi
+done
 
 echo "ok: grid"

@@ -84,6 +84,23 @@ if grep -q 'hyprland is not in the Ubuntu 24.04 archive' <<<"$desktop_output"; t
     exit 1
   fi
 fi
+if ! grep -q 'not changing existing Netplan files or running netplan apply' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not promise to leave existing Netplan files unchanged" >&2
+  exit 1
+fi
+if grep -Eq 'run: netplan apply|dry-run: netplan apply' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run would apply netplan" >&2
+  exit 1
+fi
+if ! grep -q 'network-manager' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not list network-manager" >&2
+  exit 1
+fi
+if ! grep -q 'workstation services dry-run complete' <<<"$desktop_output"; then
+  printf '%s\n' "$desktop_output" >&2
+  echo "FAIL: dry-run did not finish workstation services" >&2
+  exit 1
+fi
 
 set +e
 uninstall_output="$(PATH="${shim_dir}:${PATH}" "${ROOT}/scripts/uninstall.sh" --profile desktop --dry-run 2>&1)"

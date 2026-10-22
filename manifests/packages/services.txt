@@ -1,0 +1,39 @@
+# Phase 3 workstation services.
+# Ubuntu 24.04 archive only. One package name per line.
+# Blank lines and # comments are ignored.
+# Not listed, because they are not in noble or they pull the wrong stack:
+#   grimshot (depends on sway)
+#   xdg-desktop-portal-hyprland and hyprpolkitagent (ppa:cppiber/hyprland only)
+#   pulseaudio (PipeWire provides the PulseAudio socket)
+#   tlp (conflicts with power-profiles-daemon)
+# file is listed because network-manager's postinst calls it.
+# NetworkManager keeps Ubuntu's default of managing wifi only.
+# See docs/decisions/0007-workstation-services.md.
+
+network-manager
+network-manager-gnome
+file
+bluez
+blueman
+libspa-0.2-bluetooth
+pipewire
+pipewire-pulse
+pipewire-alsa
+wireplumber
+pavucontrol
+power-profiles-daemon
+upower
+mate-polkit
+udisks2
+gvfs
+gvfs-backends
+gvfs-fuse
+thunar-volman
+wdisplays
+wlr-randr
+wl-clipboard
+cliphist
+grim
+slurp
+wf-recorder
+brightnessctl

@@ -60,4 +60,4 @@ The second install is successful when validation still passes, no duplicate loca
 
 The operator reported a successful base install, `scripts/validate/base.sh`, and a reboot on this Ubuntu Server 24.04 machine on 2026-10-22. That report is the gate used to start Phase 2. A second install pass was not recorded in this repository. The procedure above is still the one to repeat on a fresh virtual machine.
 
-Phase 2 is documented in `docs/installation/desktop.md`. It installs Hyprland from `ppa:cppiber/hyprland` because Ubuntu 24.04 does not publish that package.
+Phase 2 is documented in `docs/installation/desktop.md`. It installs Hyprland from `ppa:cppiber/hyprland` because Ubuntu 24.04 does not publish that package. Phase 3 workstation services are documented in `docs/installation/services.md`. They leave the existing Netplan Ethernet configuration in place.

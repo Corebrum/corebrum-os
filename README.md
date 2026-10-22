@@ -10,7 +10,7 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 Phase 0 and Phase 1 are in the tree. The operator reported a successful base install, validation, and reboot on Ubuntu Server 24.04.
 
-Phase 2 is started and not accepted. The desktop profile installs Hyprland from `ppa:cppiber/hyprland` when Ubuntu 24.04 has no `hyprland` package, and pins that archive so Waybar, Fuzzel, and PipeWire stay on Ubuntu. See `docs/installation/desktop.md`.
+Phase 2 booted to Hyprland on this machine. Phase 3 is started and not accepted. The desktop profile adds workstation services from the Ubuntu archive and leaves the existing Netplan Ethernet configuration in place. See `docs/installation/desktop.md` and `docs/installation/services.md`.
 
 ## Preview the base install
 

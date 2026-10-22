@@ -42,6 +42,8 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
 | Super+Shift+E | Leave Hyprland and return to the greeter |
+| Print | Copy a selected area |
+| Super+C | Clipboard history |
 | Ctrl+Alt+F1 | Text console |
 
 Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock. The grid starts with Terminal, Files, and Browser. Add a robotics tool later by appending `Label|command` to `/etc/corebrum/dashboard/tiles.conf`. Do not put `|` or `#` in the command.
@@ -78,4 +80,4 @@ This disables greetd, restores the previous default target when this installer c
 
 ## What is not done
 
-Phase 2 is not accepted until a machine with an Ubuntu `hyprland` package boots to greetd, starts Hyprland, and passes the checks above. Quickshell, ROS 2, Zenoh, RViz, Gazebo, RealSense, AgenticROS, and Corebrum Mesh are not part of this install.
+The operator continued to Phase 3 after this machine booted to Hyprland and showed Waybar. Confirm the key table above on the session if that has not been done. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, RealSense, AgenticROS, and Corebrum Mesh are not part of this install.

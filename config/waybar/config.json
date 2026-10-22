@@ -1,11 +1,11 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 32,
+  "height": 34,
   "spacing": 8,
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["cpu", "memory", "network", "clock"],
+  "modules-right": ["cpu", "memory", "network", "pulseaudio", "bluetooth", "battery", "tray", "clock"],
   "hyprland/workspaces": {
     "format": "{id}",
     "all-outputs": true
@@ -27,5 +27,27 @@
     "format-wifi": "{essid}",
     "format-disconnected": "offline",
     "tooltip-format": "{ifname}"
+  },
+  "pulseaudio": {
+    "format": "{volume}%",
+    "format-muted": "muted",
+    "scroll-step": 5,
+    "on-click": "pavucontrol"
+  },
+  "bluetooth": {
+    "format": "bt {status}",
+    "format-connected": "bt {num_connections}",
+    "on-click": "blueman-manager"
+  },
+  "battery": {
+    "format": "{capacity}%",
+    "format-charging": "{capacity}%",
+    "states": {
+      "warning": 30,
+      "critical": 15
+    }
+  },
+  "tray": {
+    "spacing": 8
   }
 }

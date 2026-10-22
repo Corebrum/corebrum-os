@@ -116,6 +116,9 @@ corebrum_uninstall_desktop() {
   if [[ "${DRY_RUN:-0}" -eq 0 && "$(id -u)" -ne 0 ]]; then
     corebrum_die "desktop uninstall requires root; pass --dry-run to preview"
   fi
+  # shellcheck source=services.sh
+  source "${COREBRUM_ROOT}/scripts/lib/services.sh"
+  corebrum_uninstall_services
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: disable greetd.service when the unit exists"
     corebrum_log "dry-run: restore /etc/greetd/config.toml from the recorded backup when present"

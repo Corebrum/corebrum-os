@@ -1,0 +1,7 @@
+component: services
+ubuntu: 24.04
+arch: x86_64
+source: archive.ubuntu.com noble
+packages: manifests/packages/services.txt
+pin: Ubuntu 24.04 archive versions at install time
+notes: Phase 3 stays on the Ubuntu archive. On 2026-10-22 noble had network-manager 1.46.0-1ubuntu2.8, pipewire 1.0.5-1ubuntu3.3, wireplumber 0.4.17-1ubuntu4.1, bluez 5.72-0ubuntu5.8, and xdg-desktop-portal-wlr 0.7.1-1build2 already installed by the desktop profile. grimshot was rejected because it depends on sway. xdg-desktop-portal-hyprland and hyprpolkitagent exist only in ppa:cppiber/hyprland and are not installed. The capture portal is the Ubuntu wlr portal. The polkit agent is mate-polkit.

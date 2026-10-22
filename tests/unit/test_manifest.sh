@@ -54,4 +54,28 @@ if [[ "$found_waybar" -ne 1 || "$found_greetd" -ne 1 || "$found_mako" -ne 1 ]]; 
   exit 1
 fi
 
+services=()
+corebrum_load_manifest "${ROOT}/manifests/packages/services.txt" services
+assert_eq "${#services[@]}" "27" "services package count"
+for pkg in "${services[@]}"; do
+  case "$pkg" in
+    grimshot | pulseaudio | tlp | hyprpolkitagent | xdg-desktop-portal-hyprland)
+      echo "FAIL: services manifest includes ${pkg}" >&2
+      exit 1
+      ;;
+  esac
+done
+found_nm=0
+found_pipewire=0
+found_mate=0
+for pkg in "${services[@]}"; do
+  [[ "$pkg" == "network-manager" ]] && found_nm=1
+  [[ "$pkg" == "pipewire-pulse" ]] && found_pipewire=1
+  [[ "$pkg" == "mate-polkit" ]] && found_mate=1
+done
+if [[ "$found_nm" -ne 1 || "$found_pipewire" -ne 1 || "$found_mate" -ne 1 ]]; then
+  echo "FAIL: services manifest is missing network-manager, pipewire-pulse, or mate-polkit" >&2
+  exit 1
+fi
+
 echo "ok: manifest"

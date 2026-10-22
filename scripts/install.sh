@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Corebrum OS installer. Profiles: base (Phase 1), desktop (Phase 2).
+# Corebrum OS installer. Profiles: base (Phase 1), desktop (Phases 2 and 3).
 set -eEuo pipefail
 
 COREBRUM_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -26,7 +26,7 @@ usage() {
 Usage: scripts/install.sh --profile base|desktop [--dry-run] [--enable-ssh]
 
   --profile base      Install the Ubuntu Server foundation
-  --profile desktop   Install the base profile, then the Hyprland desktop
+  --profile desktop   Install the base profile, the Hyprland desktop, and workstation services
   --dry-run           Print intended actions without changing the system
   --enable-ssh        Also install and enable OpenSSH server
   -h, --help          Show this help
@@ -35,6 +35,8 @@ A real install must be run as root. --dry-run may be run as a normal user.
 When hyprland is not in the Ubuntu archive, the desktop profile adds
 ppa:cppiber/hyprland and pins it so only Hyprland and the libraries it
 requires are installed from there.
+Workstation services come from the Ubuntu archive. The installer does not
+edit existing Netplan files or run netplan apply.
 EOF
 }
 
@@ -106,4 +108,7 @@ if [[ "$PROFILE" == "desktop" ]]; then
   # shellcheck source=phases/02-desktop.sh
   source "${COREBRUM_ROOT}/scripts/phases/02-desktop.sh"
   corebrum_phase_desktop
+  # shellcheck source=phases/03-services.sh
+  source "${COREBRUM_ROOT}/scripts/phases/03-services.sh"
+  corebrum_phase_services
 fi

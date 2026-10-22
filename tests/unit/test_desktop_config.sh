@@ -25,6 +25,16 @@ require "workspace, 1"
 require "/usr/local/bin/corebrum-grid"
 require "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini"
 require "waybar --config /etc/corebrum/waybar/config.json"
+require "/usr/libexec/polkit-mate-authentication-agent-1"
+require "nm-applet --indicator"
+require "blueman-applet"
+require "systemctl --user start thunar.service"
+require 'ln -sfn "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE" "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE"'
+require "wl-paste --watch cliphist store"
+if grep -q 'grimshot' "$conf"; then
+  echo "FAIL: grimshot depends on sway and is not part of the session" >&2
+  exit 1
+fi
 
 python3 -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' \
   "${ROOT}/config/waybar/config.json"

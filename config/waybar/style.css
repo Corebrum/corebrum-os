@@ -16,6 +16,10 @@ window#waybar {
 #cpu,
 #memory,
 #network,
+#pulseaudio,
+#bluetooth,
+#battery,
+#tray,
 #clock,
 #window {
     padding: 0 8px;
