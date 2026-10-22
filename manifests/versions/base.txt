@@ -1,0 +1,7 @@
+component: base
+ubuntu: 24.04
+arch: x86_64
+source: archive.ubuntu.com noble
+packages: manifests/packages/base.txt
+pin: Ubuntu 24.04 archive versions at install time
+notes: No third-party repositories. OpenSSH is optional and unpinned the same way.

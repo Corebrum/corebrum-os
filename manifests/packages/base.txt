@@ -1,0 +1,22 @@
+# Corebrum base profile
+# Ubuntu 24.04 (noble) official archive only.
+# One package name per line. Blank lines and # comments are ignored.
+# openssh-server is not listed here; pass --enable-ssh to install it.
+
+ca-certificates
+curl
+wget
+git
+gnupg
+locales
+systemd-timesyncd
+jq
+rsync
+tmux
+htop
+nano
+less
+pciutils
+usbutils
+iproute2
+iputils-ping
