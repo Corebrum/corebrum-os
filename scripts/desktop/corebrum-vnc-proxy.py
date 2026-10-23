@@ -100,11 +100,19 @@ def screen_pixel_format(msg):
 
 
 def mac_command_key(msg):
-    """Screen Sharing sends Command as Meta, which this desktop treats as Alt."""
+    """Screen Sharing sends Command as Alt and Option as Meta.
+
+    That is what another Mac expects. This desktop uses Super and Alt.
+    """
     if len(msg) != 8 or msg[0] != 4:
         return msg
     keysym = int.from_bytes(msg[4:8], "big")
-    mapped = {0xFFE7: 0xFFEB, 0xFFE8: 0xFFEC}.get(keysym)
+    mapped = {
+        0xFFE9: 0xFFEB,  # Alt_L, Command -> Super_L
+        0xFFEA: 0xFFEC,  # Alt_R, Command -> Super_R
+        0xFFE7: 0xFFE9,  # Meta_L, Option -> Alt_L
+        0xFFE8: 0xFFEA,  # Meta_R, Option -> Alt_R
+    }.get(keysym)
     if mapped is None:
         return msg
     return msg[:4] + mapped.to_bytes(4, "big")
@@ -318,12 +326,12 @@ def self_test():
     depth32 = bytes([0, 0, 0, 0, 32, 32, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0, 0, 0, 0])
     if screen_pixel_format(depth32)[5] != 24:
         raise SystemExit("depth 32 was not reported as 24")
-    command = bytes([4, 1, 0, 0]) + (0xFFE7).to_bytes(4, "big")
+    command = bytes([4, 1, 0, 0]) + (0xFFE9).to_bytes(4, "big")
     if int.from_bytes(mac_command_key(command)[4:8], "big") != 0xFFEB:
         raise SystemExit("Command was not mapped to Super")
-    option = bytes([4, 1, 0, 0]) + (0xFFE9).to_bytes(4, "big")
-    if mac_command_key(option) != option:
-        raise SystemExit("Option was changed")
+    option = bytes([4, 1, 0, 0]) + (0xFFE7).to_bytes(4, "big")
+    if int.from_bytes(mac_command_key(option)[4:8], "big") != 0xFFE9:
+        raise SystemExit("Option was not mapped to Alt")
 
     upstream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     upstream.bind(("127.0.0.1", 0))
