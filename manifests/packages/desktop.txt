@@ -19,7 +19,7 @@ thunar
 firefox
 mako-notifier
 libnotify-bin
-espeak-ng
+espeak-ng-espeak
 fonts-noto
 fonts-noto-mono
 fonts-noto-color-emoji
@@ -29,5 +29,10 @@ dmz-cursor-theme
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-wlr
+gstreamer1.0-tools
+gstreamer1.0-plugins-base
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-ugly
+gstreamer1.0-pipewire
 xwayland
 dbus-user-session

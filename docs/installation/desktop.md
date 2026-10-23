@@ -10,7 +10,9 @@ Ubuntu 24.04 does not publish `hyprland`. The desktop profile then adds `ppa:cpp
 
 Quickshell is still not in Ubuntu 24.04, so the bar is Waybar. Super+Space is a GTK window: the idle list keeps parent menus such as AI Agents and ROS, and typing `grok` or `gazebo` adds that submenu item. Fuzzel still opens the submenus. The desktop packages are `python3-gi`, `gir1.2-gtk-3.0`, and `libgtk-layer-shell0`. See `docs/decisions/0030-menu-search-submenus.md`.
 
-The same profile installs Ubuntu `espeak-ng`. The command is `espeak-ng`. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. Speech recognition and `corebrum speak` are not part of this install. See `docs/decisions/0031-espeak-ng.md`.
+The same profile installs Ubuntu `espeak-ng-espeak`. That package depends on `espeak-ng` and provides the `espeak` command. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. Speech recognition and `corebrum speak` are not part of this install. See `docs/decisions/0031-espeak-ng.md`.
+
+The same profile installs Ubuntu GStreamer so `agenticros desktop` can send the screen to AgenticROS Cloud: `gstreamer1.0-tools`, `gstreamer1.0-plugins-base`, `gstreamer1.0-plugins-good`, `gstreamer1.0-plugins-ugly`, and `gstreamer1.0-pipewire`. The ugly plugins package supplies `x264enc`. PipeWire, WirePlumber, and `xdg-desktop-portal` are already part of this install. Screen capture stays on `xdg-desktop-portal-wlr`. See `docs/decisions/0036-gstreamer-desktop.md`.
 
 Preview the plan without changing the system:
 
