@@ -163,6 +163,7 @@ Icon=applications-science
 Terminal=false
 Categories=Science;Development;
 StartupNotify=false
+NoDisplay=true
 EOF
   done < <(corebrum_agenticros_menu_actions)
 }

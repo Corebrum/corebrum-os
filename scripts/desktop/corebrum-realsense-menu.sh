@@ -111,6 +111,7 @@ Icon=camera-video
 Terminal=false
 Categories=Science;Development;
 StartupNotify=false
+NoDisplay=true
 EOF
   done <<'EOF'
 viewer|RealSense Viewer

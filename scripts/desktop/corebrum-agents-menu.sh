@@ -203,6 +203,7 @@ Icon=utilities-terminal
 Terminal=false
 Categories=Development;
 StartupNotify=false
+NoDisplay=true
 EOF
   done
 }

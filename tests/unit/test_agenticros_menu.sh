@@ -73,6 +73,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-agenticros-menu launch motors-start$
   echo "FAIL: choosing Motors: Start from search does not run that action" >&2
   exit 1
 fi
+if ! grep -q '^NoDisplay=true$' "$motors_entry"; then
+  echo "FAIL: Motors: Start is listed in the idle Super+Space menu" >&2
+  exit 1
+fi
 assert_eq "$("$menu" launch arc-connect)" "agenticros connect" "typing arc connect uses the CLI"
 export COREBRUM_AGENTICROS_CHOICE="ARC: Connect"
 assert_eq "$("$menu" open)" "agenticros connect" "ARC connect uses the CLI"

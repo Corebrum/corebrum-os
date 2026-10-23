@@ -77,6 +77,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-ros-menu launch gazebo$' "$gazebo_en
   echo "FAIL: choosing Gazebo from search does not launch that tool" >&2
   exit 1
 fi
+if ! grep -q '^NoDisplay=true$' "$gazebo_entry"; then
+  echo "FAIL: Gazebo is listed in the idle Super+Space menu" >&2
+  exit 1
+fi
 if ! grep -q '^Name=RViz$' "${runtime}/corebrum/applications/corebrum-ros-tool-rviz.desktop"; then
   echo "FAIL: installed RViz is still marked install in search" >&2
   exit 1

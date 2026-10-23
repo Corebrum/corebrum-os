@@ -33,4 +33,19 @@ else
   export XDG_DATA_DIRS="${data_dir}:/usr/local/share:/usr/share"
 fi
 # Fuzzel rejects an empty prompt in its ini file, so the blank search field is set here.
-exec fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''
+# The menu window lists parent entries until the user types. Submenu items such as
+# Grok and Gazebo are desktop files with NoDisplay=true, and the window adds them
+# only when the typed text matches. Fuzzel remains the fallback and the submenu UI.
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ui="${script_dir}/corebrum-launcher.py"
+if [[ ! -f "$ui" ]]; then
+  ui=/usr/local/lib/corebrum/corebrum-launcher.py
+fi
+set +e
+python3 "$ui"
+status=$?
+set -e
+if [[ "$status" -eq 2 ]]; then
+  exec fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''
+fi
+exit "$status"

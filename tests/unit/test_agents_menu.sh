@@ -115,6 +115,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu launch grok$' "$grok_ent
   echo "FAIL: choosing Grok from search does not launch that agent" >&2
   exit 1
 fi
+if ! grep -q '^NoDisplay=true$' "$grok_entry"; then
+  echo "FAIL: Grok is listed in the idle Super+Space menu" >&2
+  exit 1
+fi
 if ! grep -q '^Name=Claude Code CLI$' "${runtime}/corebrum/applications/corebrum-agent-claude.desktop"; then
   echo "FAIL: an installed agent is still marked install in search" >&2
   exit 1

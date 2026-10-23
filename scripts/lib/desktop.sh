@@ -116,6 +116,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.sh" /usr/local/bin/corebrum-launcher 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.py" /usr/local/lib/corebrum/corebrum-launcher.py 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-menu.sh" /usr/local/bin/corebrum-agenticros-menu 755
@@ -212,6 +213,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid
 /usr/local/bin/corebrum-launcher
+/usr/local/lib/corebrum/corebrum-launcher.py
 /usr/local/bin/corebrum-ros-menu
 /usr/local/bin/corebrum-realsense-menu
 /usr/local/bin/corebrum-agenticros-menu

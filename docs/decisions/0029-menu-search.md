@@ -1,7 +1,7 @@
 # 0029. Super+Space search includes submenu items
 
 Date: 2026-10-23
-Status: Accepted
+Status: Superseded by 0030
 
 ## Context
 
