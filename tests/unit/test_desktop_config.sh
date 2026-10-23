@@ -61,6 +61,9 @@ if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$
 fi
 require "waybar --config /etc/corebrum/waybar/config.json"
 require "disable_splash_rendering = true"
+require "/usr/local/bin/corebrum-osd volume-up"
+require "/usr/local/bin/corebrum-osd brightness-down"
+require "/usr/local/bin/corebrum-autolock start"
 require 'cmd=$(command -v hyprpaper)'
 require 'corebrum/hyprpaper.conf'
 if grep -q 'waypaper --restore' "$conf"; then

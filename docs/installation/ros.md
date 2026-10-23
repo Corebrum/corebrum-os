@@ -2,7 +2,7 @@
 
 Phase 5 installs one ROS 2 release and one Zenoh router. Ubuntu noble gets Jazzy. Ubuntu resolute gets Lyrical Luth. The decisions are `docs/decisions/0009-ros-jazzy-zenoh.md` and `docs/decisions/0010-ubuntu-2604-packages.md`. This profile does not install the Hyprland desktop, RViz, Gazebo, Nav2, MoveIt, or RealSense.
 
-On a desktop install, Super+Space lists `ROS 2   install` before this profile is installed. Choosing it runs the command below in a terminal. After it finishes, Super+Space lists `ROS`. That entry opens RViz, Gazebo, Nav2, and MoveIt. A tool that is not installed yet is marked `install` and choosing it installs that package. A tool that is installed launches. RealSense is a separate Super+Space entry. It installs librealsense with `realsense-viewer`, the ROS camera packages, and `pyrealsense2` for the system Python. After that install, the entry opens a submenu: RealSense Viewer launches the viewer, and RealSense ROS opens a terminal running `ros2 launch realsense2_camera rs_launch.py`. See `docs/decisions/0011-ros-launcher-menu.md` and `docs/decisions/0013-realsense-menu.md`.
+On a desktop install, Super+Space lists `ROS 2   install` before this profile is installed. Choosing it runs the command below in a terminal. After it finishes, Super+Space lists `ROS` and `Zenoh network`. `ROS` opens RViz, Gazebo, Nav2, and MoveIt. `Zenoh network` runs `zenoh network` and draws the nodes connected to the router. That row is absent until ROS and the Zenoh CLI are installed. A tool that is not installed yet is marked `install` and choosing it installs that package. A tool that is installed launches. RealSense is a separate Super+Space entry. It installs librealsense with `realsense-viewer`, the ROS camera packages, and `pyrealsense2` for the system Python. After that install, the entry opens a submenu: RealSense Viewer launches the viewer, and RealSense ROS opens a terminal running `ros2 launch realsense2_camera rs_launch.py`. See `docs/decisions/0011-ros-launcher-menu.md` and `docs/decisions/0013-realsense-menu.md`.
 
 Preview:
 
@@ -16,7 +16,7 @@ Apply:
 sudo ./scripts/corebrum.sh install ros
 ```
 
-That also installs the base profile when it is missing. It adds the official ROS 2 apt repository, installs `ros-base` and `rmw_zenoh_cpp` for the release that matches this Ubuntu version, and starts `corebrum-zenoh-router.service`. It does not edit existing Netplan files and it does not run `apt upgrade`. The chosen codename is written to `/etc/corebrum/ros/distro`.
+That also installs the base profile when it is missing. It adds the official ROS 2 apt repository, installs `ros-base` and `rmw_zenoh_cpp` for the release that matches this Ubuntu version, and starts `corebrum-zenoh-router.service`. It installs the Zenoh client CLI into `/opt/corebrum/zenoh-cli` and links it as `zenoh`. Run the same command again on a machine that already has ROS. The install is idempotent, and its graph check restarts the router once. It does not edit existing Netplan files and it does not run `apt upgrade`. The chosen codename is written to `/etc/corebrum/ros/distro`.
 
 A new Super+Return terminal sources `/etc/profile.d/corebrum-ros.sh` before Kitty starts. The terminal you already have does not change. Close it and open another. A shell that was not started by Corebrum can still run:
 
@@ -32,6 +32,8 @@ source /etc/profile.d/corebrum-ros.sh
 | `corebrum ros rmw fastrtps` | New shells use Fast DDS instead |
 | `corebrum zenoh status` | Router unit, process count, listen address |
 | `corebrum zenoh peers` | Router address and this machine's IPv4 addresses |
+| `zenoh info` | Client session against the existing router |
+| `zenoh subscribe -k 'rt/**'` | Print samples published on a key expression |
 
 `corebrum ros rmw` needs root. It writes `/etc/corebrum/ros/rmw` and leaves the router running.
 
@@ -42,6 +44,7 @@ source /etc/profile.d/corebrum-ros.sh
 - A robot prefix is a ROS namespace, for example `__ns:=/robot1`.
 - Local sessions connect to `tcp/localhost:7447`. The router listens on `tcp/[::]:7447` with multicast scouting disabled. That is the upstream `rmw_zenoh` default. Port 7447 is open on the machine's interfaces and the router does not authenticate clients.
 - There is one router. Do not also run `ros2 run rmw_zenoh_cpp rmw_zenohd`.
+- `zenoh` is the client CLI. It lives in `/opt/corebrum/zenoh-cli` and does not install `zenohd`. A command with no session flags connects to `tcp/127.0.0.1:7447` with multicast scouting off. `--mode`, `--connect`, `--listen`, or `--config` uses the session you pass instead. See `docs/decisions/0023-zenoh-cli.md`.
 
 ## Router restart
 
@@ -100,7 +103,7 @@ rosdep update
 sudo corebrum uninstall ros
 ```
 
-This disables the router and removes Corebrum's unit, profile script, and `/etc/corebrum/ros`. The ROS packages and the apt source stay installed. To remove the packages as well:
+This disables the router and removes Corebrum's unit, profile script, `/etc/corebrum/ros`, and the Zenoh client in `/opt/corebrum/zenoh-cli`. The ROS packages and the apt source stay installed. To remove the packages as well:
 
 ```bash
 sudo apt remove '~nros-jazzy-*' ros-dev-tools ros2-apt-source

@@ -13,6 +13,7 @@ Super+Space            Open the application menu
 Super+Alt+Space        Open the app grid
 Super+S                Toggle the agent scratchpad terminal
 Super+Escape           Lock the screen
+Super+Shift+Escape     Pause autolock, or resume it
 Super+Shift+E          Leave Hyprland and return to the login screen
 Super+C                Clipboard history
 Super+Print            Record the selected area
@@ -57,7 +58,7 @@ corebrum_keys_menu_open() {
     --dmenu \
     --prompt 'Keys  ' \
     --width 68 \
-    --lines 17 >/dev/null || return 0
+    --lines 18 >/dev/null || return 0
 }
 
 usage() {

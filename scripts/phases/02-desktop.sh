@@ -39,6 +39,15 @@ corebrum_phase_desktop() {
       corebrum_log "${pkg} is not in the archive; skipping"
     fi
   done
+  # hypridle is in Ubuntu 26.04 with hyprlock. Ubuntu 24.04 publishes neither.
+  # Do not install the idle daemon when there is no locker for it to run.
+  candidate="$(corebrum_archive_candidate hypridle)"
+  if corebrum_candidate_installable "$candidate" && corebrum_candidate_installable "$(corebrum_archive_candidate hyprlock)"; then
+    corebrum_log "hypridle candidate ${candidate}"
+    packages+=("hypridle")
+  else
+    corebrum_log "hypridle stays uninstalled; this archive has no hypridle and hyprlock pair"
+  fi
   corebrum_apt_install --no-install-recommends "${packages[@]}"
   corebrum_install_desktop_files
   corebrum_install_node

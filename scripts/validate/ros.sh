@@ -123,6 +123,13 @@ else
   corebrum_log "missing: command ros2"
   failed=1
 fi
+if [[ -x /usr/local/bin/zenoh && -x /opt/corebrum/zenoh-cli/bin/zenoh ]]; then
+  corebrum_log "ok: zenoh cli"
+else
+  corebrum_log "missing: zenoh cli"
+  failed=1
+fi
+
 for cmd in colcon rosdep; do
   if command -v "$cmd" >/dev/null 2>&1; then
     corebrum_log "ok: command ${cmd}"

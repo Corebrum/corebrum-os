@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Autolock is a Super+Space timer. Stay awake pauses it for this session.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+menu="${ROOT}/scripts/desktop/corebrum-autolock.sh"
+conf="${ROOT}/config/hypr/hyprland.conf"
+fail=0
+
+if ! grep -q '/usr/local/bin/corebrum-autolock refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh Autolock" >&2
+  fail=1
+fi
+if ! grep -q 'bind = $mainMod SHIFT, Escape, exec, /usr/local/bin/corebrum-autolock toggle' "$conf"; then
+  echo "FAIL: Super+Shift+Escape does not toggle stay awake" >&2
+  fail=1
+fi
+if ! grep -q '/usr/local/bin/corebrum-autolock start' "$conf"; then
+  echo "FAIL: the session does not start the autolock timer" >&2
+  fail=1
+fi
+if ! grep -q 'ignore_systemd_inhibit = false' "${ROOT}/config/hypr/hypridle.conf"; then
+  echo "FAIL: stay awake cannot pause hypridle" >&2
+  fail=1
+fi
+if ! grep -q 'timeout = 600' "${ROOT}/config/hypr/hypridle.conf"; then
+  echo "FAIL: the default autolock timer is not 10 minutes" >&2
+  fail=1
+fi
+if ! grep -q '/etc/xdg/hypr/hypridle.conf' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: hypridle cannot see a system config" >&2
+  fail=1
+fi
+if ! grep -q 'hypridle' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider hypridle" >&2
+  fail=1
+fi
+if grep -q '^hypridle' "${ROOT}/manifests/packages/desktop.txt"; then
+  echo "FAIL: desktop profile preinstalls hypridle on Ubuntu 24.04" >&2
+  fail=1
+fi
+if ! grep -q 'ExecStart=/bin/true' "${ROOT}/config/systemd/user/hypridle.service.d/corebrum.conf"; then
+  echo "FAIL: the packaged hypridle service can start without the Corebrum config" >&2
+  fail=1
+fi
+
+runtime="$(mktemp -d)"
+state="$(mktemp -d)"
+export XDG_RUNTIME_DIR="$runtime"
+export XDG_STATE_HOME="$state"
+export HOME=/home/corebrum
+export COREBRUM_AUTOLOCK_STUB=1
+
+name="$(COREBRUM_AUTOLOCK_READY=0 bash "$menu" entry-name)"
+if [[ "$name" != "Autolock   install" ]]; then
+  echo "FAIL: missing hypridle is not marked install (got ${name})" >&2
+  fail=1
+fi
+name="$(COREBRUM_AUTOLOCK_READY=1 bash "$menu" entry-name)"
+if [[ "$name" != "Autolock" ]]; then
+  echo "FAIL: installed hypridle still shows install (got ${name})" >&2
+  fail=1
+fi
+
+output="$(COREBRUM_AUTOLOCK_READY=1 COREBRUM_AUTOLOCK_AWAKE=0 bash "$menu" open)"
+if [[ "$output" != $'Stay awake\n5 minutes\n10 minutes   on\n30 minutes\n1 hour' ]]; then
+  echo "FAIL: autolock list was ${output}" >&2
+  fail=1
+fi
+output="$(COREBRUM_AUTOLOCK_READY=1 COREBRUM_AUTOLOCK_AWAKE=1 COREBRUM_AUTOLOCK_MINUTES=30 bash "$menu" open)"
+if [[ "$output" != $'Stay awake   on\n5 minutes\n10 minutes\n30 minutes   on\n1 hour' ]]; then
+  echo "FAIL: awake list was ${output}" >&2
+  fail=1
+fi
+
+output="$(COREBRUM_AUTOLOCK_READY=1 COREBRUM_AUTOLOCK_CHOICE='1 hour' bash "$menu" open)"
+if [[ "$output" != "minutes 60" ]]; then
+  echo "FAIL: hour choice was ${output}" >&2
+  fail=1
+fi
+if ! grep -q 'timeout = 3600' "${state}/corebrum/hypridle.conf"; then
+  echo "FAIL: saved hypridle config is not one hour" >&2
+  fail=1
+fi
+output="$(COREBRUM_AUTOLOCK_AWAKE=0 bash "$menu" toggle)"
+if [[ "$output" != "awake on" ]]; then
+  echo "FAIL: stay awake did not turn on (got ${output})" >&2
+  fail=1
+fi
+output="$(COREBRUM_AUTOLOCK_AWAKE=1 bash "$menu" toggle)"
+if [[ "$output" != "awake off" ]]; then
+  echo "FAIL: stay awake did not turn off (got ${output})" >&2
+  fail=1
+fi
+
+output="$(COREBRUM_AUTOLOCK_READY=0 bash "$menu" open)"
+if [[ "$output" != *'apt-get install -y hypridle'* ]]; then
+  echo "FAIL: selecting Autolock did not install hypridle" >&2
+  fail=1
+fi
+if [[ "$output" != *'hypridle is not in this Ubuntu archive'* ]]; then
+  echo "FAIL: the installer does not explain a missing archive package" >&2
+  fail=1
+fi
+
+rm -rf "$runtime" "$state"
+if [[ "$fail" -ne 0 ]]; then
+  exit 1
+fi
+echo "autolock unit tests passed"

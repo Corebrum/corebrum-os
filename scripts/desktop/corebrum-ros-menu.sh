@@ -128,8 +128,23 @@ corebrum_ros_menu_data_dir() {
   printf '%s\n' "${root}/corebrum"
 }
 
+corebrum_ros_menu_zenoh_ready() {
+  if [[ "${COREBRUM_ROS_MENU_STUB:-0}" == 1 ]]; then
+    [[ "${COREBRUM_ZENOH_MENU_READY:-0}" == 1 ]]
+    return
+  fi
+  [[ -x /usr/local/bin/zenoh && -x /opt/corebrum/zenoh-cli/bin/zenoh ]]
+}
+
+corebrum_ros_menu_zenoh_visible() {
+  local base
+  base="$(corebrum_ros_menu_base_pkg)"
+  corebrum_ros_menu_pkg_installed "$base" || return 1
+  corebrum_ros_menu_zenoh_ready
+}
+
 corebrum_ros_menu_refresh() {
-  local dir name
+  local dir name zenoh_file
   dir="$(corebrum_ros_menu_data_dir)/applications"
   name="$(corebrum_ros_menu_entry_name)"
   mkdir -p "$dir"
@@ -145,6 +160,23 @@ Terminal=false
 Categories=Science;Development;
 StartupNotify=false
 EOF
+  zenoh_file="${dir}/corebrum-zenoh-network.desktop"
+  if corebrum_ros_menu_zenoh_visible; then
+    cat >"$zenoh_file" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Zenoh network
+GenericName=Zenoh network
+Comment=Show Zenoh nodes connected to the router
+Exec=/usr/local/bin/zenoh network
+Icon=network-workgroup
+Terminal=false
+Categories=Science;Network;
+StartupNotify=false
+EOF
+  else
+    rm -f "$zenoh_file"
+  fi
 }
 
 corebrum_ros_menu_terminal() {

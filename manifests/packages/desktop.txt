@@ -15,6 +15,7 @@ greetd
 thunar
 firefox
 mako-notifier
+libnotify-bin
 fonts-noto
 fonts-noto-mono
 fonts-noto-color-emoji

@@ -37,6 +37,7 @@ require_line "Super+Space            Open the application menu"
 require_line "Super+Alt+Space        Open the app grid"
 require_line "Super+S                Toggle the agent scratchpad terminal"
 require_line "Super+Escape           Lock the screen"
+require_line "Super+Shift+Escape     Pause autolock, or resume it"
 require_line "Super+Shift+E          Leave Hyprland and return to the login screen"
 require_line "Super+C                Clipboard history"
 require_line "Super+Print            Record the selected area"
@@ -55,6 +56,7 @@ require_bind 'bind = $mainMod, Space, exec, /usr/local/bin/corebrum-launcher'
 require_bind 'bind = $mainMod ALT, Space, exec, /usr/local/bin/corebrum-grid'
 require_bind 'bind = $mainMod, S, togglespecialworkspace, agent'
 require_bind 'bind = $mainMod, Escape, exec, /usr/local/bin/corebrum-lock'
+require_bind 'bind = $mainMod SHIFT, Escape, exec, /usr/local/bin/corebrum-autolock toggle'
 require_bind 'bind = $mainMod SHIFT, E, exit'
 require_bind 'bind = $mainMod, C, exec,'
 require_bind 'bind = $mainMod, Print, exec,'

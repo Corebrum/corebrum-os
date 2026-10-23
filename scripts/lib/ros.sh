@@ -30,6 +30,12 @@ COREBRUM_ROS_RMW="/etc/corebrum/ros/rmw"
 COREBRUM_ROS_PROFILE="/etc/profile.d/corebrum-ros.sh"
 COREBRUM_ROS_UNIT="corebrum-zenoh-router.service"
 COREBRUM_ROS_TILE='ROS|kitty /usr/local/bin/corebrum-ros-shell'
+# eclipse-zenoh 1.8.0 matches the vendored library but publishes only a Python 3.8 wheel.
+# 1.9.0 is the oldest abi3 wheel, and Zenoh 1.x sessions stay compatible with that library.
+COREBRUM_ZENOH_CLI_ROOT="/opt/corebrum/zenoh-cli"
+COREBRUM_ZENOH_CLI_BIN="/usr/local/bin/zenoh"
+COREBRUM_ZENOH_CLI_LIB="eclipse-zenoh==1.9.0"
+COREBRUM_ZENOH_CLI_TOOL="zenoh-cli==0.7.0"
 
 corebrum_ros_distro_for_codename() {
   case "$1" in
@@ -262,6 +268,41 @@ corebrum_ros_install_distro_file() {
   rm -f "$work"
 }
 
+corebrum_ros_zenoh_cli_ready() {
+  local pip="${COREBRUM_ZENOH_CLI_ROOT}/bin/pip" lib="" tool=""
+  [[ -x "$pip" ]] || return 1
+  lib="$("$pip" show eclipse-zenoh 2>/dev/null | awk '/^Version:/{ print $2; exit }')"
+  tool="$("$pip" show zenoh-cli 2>/dev/null | awk '/^Version:/{ print $2; exit }')"
+  [[ "$lib" == "1.9.0" && "$tool" == "0.7.0" ]]
+}
+
+corebrum_ros_install_zenoh_cli() {
+  local pip="${COREBRUM_ZENOH_CLI_ROOT}/bin/pip"
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: install python3-venv when it is missing"
+    corebrum_log "dry-run: python3 -m venv ${COREBRUM_ZENOH_CLI_ROOT}"
+    corebrum_log "dry-run: ${pip} install ${COREBRUM_ZENOH_CLI_LIB} ${COREBRUM_ZENOH_CLI_TOOL}"
+    corebrum_log "dry-run: install ${COREBRUM_ZENOH_CLI_BIN}"
+    return 0
+  fi
+  if ! dpkg-query -W -f='${Status}' python3-venv 2>/dev/null | grep -q 'install ok installed'; then
+    corebrum_apt_install python3-venv
+  fi
+  if corebrum_ros_zenoh_cli_ready; then
+    corebrum_log "Zenoh CLI ${COREBRUM_ZENOH_CLI_LIB} and ${COREBRUM_ZENOH_CLI_TOOL} already installed"
+  else
+    mkdir -p "$(dirname "$COREBRUM_ZENOH_CLI_ROOT")"
+    if [[ ! -x "$pip" ]]; then
+      corebrum_log "run: python3 -m venv ${COREBRUM_ZENOH_CLI_ROOT}"
+      python3 -m venv "$COREBRUM_ZENOH_CLI_ROOT"
+    fi
+    corebrum_log "run: ${pip} install ${COREBRUM_ZENOH_CLI_LIB} ${COREBRUM_ZENOH_CLI_TOOL}"
+    "$pip" install --disable-pip-version-check "$COREBRUM_ZENOH_CLI_LIB" "$COREBRUM_ZENOH_CLI_TOOL"
+    corebrum_ros_zenoh_cli_ready || corebrum_die "Zenoh CLI install did not leave ${COREBRUM_ZENOH_CLI_LIB} and ${COREBRUM_ZENOH_CLI_TOOL}"
+  fi
+  corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/zenoh-cli.sh" "$COREBRUM_ZENOH_CLI_BIN" 755
+}
+
 corebrum_phase_ros() {
   local manifest
   local -a packages=()
@@ -280,6 +321,7 @@ corebrum_phase_ros() {
   corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/with-ros.sh" /usr/local/lib/corebrum/with-ros.sh 755
   corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/zenoh-router.sh" /usr/local/lib/corebrum/zenoh-router.sh 755
   corebrum_install_file "${COREBRUM_ROOT}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
+  corebrum_ros_install_zenoh_cli
   corebrum_install_file \
     "${COREBRUM_ROOT}/config/systemd/corebrum-zenoh-router.service" \
     "/etc/systemd/system/${COREBRUM_ROS_UNIT}" \
@@ -311,6 +353,7 @@ corebrum_uninstall_ros() {
     corebrum_log "dry-run: systemctl disable --now ${COREBRUM_ROS_UNIT}"
     corebrum_log "dry-run: remove the Corebrum Zenoh unit, profile script, and /etc/corebrum/ros"
     corebrum_log "dry-run: leave ros2-apt-source and the ROS packages installed"
+    corebrum_log "dry-run: remove ${COREBRUM_ZENOH_CLI_BIN} and ${COREBRUM_ZENOH_CLI_ROOT}"
     corebrum_ros_remove_tile
     corebrum_log "ros uninstall dry-run complete"
     return 0
@@ -323,6 +366,7 @@ corebrum_uninstall_ros() {
     /usr/local/lib/corebrum/zenoh-router.sh \
     /usr/local/lib/corebrum/ros-env.sh \
     /usr/local/bin/corebrum-ros-shell \
+    "$COREBRUM_ZENOH_CLI_BIN" \
     "$COREBRUM_ROS_RMW" \
     /etc/corebrum/ros/distro
   do
@@ -332,6 +376,10 @@ corebrum_uninstall_ros() {
       corebrum_log "removed ${path}"
     fi
   done
+  if [[ -d "$COREBRUM_ZENOH_CLI_ROOT" ]]; then
+    rm -rf "$COREBRUM_ZENOH_CLI_ROOT"
+    corebrum_log "removed ${COREBRUM_ZENOH_CLI_ROOT}"
+  fi
   rmdir /etc/corebrum/ros 2>/dev/null || true
   systemctl daemon-reload || true
   corebrum_ros_remove_tile

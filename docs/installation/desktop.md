@@ -41,12 +41,13 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+W | Close the focused window |
 | Super+F | Fullscreen |
 | Super+V | Float or tile |
-| Super+Space | Fuzzel launcher. ROS 2 is listed there as `ROS 2   install` until `corebrum install ros` has been run, then as `ROS` |
+| Super+Space | Fuzzel launcher. ROS 2 is listed there as `ROS 2   install` until `corebrum install ros` has been run, then as `ROS`. `Zenoh network` appears beside it only after that install |
 | Super+Alt+Space | App grid |
 | Super+S | Agent scratchpad terminal |
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
 | Super+Escape | Lock the screen with hyprlock |
+| Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Leave Hyprland and return to the greeter |
 | Print | Copy a selected area |
 | Super+C | Clipboard history |
@@ -54,7 +55,9 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 
 Super+Space includes Keybindings. That entry lists the Super shortcuts in the table above. Choosing a row closes the list and does not run the shortcut.
 
-Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock. Hyprland's splash quotes are turned off. A transparent bar on the wallpaper reads `Corebrum: The Physical AI Operating System`. The grid starts with Terminal, Files, and Browser. Add a robotics tool later by appending `Label|command` to `/etc/corebrum/dashboard/tiles.conf`. Do not put `|` or `#` in the command.
+Super+Space also lists Autolock. The screen locks after 10 minutes idle unless that menu, or Super+Shift+Escape, turns on Stay awake. The other rows are 5 minutes, 30 minutes, and 1 hour. Stay awake lasts until it is turned off or the session ends. Ubuntu 24.04 has no `hypridle` package, so that release keeps Super+Escape as the only lock. See `docs/decisions/0022-autolock.md`.
+
+Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock. Volume, mute, microphone mute, and brightness keys change the level and show a notification at the top right. Other applications use the same Mako popups. Hyprland's splash quotes are turned off. A transparent bar on the wallpaper reads `Corebrum: The Physical AI Operating System`. The grid starts with Terminal, Files, and Browser. Add a robotics tool later by appending `Label|command` to `/etc/corebrum/dashboard/tiles.conf`. Do not put `|` or `#` in the command.
 
 ```bash
 ./scripts/validate/desktop.sh

@@ -58,9 +58,30 @@ assert_eq "$("$menu" labels)" "$(printf '%s\n' \
 
 runtime="$(mktemp -d)"
 export XDG_RUNTIME_DIR="$runtime"
+export COREBRUM_ZENOH_MENU_READY=0
 "$menu" refresh
 if ! grep -q '^Name=ROS$' "${runtime}/corebrum/applications/corebrum-ros.desktop"; then
   echo "FAIL: refreshed desktop entry did not name installed ROS" >&2
+  exit 1
+fi
+if [[ -e "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop" ]]; then
+  echo "FAIL: Zenoh network is listed before the Zenoh CLI is installed" >&2
+  exit 1
+fi
+export COREBRUM_ZENOH_MENU_READY=1
+"$menu" refresh
+if ! grep -q '^Name=Zenoh network$' "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop"; then
+  echo "FAIL: Zenoh network is missing after ROS and the CLI are installed" >&2
+  exit 1
+fi
+if ! grep -q '^Exec=/usr/local/bin/zenoh network$' "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop"; then
+  echo "FAIL: Zenoh network does not run zenoh network" >&2
+  exit 1
+fi
+export COREBRUM_ROS_MENU_INSTALLED=""
+"$menu" refresh
+if [[ -e "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop" ]]; then
+  echo "FAIL: Zenoh network stays listed when ROS is not installed" >&2
   exit 1
 fi
 rm -rf "$runtime"

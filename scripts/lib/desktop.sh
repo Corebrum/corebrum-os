@@ -52,6 +52,14 @@ corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
   corebrum_install_file "${root}/config/hypr/hyprland.conf" /etc/corebrum/hypr/hyprland.conf 644
   corebrum_install_file "${root}/config/hypr/hyprlock.conf" /etc/corebrum/hypr/hyprlock.conf 644
+  corebrum_install_file "${root}/config/hypr/hypridle.conf" /etc/corebrum/hypr/hypridle.conf 644
+  # hypridle 0.1.7 looks up /etc/xdg/hypr/hypridle.conf even when --config is set.
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: symlink /etc/xdg/hypr/hypridle.conf to /etc/corebrum/hypr/hypridle.conf"
+  else
+    mkdir -p /etc/xdg/hypr
+    ln -sfn /etc/corebrum/hypr/hypridle.conf /etc/xdg/hypr/hypridle.conf
+  fi
   corebrum_install_file "${root}/config/greetd/gtkgreet.css" /etc/corebrum/greetd/gtkgreet.css 644
   corebrum_install_file "${root}/config/waybar/config.json" /etc/corebrum/waybar/config.json 644
   corebrum_install_file "${root}/config/waybar/style.css" /etc/corebrum/waybar/style.css 644
@@ -74,7 +82,10 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-keys-menu.sh" /usr/local/bin/corebrum-keys-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-osd.sh" /usr/local/bin/corebrum-osd 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
   corebrum_install_file "${root}/config/systemd/user/hyprpaper.service.d/corebrum.conf" /etc/systemd/user/hyprpaper.service.d/corebrum.conf 644
+  corebrum_install_file "${root}/config/systemd/user/hypridle.service.d/corebrum.conf" /etc/systemd/user/hypridle.service.d/corebrum.conf 644
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
     rm -f /usr/local/bin/corebrum-waypaper-menu
   fi
@@ -135,6 +146,8 @@ corebrum_desktop_managed_paths() {
   cat <<'EOF'
 /etc/corebrum/hypr/hyprland.conf
 /etc/corebrum/hypr/hyprlock.conf
+/etc/corebrum/hypr/hypridle.conf
+/etc/xdg/hypr/hypridle.conf
 /etc/corebrum/greetd/gtkgreet.css
 /etc/corebrum/waybar/config.json
 /etc/corebrum/waybar/style.css
@@ -158,7 +171,10 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-wallpaper-menu
 /usr/local/bin/corebrum-waypaper-menu
 /usr/local/bin/corebrum-keys-menu
+/usr/local/bin/corebrum-osd
+/usr/local/bin/corebrum-autolock
 /etc/systemd/user/hyprpaper.service.d/corebrum.conf
+/etc/systemd/user/hypridle.service.d/corebrum.conf
 /etc/corebrum/agents.conf
 /usr/local/lib/corebrum/realsense-install.sh
 /etc/corebrum/ros-tools.conf

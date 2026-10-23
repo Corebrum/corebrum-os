@@ -39,7 +39,7 @@ fi
 
 desktop=()
 corebrum_load_manifest "${ROOT}/manifests/packages/desktop.txt" desktop
-assert_eq "${#desktop[@]}" "20" "desktop package count"
+assert_eq "${#desktop[@]}" "21" "desktop package count"
 assert_eq "${desktop[0]}" "hyprland" "desktop manifest starts with hyprland"
 found_waybar=0
 found_greetd=0

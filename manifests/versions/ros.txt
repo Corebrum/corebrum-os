@@ -9,6 +9,7 @@ apt_source_sha256: f31d84adf5054c7d60ded0e82c0f776a77ea33af53d08f40b9ad7c94cca55
 apt_source_fingerprint: C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 rmw: rmw_zenoh_cpp
 rmw_fallback: rmw_fastrtps_cpp
+zenoh_cli: zenoh-cli 0.7.0 with eclipse-zenoh 1.9.0 in /opt/corebrum/zenoh-cli
 notes: Observed on 2026-10-22 from the noble main index. ros-jazzy-ros-base 0.11.0-1noble.20261006.035407, ros-jazzy-rmw-zenoh-cpp 0.2.11-1noble.20260915.171026, ros-jazzy-rmw-fastrtps-cpp 8.4.4-1noble.20260911.100940, ros-jazzy-demo-nodes-cpp 0.33.11-1noble.20260920.235420, ros-jazzy-action-tutorials-cpp 0.33.11-1noble.20260912.162738, ros-dev-tools 1.0.3. Individual Jazzy debs are not apt-pinned because a sync moves them together. The bootstrap deb and the Open Robotics key fingerprint are pinned. RViz, Gazebo, and RealSense are not in this component. Ubuntu 26.04 selects Lyrical instead of this file. See the lyrical block below.
 
 component: ros
@@ -22,4 +23,5 @@ apt_source_sha256: e70bc980395f4a3b366b9c5e7f8f9b4d63a4064fb115f6ff3bc52f7faa02e
 apt_source_fingerprint: C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 rmw: rmw_zenoh_cpp
 rmw_fallback: rmw_fastrtps_cpp
-notes: Observed on 2026-10-22 from the resolute main index. ros-lyrical-ros-base 0.13.0-3resolute.20260919.194435, ros-lyrical-rmw-zenoh-cpp 0.10.6-1resolute.20260915.025944, ros-lyrical-rmw-fastrtps-cpp 9.4.10-1resolute.20260915.053043, ros-lyrical-demo-nodes-cpp 0.37.9-1resolute.20260915.065629, ros-lyrical-action-tutorials-cpp 0.37.9-1resolute.20260915.071207, ros-dev-tools 1.0.3. The same Open Robotics key signs the noble and resolute bootstrap packages. RViz, Gazebo, and RealSense are not in this component.
+zenoh_cli: zenoh-cli 0.7.0 with eclipse-zenoh 1.9.0 in /opt/corebrum/zenoh-cli
+notes: Observed on 2026-10-22 from the resolute main index. ros-lyrical-ros-base 0.13.0-3resolute.20260919.194435, ros-lyrical-rmw-zenoh-cpp 0.10.6-1resolute.20260915.025944, ros-lyrical-rmw-fastrtps-cpp 9.4.10-1resolute.20260915.053043, ros-lyrical-demo-nodes-cpp 0.37.9-1resolute.20260915.065629, ros-lyrical-action-tutorials-cpp 0.37.9-1resolute.20260915.071207, ros-dev-tools 1.0.3. The same Open Robotics key signs the noble and resolute bootstrap packages. The vendored Zenoh library is 1.8.0. The client pin is eclipse-zenoh 1.9.0 because 1.8.0 has no wheel for this Python. RViz, Gazebo, and RealSense are not in this component.

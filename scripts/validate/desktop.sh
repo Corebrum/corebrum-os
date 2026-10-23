@@ -29,6 +29,8 @@ done
 for path in \
   /etc/corebrum/hypr/hyprland.conf \
   /etc/corebrum/hypr/hyprlock.conf \
+  /etc/corebrum/hypr/hypridle.conf \
+  /etc/xdg/hypr/hypridle.conf \
   /etc/corebrum/greetd/gtkgreet.css \
   /usr/local/bin/corebrum-greeter \
   /usr/local/bin/corebrum-lock \
@@ -51,6 +53,9 @@ for path in \
   /usr/local/bin/corebrum-wallpaper-menu \
   /etc/systemd/user/hyprpaper.service.d/corebrum.conf \
   /usr/local/bin/corebrum-keys-menu \
+  /usr/local/bin/corebrum-osd \
+  /usr/local/bin/corebrum-autolock \
+  /etc/systemd/user/hypridle.service.d/corebrum.conf \
   /etc/corebrum/agents.conf \
   /etc/corebrum/ros-tools.conf
 do
@@ -83,7 +88,7 @@ for cmd in waybar kitty fuzzel wofi agreety; do
   fi
 done
 
-for pkg in hyprlock gtkgreet cage; do
+for pkg in hyprlock gtkgreet cage hypridle; do
   policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"
   candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$policy")"
   if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then
