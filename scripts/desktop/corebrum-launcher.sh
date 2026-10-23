@@ -6,6 +6,7 @@ set -euo pipefail
 /usr/local/bin/corebrum-agenticros-menu refresh
 /usr/local/bin/corebrum-realsense-menu refresh
 /usr/local/bin/corebrum-chromium-menu refresh
+/usr/local/bin/corebrum-ollama-menu refresh
 /usr/local/bin/corebrum-agents-menu refresh
 /usr/local/bin/corebrum-wallpaper-menu refresh
 /usr/local/bin/corebrum-autolock refresh

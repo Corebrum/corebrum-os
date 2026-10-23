@@ -53,6 +53,7 @@ for path in \
   /usr/local/bin/corebrum-ros-menu \
   /usr/local/bin/corebrum-realsense-menu \
   /usr/local/bin/corebrum-chromium-menu \
+  /usr/local/bin/corebrum-ollama-menu \
   /usr/local/bin/corebrum-agents-menu \
   /usr/local/bin/corebrum-wallpaper-menu \
   /etc/systemd/user/hyprpaper.service.d/corebrum.conf \

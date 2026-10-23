@@ -48,6 +48,10 @@ if ! grep -q '/usr/local/bin/corebrum-chromium-menu refresh' "${ROOT}/scripts/de
   echo "FAIL: Super+Space does not refresh the Chromium entry" >&2
   exit 1
 fi
+if ! grep -q '/usr/local/bin/corebrum-ollama-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Ollama entry" >&2
+  exit 1
+fi
 if ! grep -q '/usr/local/bin/corebrum-wallpaper-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the Wallpaper entry" >&2
   exit 1

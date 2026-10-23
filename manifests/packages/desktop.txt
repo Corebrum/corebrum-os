@@ -19,6 +19,7 @@ thunar
 firefox
 mako-notifier
 libnotify-bin
+espeak-ng
 fonts-noto
 fonts-noto-mono
 fonts-noto-color-emoji
