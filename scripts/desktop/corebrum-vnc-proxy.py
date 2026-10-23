@@ -7,13 +7,15 @@ listens on the network, checks the 8-character VNC password, and then connects
 the Mac to wayvnc on localhost. Screen Sharing asks for depth 32. wayvnc then
 writes 4 bytes per pixel, while the Mac reads 3, so the window flashes with
 no desktop. This process reports depth 24, asks for a ZRLE or raw picture,
-and turns the Mac Command key into Super. The local connection is not left
-on the connect timer, or Screen Sharing closes and redraws after a few quiet
-seconds.
+and turns the Mac Command key into Super. Copied Mac text is placed on
+the Wayland clipboard, and Command+V pastes it after Super is released.
+The local connection is not left on the connect timer, or Screen Sharing
+closes and redraws after a few quiet seconds.
 """
 import argparse
 import hmac
 import os
+import select
 import socket
 import subprocess
 import sys
@@ -101,6 +103,17 @@ def screen_pixel_format(msg):
     return msg
 
 
+# Screen Sharing sends Command as Alt and Option as Meta.
+COMMAND_TO_SUPER = {0xFFE9: 0xFFEB, 0xFFEA: 0xFFEC}
+OPTION_TO_ALT = {0xFFE7: 0xFFE9, 0xFFE8: 0xFFEA}
+PASTE_KEYSYMS = {0x76, 0x56}  # v and V
+EXTENDED_CLIPBOARD = -1063131698
+
+
+def key_event(down, keysym):
+    return bytes([4, 1 if down else 0, 0, 0]) + keysym.to_bytes(4, "big")
+
+
 def mac_command_key(msg):
     """Screen Sharing sends Command as Alt and Option as Meta.
 
@@ -109,15 +122,55 @@ def mac_command_key(msg):
     if len(msg) != 8 or msg[0] != 4:
         return msg
     keysym = int.from_bytes(msg[4:8], "big")
-    mapped = {
-        0xFFE9: 0xFFEB,  # Alt_L, Command -> Super_L
-        0xFFEA: 0xFFEC,  # Alt_R, Command -> Super_R
-        0xFFE7: 0xFFE9,  # Meta_L, Option -> Alt_L
-        0xFFE8: 0xFFEA,  # Meta_R, Option -> Alt_R
-    }.get(keysym)
+    mapped = COMMAND_TO_SUPER.get(keysym)
+    if mapped is None:
+        mapped = OPTION_TO_ALT.get(keysym)
     if mapped is None:
         return msg
     return msg[:4] + mapped.to_bytes(4, "big")
+
+
+def clipboard_text(raw):
+    raw = raw.split(b"\x00", 1)[0]
+    raw = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("latin1")
+
+
+def publish_clipboard(text):
+    if not text or "WAYLAND_DISPLAY" not in os.environ:
+        return
+    try:
+        subprocess.run(
+            ["wl-copy", "--"],
+            input=text.encode(),
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError:
+        return
+
+
+def edit_keys_bin():
+    installed = "/usr/local/bin/corebrum-edit-keys"
+    if os.access(installed, os.X_OK):
+        return installed
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "corebrum-edit-keys.sh")
+
+
+def run_remote_paste():
+    try:
+        subprocess.run(
+            [edit_keys_bin(), "paste"],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError:
+        return
 
 
 def rewrite_encodings(requested):
@@ -125,10 +178,14 @@ def rewrite_encodings(requested):
 
     wayvnc uses the first of ZRLE, Tight, or raw. Tight and the cursor image
     are what make the Mac window flash. ZRLE is a complete desktop image.
+    Extended clipboard stays when the Mac asked for it, so copied text can
+    arrive as UTF-8.
     """
     chosen = [code for code in (16, 0) if code in requested]
     if -223 in requested:
         chosen.append(-223)
+    if EXTENDED_CLIPBOARD in requested:
+        chosen.append(EXTENDED_CLIPBOARD)
     if 16 not in chosen and 0 not in chosen:
         chosen.insert(0, 0)
     return chosen
@@ -141,6 +198,10 @@ class ClientMessages:
         self.buf = bytearray()
         self.passthrough = False
         self.full_frame_sent = False
+        self.command_held = set()
+        self.swallow_v_up = False
+        self.paste_after_send = False
+        self.clipboard = ""
 
     def feed(self, data):
         if self.passthrough:
@@ -200,19 +261,60 @@ class ClientMessages:
             msg = self.take(8)
             if msg is None:
                 return None
-            return mac_command_key(msg)
+            return self.command_key(msg)
         if kind == 5:
             return self.take(6)
         if kind == 6:
             if len(self.buf) < 8:
                 return None
             length = int.from_bytes(self.buf[4:8], "big", signed=True)
-            if length < 0 or length > 1_000_000:
+            if length < 0:
+                payload = -length
+            else:
+                payload = length
+            if payload > 1_000_000:
                 return self.pass_rest()
-            return self.take(8 + length)
+            msg = self.take(8 + payload)
+            if msg is None:
+                return None
+            if length >= 0:
+                self.clipboard = clipboard_text(msg[8:])
+            return msg
         if kind == 150:
             return self.take(10)
         return self.pass_rest()
+
+    def command_key(self, msg):
+        down = msg[1] != 0
+        keysym = int.from_bytes(msg[4:8], "big")
+        if keysym in COMMAND_TO_SUPER:
+            if down:
+                self.command_held.add(keysym)
+            else:
+                self.command_held.discard(keysym)
+            return mac_command_key(msg)
+        # Super+V pastes by sending Ctrl+Shift+V. That misses while Super is
+        # still held, and it pastes the Ubuntu clipboard. Release Super, then
+        # paste the text the Mac sent.
+        if keysym in PASTE_KEYSYMS and self.command_held:
+            if down:
+                if self.swallow_v_up:
+                    return b""
+                self.swallow_v_up = True
+                self.paste_after_send = True
+                return b"".join(
+                    key_event(False, COMMAND_TO_SUPER[sym])
+                    for sym in sorted(self.command_held)
+                )
+            if self.swallow_v_up:
+                self.swallow_v_up = False
+                return b""
+        return mac_command_key(msg)
+
+    def super_downs(self):
+        return b"".join(
+            key_event(True, COMMAND_TO_SUPER[sym]) for sym in sorted(self.command_held)
+        )
 
     def pass_rest(self):
         self.passthrough = True
@@ -231,8 +333,29 @@ def splice(left, right):
                     break
                 if messages is not None:
                     data = messages.feed(data)
-                    if not data:
+                    if data:
+                        dst.sendall(data)
+                    if not messages.paste_after_send:
                         continue
+                    closed = False
+                    ready, _, _ = select.select([src], [], [], 0.05)
+                    if ready:
+                        extra = src.recv(65536)
+                        if extra:
+                            more = messages.feed(extra)
+                            if more:
+                                dst.sendall(more)
+                        else:
+                            closed = True
+                    publish_clipboard(messages.clipboard)
+                    run_remote_paste()
+                    messages.paste_after_send = False
+                    restore = messages.super_downs()
+                    if restore:
+                        dst.sendall(restore)
+                    if closed:
+                        break
+                    continue
                 dst.sendall(data)
         except (ConnectionError, OSError):
             pass
@@ -328,6 +451,27 @@ def self_test():
         raise SystemExit("picture formats were not limited to ZRLE and raw")
     if rewrite_encodings([7, -239]) != [0]:
         raise SystemExit("Tight-only clients were not given a raw picture")
+    if rewrite_encodings([16, EXTENDED_CLIPBOARD]) != [16, EXTENDED_CLIPBOARD]:
+        raise SystemExit("extended clipboard was dropped")
+    pasted = ClientMessages()
+    copied = bytes([6, 0, 0, 0, 0, 0, 0, 5]) + b"hello"
+    command_down = key_event(True, 0xFFE9)
+    vee_down = key_event(True, 0x76)
+    vee_up = key_event(False, 0x76)
+    command_up = key_event(False, 0xFFE9)
+    forwarded = pasted.feed(copied + command_down + vee_down + vee_up + command_up)
+    if pasted.clipboard != "hello":
+        raise SystemExit("Mac clipboard text was not kept")
+    if not pasted.paste_after_send:
+        raise SystemExit("Command+V did not request a paste")
+    expected = copied + key_event(True, 0xFFEB) + key_event(False, 0xFFEB) + key_event(False, 0xFFEB)
+    if forwarded != expected:
+        raise SystemExit("Command+V was still forwarded as Super+V")
+    extended = ClientMessages()
+    payload = bytes([6, 0, 0, 0]) + (-4).to_bytes(4, "big", signed=True) + b"\x00\x00\x00\x01"
+    followed = extended.feed(payload + command_down)
+    if followed != payload + key_event(True, 0xFFEB):
+        raise SystemExit("a clipboard extension stopped Command from mapping to Super")
     depth32 = bytes([0, 0, 0, 0, 32, 32, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0, 0, 0, 0])
     if screen_pixel_format(depth32)[5] != 24:
         raise SystemExit("depth 32 was not reported as 24")

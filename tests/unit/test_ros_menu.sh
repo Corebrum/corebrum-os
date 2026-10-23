@@ -64,6 +64,29 @@ if ! grep -q '^Name=ROS$' "${runtime}/corebrum/applications/corebrum-ros.desktop
   echo "FAIL: refreshed desktop entry did not name installed ROS" >&2
   exit 1
 fi
+gazebo_entry="${runtime}/corebrum/applications/corebrum-ros-tool-gazebo.desktop"
+if ! grep -q '^Name=Gazebo   install$' "$gazebo_entry"; then
+  echo "FAIL: Super+Space does not list Gazebo for search" >&2
+  exit 1
+fi
+if ! grep -q '^Keywords=gazebo;' "$gazebo_entry"; then
+  echo "FAIL: Gazebo search entry is missing the gazebo keyword" >&2
+  exit 1
+fi
+if ! grep -q '^Exec=/usr/local/bin/corebrum-ros-menu launch gazebo$' "$gazebo_entry"; then
+  echo "FAIL: choosing Gazebo from search does not launch that tool" >&2
+  exit 1
+fi
+if ! grep -q '^Name=RViz$' "${runtime}/corebrum/applications/corebrum-ros-tool-rviz.desktop"; then
+  echo "FAIL: installed RViz is still marked install in search" >&2
+  exit 1
+fi
+got="$("$menu" launch gazebo)"
+if ! grep -q 'ros-lyrical-ros-gz' <<<"$got"; then
+  echo "FAIL: typing gazebo did not install that package" >&2
+  exit 1
+fi
+assert_eq "$("$menu" launch rviz)" "env QT_QPA_PLATFORM=xcb rviz2" "typing rviz launches RViz"
 if [[ -e "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop" ]]; then
   echo "FAIL: Zenoh network is listed before the Zenoh CLI is installed" >&2
   exit 1
@@ -82,6 +105,10 @@ export COREBRUM_ROS_MENU_INSTALLED=""
 "$menu" refresh
 if [[ -e "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop" ]]; then
   echo "FAIL: Zenoh network stays listed when ROS is not installed" >&2
+  exit 1
+fi
+if [[ -e "${runtime}/corebrum/applications/corebrum-ros-tool-gazebo.desktop" ]]; then
+  echo "FAIL: Gazebo stays listed when ROS is not installed" >&2
   exit 1
 fi
 rm -rf "$runtime"

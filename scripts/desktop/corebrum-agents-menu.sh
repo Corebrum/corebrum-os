@@ -158,9 +158,20 @@ corebrum_agents_couple() {
   fi
 }
 
+corebrum_agents_clear_leaves() {
+  local dir="$1" file
+  shopt -s nullglob
+  for file in "${dir}"/corebrum-agent-*.desktop; do
+    rm -f "$file"
+  done
+  shopt -u nullglob
+}
+
 corebrum_agents_refresh() {
-  local dir
+  local dir i id label
   corebrum_agents_couple
+  corebrum_agents_prepare_path
+  corebrum_agents_load
   dir="$(corebrum_agents_data_dir)/applications"
   mkdir -p "$dir"
   cat >"${dir}/corebrum-agents.desktop" <<'EOF'
@@ -175,6 +186,25 @@ Terminal=false
 Categories=Development;
 StartupNotify=false
 EOF
+  # One desktop file per CLI so Super+Space can match "grok" without opening this menu.
+  corebrum_agents_clear_leaves "$dir"
+  for i in "${!AGENTS_IDS[@]}"; do
+    id="${AGENTS_IDS[$i]}"
+    label="$(corebrum_agents_choice_label "$i")"
+    cat >"${dir}/corebrum-agent-${id}.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${label}
+GenericName=${AGENTS_LABELS[$i]}
+Keywords=${id};${AGENTS_BINS[$i]};${AGENTS_LABELS[$i]};
+Comment=AI Agents
+Exec=/usr/local/bin/corebrum-agents-menu launch ${id}
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;
+StartupNotify=false
+EOF
+  done
 }
 
 corebrum_agents_terminal() {
@@ -286,6 +316,24 @@ corebrum_agents_run() {
   corebrum_agents_die "unknown AI Agents menu choice"
 }
 
+corebrum_agents_launch_id() {
+  local id="$1" i
+  [[ "$id" =~ ^[a-z0-9-]+$ ]] || corebrum_agents_die "invalid agent id"
+  corebrum_agents_prepare_path
+  corebrum_agents_load
+  for i in "${!AGENTS_IDS[@]}"; do
+    if [[ "${AGENTS_IDS[$i]}" == "$id" ]]; then
+      if corebrum_agents_ready "$i"; then
+        corebrum_agents_launch "$i"
+      else
+        corebrum_agents_install "$i"
+      fi
+      return 0
+    fi
+  done
+  corebrum_agents_die "unknown agent ${id}"
+}
+
 corebrum_agents_open() {
   local choice="" i line
   local -a lines=()
@@ -315,7 +363,7 @@ corebrum_agents_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-agents-menu refresh|open|labels|data-dir
+Usage: corebrum-agents-menu refresh|open|launch ID|labels|data-dir
 EOF
 }
 
@@ -323,6 +371,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_agents_refresh ;;
   open) corebrum_agents_open ;;
+  launch) corebrum_agents_launch_id "${2:-}" ;;
   labels) corebrum_agents_labels ;;
   data-dir) corebrum_agents_data_dir ;;
   -h | --help | help) usage ;;

@@ -57,6 +57,7 @@ fi
 export COREBRUM_AGENTS_CHOICE="Grok CLI   install"
 got="$("$menu" open)"
 assert_eq "$got" 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=@xai-official/grok @xai-official/grok' "Grok installs from npm"
+assert_eq "$("$menu" launch grok)" 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=@xai-official/grok @xai-official/grok' "typing grok installs Grok"
 
 export COREBRUM_AGENTS_CHOICE="OpenClaw   install"
 got="$("$menu" open)"
@@ -99,6 +100,23 @@ if ! grep -q '^Name=AI Agents$' "${runtime}/corebrum/applications/corebrum-agent
 fi
 if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu open$' "${runtime}/corebrum/applications/corebrum-agents.desktop"; then
   echo "FAIL: AI Agents desktop entry does not open the agent menu" >&2
+  exit 1
+fi
+grok_entry="${runtime}/corebrum/applications/corebrum-agent-grok.desktop"
+if ! grep -q '^Name=Grok CLI   install$' "$grok_entry"; then
+  echo "FAIL: Super+Space does not list Grok CLI for search" >&2
+  exit 1
+fi
+if ! grep -q '^Keywords=grok;' "$grok_entry"; then
+  echo "FAIL: Grok search entry is missing the grok keyword" >&2
+  exit 1
+fi
+if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu launch grok$' "$grok_entry"; then
+  echo "FAIL: choosing Grok from search does not launch that agent" >&2
+  exit 1
+fi
+if ! grep -q '^Name=Claude Code CLI$' "${runtime}/corebrum/applications/corebrum-agent-claude.desktop"; then
+  echo "FAIL: an installed agent is still marked install in search" >&2
   exit 1
 fi
 rm -rf "$runtime"

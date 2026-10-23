@@ -71,6 +71,22 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-realsense-menu open$' "${runtime}/co
   echo "FAIL: RealSense desktop entry does not open the RealSense menu command" >&2
   exit 1
 fi
+viewer_entry="${runtime}/corebrum/applications/corebrum-realsense-tool-viewer.desktop"
+if ! grep -q '^Name=RealSense Viewer$' "$viewer_entry"; then
+  echo "FAIL: Super+Space does not list RealSense Viewer for search" >&2
+  exit 1
+fi
+if ! grep -q '^Exec=/usr/local/bin/corebrum-realsense-menu launch viewer$' "$viewer_entry"; then
+  echo "FAIL: choosing RealSense Viewer from search does not launch the viewer" >&2
+  exit 1
+fi
+assert_eq "$("$menu" launch viewer)" "realsense-viewer" "typing the viewer launches it"
+export COREBRUM_REALSENSE_READY=0
+"$menu" refresh
+if [[ -e "$viewer_entry" ]]; then
+  echo "FAIL: RealSense Viewer stays listed before RealSense is installed" >&2
+  exit 1
+fi
 rm -rf "$runtime"
 
 echo "ok: realsense-menu"

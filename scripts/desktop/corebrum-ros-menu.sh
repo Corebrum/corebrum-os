@@ -143,6 +143,40 @@ corebrum_ros_menu_zenoh_visible() {
   corebrum_ros_menu_zenoh_ready
 }
 
+corebrum_ros_menu_clear_tools() {
+  local dir="$1" file
+  shopt -s nullglob
+  for file in "${dir}"/corebrum-ros-tool-*.desktop; do
+    rm -f "$file"
+  done
+  shopt -u nullglob
+}
+
+corebrum_ros_menu_write_tools() {
+  local dir="$1" base i id label
+  corebrum_ros_menu_clear_tools "$dir"
+  base="$(corebrum_ros_menu_base_pkg)"
+  corebrum_ros_menu_pkg_installed "$base" || return 0
+  corebrum_ros_menu_load
+  for i in "${!ROS_MENU_IDS[@]}"; do
+    id="${ROS_MENU_IDS[$i]}"
+    label="$(corebrum_ros_menu_choice_label "$i")"
+    cat >"${dir}/corebrum-ros-tool-${id}.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${label}
+GenericName=${ROS_MENU_LABELS[$i]}
+Keywords=${id};${ROS_MENU_LABELS[$i]};
+Comment=ROS
+Exec=/usr/local/bin/corebrum-ros-menu launch ${id}
+Icon=applications-science
+Terminal=false
+Categories=Science;Development;
+StartupNotify=false
+EOF
+  done
+}
+
 corebrum_ros_menu_refresh() {
   local dir name zenoh_file
   dir="$(corebrum_ros_menu_data_dir)/applications"
@@ -177,6 +211,8 @@ EOF
   else
     rm -f "$zenoh_file"
   fi
+  # Tool rows exist only after ROS is installed, which is when the ROS submenu lists them.
+  corebrum_ros_menu_write_tools "$dir"
 }
 
 corebrum_ros_menu_terminal() {
@@ -278,9 +314,31 @@ corebrum_ros_menu_open() {
   fi
 }
 
+corebrum_ros_menu_launch_id() {
+  local id="$1" i base
+  [[ "$id" =~ ^[a-z0-9-]+$ ]] || corebrum_ros_menu_die "invalid tool id"
+  base="$(corebrum_ros_menu_base_pkg)"
+  if ! corebrum_ros_menu_pkg_installed "$base"; then
+    corebrum_ros_menu_install_base
+    return 0
+  fi
+  corebrum_ros_menu_load
+  for i in "${!ROS_MENU_IDS[@]}"; do
+    if [[ "${ROS_MENU_IDS[$i]}" == "$id" ]]; then
+      if corebrum_ros_menu_tool_ready "$i"; then
+        corebrum_ros_menu_launch "${ROS_MENU_CMDS[$i]}"
+      else
+        corebrum_ros_menu_install_pkg "${ROS_MENU_PKGS[$i]}"
+      fi
+      return 0
+    fi
+  done
+  corebrum_ros_menu_die "unknown ROS tool ${id}"
+}
+
 usage() {
   cat <<'EOF'
-Usage: corebrum-ros-menu refresh|open|entry-name|labels|data-dir
+Usage: corebrum-ros-menu refresh|open|launch ID|entry-name|labels|data-dir
 EOF
 }
 
@@ -288,6 +346,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_ros_menu_refresh ;;
   open) corebrum_ros_menu_open ;;
+  launch) corebrum_ros_menu_launch_id "${2:-}" ;;
   entry-name) corebrum_ros_menu_entry_name ;;
   labels) corebrum_ros_menu_labels ;;
   data-dir) corebrum_ros_menu_data_dir ;;

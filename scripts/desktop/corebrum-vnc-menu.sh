@@ -156,7 +156,8 @@ corebrum_vnc_instructions() {
   printf '%s\n' "It asks for the password above and does not ask for a name."
   printf '%s\n' "That is not the Mac password."
   printf '%s\n' "The Mac keyboard and pointer control the desktop already on this screen."
-  printf '%s\n' "The Command key is Super. Option stays Alt."
+  printf '%s\n' "The Command key is Super. Option stays Alt. Command+V pastes."
+  printf '%s\n' "Screen Sharing leaves its clipboard commands gray unless the other computer is a Mac."
   printf '%s\n' "Choose Remote desktop, then Stop, when you are done."
 }
 

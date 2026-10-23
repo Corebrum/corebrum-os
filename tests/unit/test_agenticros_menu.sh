@@ -64,6 +64,16 @@ if ! grep -q '^Name=AgenticROS$' "${runtime}/corebrum/applications/corebrum-agen
   echo "FAIL: refreshed desktop entry did not name AgenticROS" >&2
   exit 1
 fi
+motors_entry="${runtime}/corebrum/applications/corebrum-agenticros-action-motors-start.desktop"
+if ! grep -q '^Name=Motors: Start$' "$motors_entry"; then
+  echo "FAIL: Super+Space does not list Motors: Start for search" >&2
+  exit 1
+fi
+if ! grep -q '^Exec=/usr/local/bin/corebrum-agenticros-menu launch motors-start$' "$motors_entry"; then
+  echo "FAIL: choosing Motors: Start from search does not run that action" >&2
+  exit 1
+fi
+assert_eq "$("$menu" launch arc-connect)" "agenticros connect" "typing arc connect uses the CLI"
 export COREBRUM_AGENTICROS_CHOICE="ARC: Connect"
 assert_eq "$("$menu" open)" "agenticros connect" "ARC connect uses the CLI"
 export COREBRUM_AGENTICROS_CHOICE="Camera: Start RealSense"

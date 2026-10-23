@@ -19,6 +19,8 @@ With authentication off, `wayvnc` 0.9.1 offers only VNC security type None. With
 - The connection to wayvnc is given five seconds to open. That limit used to stay on the open connection, so a quiet screen closed it and Screen Sharing drew a new picture a few seconds later. The limit now applies only while connecting.
 - Screen Sharing asks for 32 bits per pixel with depth 32. `wayvnc` 0.9 then writes 4 bytes into each ZRLE pixel, and Screen Sharing reads 3, so the Mac window flashes and the desktop never appears. The proxy reports that format as depth 24. That is the 3-byte pixel Screen Sharing draws.
 - Screen Sharing sends Command as Alt and Option as Meta, which is what another Mac expects. The proxy forwards Command as Super and Option as Alt.
+- Text copied on the Mac arrives as a clipboard message. Command+V is Super+V, and Super+V pastes by sending Ctrl+Shift+V while Super is still held, so a terminal does not receive the paste. The proxy puts the Mac text on the Wayland clipboard, releases Super, and then pastes.
+- Copy and paste inside the shared desktop uses that path. Screen Sharing enables its clipboard commands only when the other computer is a Mac, so on this connection those menu items stay gray and text copied in another Mac app is not sent. A viewer that sends the standard clipboard message can still paste that text. The proxy places it on the Wayland clipboard and Command+V inserts it.
 
 ## Consequences
 

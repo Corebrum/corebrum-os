@@ -75,6 +75,7 @@ corebrum_agenticros_menu_refresh() {
   mkdir -p "$dir"
   if ! corebrum_agenticros_menu_ros_ready; then
     rm -f "$dest"
+    corebrum_agenticros_menu_clear_actions "$dir"
     return 0
   fi
   name="$(corebrum_agenticros_menu_entry_name)"
@@ -90,6 +91,7 @@ Terminal=false
 Categories=Science;Development;
 StartupNotify=false
 EOF
+  corebrum_agenticros_menu_write_actions "$dir"
 }
 
 corebrum_agenticros_menu_terminal() {
@@ -101,29 +103,68 @@ corebrum_agenticros_menu_terminal() {
   exec /usr/local/bin/corebrum-terminal bash --login -c "$script"
 }
 
-corebrum_agenticros_menu_labels() {
+corebrum_agenticros_menu_actions() {
   cat <<'EOF'
-ARC: Connect
-ARC: Disconnect
-ARC: Sign in
-Camera: Start RealSense
-Camera: Stop RealSense
-Camera: Start 2D
-Camera: Stop 2D
-Motors: Start
-Motors: Stop
-Eyes: Start
-Eyes: Stop
-Stack: Real robot
-Stack: Sim AMR
-Stack: Sim arm
-Stack: Stop
-Mode: Real
-Mode: Sim
-Status
-Doctor
-Agents: Connect installed CLIs
+arc-connect|ARC: Connect
+arc-disconnect|ARC: Disconnect
+arc-sign-in|ARC: Sign in
+camera-start-realsense|Camera: Start RealSense
+camera-stop-realsense|Camera: Stop RealSense
+camera-start-2d|Camera: Start 2D
+camera-stop-2d|Camera: Stop 2D
+motors-start|Motors: Start
+motors-stop|Motors: Stop
+eyes-start|Eyes: Start
+eyes-stop|Eyes: Stop
+stack-real|Stack: Real robot
+stack-sim-amr|Stack: Sim AMR
+stack-sim-arm|Stack: Sim arm
+stack-stop|Stack: Stop
+mode-real|Mode: Real
+mode-sim|Mode: Sim
+status|Status
+doctor|Doctor
+agents-connect|Agents: Connect installed CLIs
 EOF
+}
+
+corebrum_agenticros_menu_labels() {
+  local slug label
+  while IFS='|' read -r slug label; do
+    [[ -n "$slug" ]] || continue
+    printf '%s\n' "$label"
+  done < <(corebrum_agenticros_menu_actions)
+}
+
+corebrum_agenticros_menu_clear_actions() {
+  local dir="$1" file
+  shopt -s nullglob
+  for file in "${dir}"/corebrum-agenticros-action-*.desktop; do
+    rm -f "$file"
+  done
+  shopt -u nullglob
+}
+
+corebrum_agenticros_menu_write_actions() {
+  local dir="$1" slug label
+  corebrum_agenticros_menu_clear_actions "$dir"
+  corebrum_agenticros_menu_ready || return 0
+  while IFS='|' read -r slug label; do
+    [[ "$slug" =~ ^[a-z0-9-]+$ ]] || corebrum_agenticros_menu_die "invalid action id: ${slug}"
+    cat >"${dir}/corebrum-agenticros-action-${slug}.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${label}
+GenericName=${label}
+Keywords=${slug};${label};
+Comment=AgenticROS
+Exec=/usr/local/bin/corebrum-agenticros-menu launch ${slug}
+Icon=applications-science
+Terminal=false
+Categories=Science;Development;
+StartupNotify=false
+EOF
+  done < <(corebrum_agenticros_menu_actions)
 }
 
 corebrum_agenticros_menu_run() {
@@ -278,15 +319,32 @@ EOF
 )"
 }
 
+corebrum_agenticros_menu_launch_id() {
+  local id="$1" slug label
+  [[ "$id" =~ ^[a-z0-9-]+$ ]] || corebrum_agenticros_menu_die "invalid AgenticROS action"
+  if ! corebrum_agenticros_menu_ready; then
+    corebrum_agenticros_menu_open
+    return 0
+  fi
+  while IFS='|' read -r slug label; do
+    if [[ "$slug" == "$id" ]]; then
+      corebrum_agenticros_menu_run "$label"
+      return 0
+    fi
+  done < <(corebrum_agenticros_menu_actions)
+  corebrum_agenticros_menu_die "unknown AgenticROS action ${id}"
+}
+
 usage() {
   cat <<'EOF'
-Usage: corebrum-agenticros-menu refresh|open|entry-name|labels|data-dir
+Usage: corebrum-agenticros-menu refresh|open|launch ID|entry-name|labels|data-dir
 EOF
 }
 
 cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_agenticros_menu_refresh ;;
+  launch) corebrum_agenticros_menu_launch_id "${2:-}" ;;
   open) corebrum_agenticros_menu_open ;;
   entry-name) corebrum_agenticros_menu_entry_name ;;
   labels) corebrum_agenticros_menu_labels ;;

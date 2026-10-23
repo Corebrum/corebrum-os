@@ -81,6 +81,41 @@ Terminal=false
 Categories=Science;Development;
 StartupNotify=false
 EOF
+  corebrum_realsense_menu_write_tools "$dir"
+}
+
+corebrum_realsense_menu_clear_tools() {
+  local dir="$1" file
+  shopt -s nullglob
+  for file in "${dir}"/corebrum-realsense-tool-*.desktop; do
+    rm -f "$file"
+  done
+  shopt -u nullglob
+}
+
+corebrum_realsense_menu_write_tools() {
+  local dir="$1" id label
+  corebrum_realsense_menu_clear_tools "$dir"
+  corebrum_realsense_menu_ready || return 0
+  while IFS='|' read -r id label; do
+    [[ -n "$id" ]] || continue
+    cat >"${dir}/corebrum-realsense-tool-${id}.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${label}
+GenericName=${label}
+Keywords=${id};${label};
+Comment=RealSense
+Exec=/usr/local/bin/corebrum-realsense-menu launch ${id}
+Icon=camera-video
+Terminal=false
+Categories=Science;Development;
+StartupNotify=false
+EOF
+  done <<'EOF'
+viewer|RealSense Viewer
+ros|RealSense ROS
+EOF
 }
 
 corebrum_realsense_menu_terminal() {
@@ -166,9 +201,23 @@ EOF
 )"
 }
 
+corebrum_realsense_menu_launch_id() {
+  local id="$1"
+  [[ "$id" =~ ^[a-z0-9-]+$ ]] || corebrum_realsense_menu_die "invalid RealSense action"
+  if ! corebrum_realsense_menu_ready; then
+    corebrum_realsense_menu_open
+    return 0
+  fi
+  case "$id" in
+    viewer) corebrum_realsense_menu_run "RealSense Viewer" ;;
+    ros) corebrum_realsense_menu_run "RealSense ROS" ;;
+    *) corebrum_realsense_menu_die "unknown RealSense action ${id}" ;;
+  esac
+}
+
 usage() {
   cat <<'EOF'
-Usage: corebrum-realsense-menu refresh|open|entry-name|labels|data-dir
+Usage: corebrum-realsense-menu refresh|open|launch ID|entry-name|labels|data-dir
 EOF
 }
 
@@ -176,6 +225,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_realsense_menu_refresh ;;
   open) corebrum_realsense_menu_open ;;
+  launch) corebrum_realsense_menu_launch_id "${2:-}" ;;
   entry-name) corebrum_realsense_menu_entry_name ;;
   labels) corebrum_realsense_menu_labels ;;
   data-dir) corebrum_realsense_menu_data_dir ;;
