@@ -39,6 +39,16 @@ corebrum_phase_desktop() {
       corebrum_log "${pkg} is not in the archive; skipping"
     fi
   done
+  # Hyprland looks for hyprland-dialog and warns when it is missing. That
+  # binary is in hyprland-qtutils. Take it only from the Ubuntu archive.
+  # The noble Hyprland PPA is not a source for this package.
+  candidate="$(corebrum_ubuntu_archive_version hyprland-qtutils)"
+  if corebrum_candidate_installable "$candidate"; then
+    corebrum_log "hyprland-qtutils candidate ${candidate}"
+    packages+=("hyprland-qtutils")
+  else
+    corebrum_log "hyprland-qtutils is not in the Ubuntu archive; Hyprland dialogs stay unavailable"
+  fi
   # hypridle is in Ubuntu 26.04 with hyprlock. Ubuntu 24.04 publishes neither.
   # Do not install the idle daemon when there is no locker for it to run.
   candidate="$(corebrum_archive_candidate hypridle)"

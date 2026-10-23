@@ -32,6 +32,7 @@ done
 export COREBRUM_AGENTS_STUB=1
 export COREBRUM_AGENTS_FILE="$catalog"
 export COREBRUM_AGENTS_INSTALLED="agent"
+unset COREBRUM_AGENTICROS_READY
 
 assert_eq "$("$menu" labels)" "$(printf '%s\n' \
   "Antigravity CLI   install" \
@@ -63,6 +64,31 @@ assert_eq "$got" 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-sc
 
 export COREBRUM_AGENTS_CHOICE="Cursor CLI"
 assert_eq "$("$menu" open)" "agent" "Cursor CLI launches agent"
+
+export COREBRUM_AGENTICROS_READY=1
+export COREBRUM_AGENTS_CHOICE="Claude Code CLI   install"
+got="$("$menu" open)"
+if ! grep -q 'https://claude.ai/install.sh' <<<"$got"; then
+  echo "FAIL: Claude install no longer runs its installer" >&2
+  exit 1
+fi
+if ! grep -q 'agenticros mcp setup --claude' <<<"$got"; then
+  echo "FAIL: installing Claude after AgenticROS did not update Claude" >&2
+  exit 1
+fi
+export COREBRUM_AGENTS_INSTALLED="claude"
+export COREBRUM_AGENTS_CHOICE="Claude Code CLI"
+got="$("$menu" open)"
+assert_eq "$got" "$(printf '%s\n' "agenticros mcp setup --claude --quiet" "claude")" "launching Claude couples it to AgenticROS"
+runtime_agents="$(mktemp -d)"
+export XDG_RUNTIME_DIR="$runtime_agents"
+got="$("$menu" refresh)"
+if ! grep -q 'agenticros mcp setup --installed --quiet' <<<"$got"; then
+  echo "FAIL: Super+Space refresh did not couple installed agents" >&2
+  exit 1
+fi
+rm -rf "$runtime_agents"
+unset COREBRUM_AGENTICROS_READY
 
 runtime="$(mktemp -d)"
 export XDG_RUNTIME_DIR="$runtime"

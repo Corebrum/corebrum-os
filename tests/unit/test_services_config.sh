@@ -26,7 +26,7 @@ cfg = next((bar for bar in bars if "modules-right" in bar), None)
 if cfg is None:
     raise SystemExit("FAIL: waybar has no top bar")
 right = cfg.get("modules-right", [])
-for name in ("network", "pulseaudio", "battery", "tray"):
+for name in ("network", "pulseaudio", "battery", "custom/agenticros", "tray"):
     if name not in right:
         raise SystemExit(f"FAIL: waybar modules-right missing {name}")
     if name not in cfg:

@@ -20,6 +20,7 @@ if grep -Eq '^[[:space:]]*pseudotile[[:space:]]*=' "$conf"; then
 fi
 require "/usr/local/bin/corebrum-terminal"
 require "bind = \$mainMod SHIFT, Return, exec, firefox"
+require "bind = \$mainMod SHIFT, F, exec, thunar"
 require "bind = \$mainMod, W, killactive"
 if grep -q 'bind = $mainMod, Q, killactive' "$conf"; then
   echo "FAIL: Super+Q still closes the focused window" >&2
@@ -31,6 +32,14 @@ require "/usr/local/bin/corebrum-lock"
 require "workspace, 1"
 require "/usr/local/bin/corebrum-grid"
 require "/usr/local/bin/corebrum-launcher"
+if ! grep -q 'Name=Files' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not rename Thunar to Files" >&2
+  exit 1
+fi
+if ! grep -q 'applications/thunar.desktop' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not override the Thunar desktop entry" >&2
+  exit 1
+fi
 if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the AI Agents entry" >&2
   exit 1
@@ -53,6 +62,10 @@ if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh' "${ROOT}/scripts/deskto
 fi
 if ! grep -q '/usr/local/bin/corebrum-realsense-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the RealSense entry" >&2
+  exit 1
+fi
+if ! grep -q '/usr/local/bin/corebrum-agenticros-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the AgenticROS entry" >&2
   exit 1
 fi
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -93,6 +106,22 @@ if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-
   echo "FAIL: the session does not source the ROS profile when it is installed" >&2
   exit 1
 fi
+if ! grep -q 'exec start-hyprland -- --config' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
+  echo "FAIL: the session does not start Hyprland through start-hyprland" >&2
+  exit 1
+fi
+if ! grep -q 'exec Hyprland --config' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
+  echo "FAIL: the session has no direct Hyprland fallback" >&2
+  exit 1
+fi
+if ! grep -q 'hyprland-qtutils' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider hyprland-qtutils" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum_ubuntu_archive_version hyprland-qtutils' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: hyprland-qtutils is not limited to the Ubuntu archive" >&2
+  exit 1
+fi
 if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-terminal.sh"; then
   echo "FAIL: a new terminal does not source the ROS profile" >&2
   exit 1
@@ -107,6 +136,14 @@ if ! grep -q "corebrum-greeter" "${ROOT}/config/greetd/gtkgreet.toml"; then
 fi
 if ! grep -q -- "--command /usr/local/bin/corebrum-session" "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
   echo "FAIL: gtkgreet does not start the Corebrum session" >&2
+  exit 1
+fi
+if ! grep -q -- "--disable-custom-commands" "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
+  echo "FAIL: the login screen still accepts a custom session command" >&2
+  exit 1
+fi
+if ! grep -q '#command-selector' "${ROOT}/config/greetd/gtkgreet.css"; then
+  echo "FAIL: the login screen still shows the session dropdown" >&2
   exit 1
 fi
 if ! grep -q 'hyprlock --config /etc/corebrum/hypr/hyprlock.conf' "${ROOT}/scripts/desktop/corebrum-lock.sh"; then

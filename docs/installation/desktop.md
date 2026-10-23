@@ -2,7 +2,7 @@
 
 Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Hyprland with dwindle tiling, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, Mako, and a greetd login.
 
-On Ubuntu 26.04 the greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. Super+Escape locks the screen with `hyprlock`. Ubuntu 24.04 does not publish `gtkgreet` or `hyprlock`, so that release keeps `agreety`, the text greeter inside `greetd`. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decision is `docs/decisions/0015-hyprlock-gtkgreet.md`.
+On Ubuntu 26.04 the greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. The first screen asks for the username. The password is the next screen. The session dropdown is hidden. Super+Escape locks the screen with `hyprlock`. Ubuntu 24.04 does not publish `gtkgreet` or `hyprlock`, so that release keeps `agreety`, the text greeter inside `greetd`. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decision is `docs/decisions/0015-hyprlock-gtkgreet.md`.
 
 ## Hyprland source
 
@@ -28,16 +28,17 @@ The same install from the checkout is `sudo ./scripts/corebrum.sh install deskto
 
 That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. If the Ubuntu archive later contains `hyprland`, this command does not add the PPA.
 
-When the archive publishes `hyprland-backgrounds`, the same command installs it. That package holds the default Hyprland wallpaper. Ubuntu 26.04 splits it out of `hyprland`, and `--no-install-recommends` does not pull it in otherwise. Ubuntu 24.04 does not publish it. Hyprland loads the image at session start, so a desktop that is already running shows it after the next login.
+When the archive publishes `hyprland-backgrounds`, the same command installs it, then replaces `wall0.png`, `wall1.png`, and `wall2.png` with the Corebrum images in `config/hypr/wallpapers`. It also installs `wall3.png`. Login and lock use `wall2.png`, so they show that Corebrum image. Ubuntu 24.04 has no `hyprland-backgrounds` package; the same four files are still copied to `/usr/share/hypr`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`.
 
 ## After a successful install
 
-Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hyprland starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/hypr/hyprland.conf`.
+Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hyprland starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/hypr/hyprland.conf`. When `start-hyprland` is installed, the session runs through that watchdog and still passes the Corebrum config. When the Ubuntu archive publishes `hyprland-qtutils`, the same install provides `hyprland-dialog`, which Hyprland uses for its dialogs. Ubuntu 24.04 does not publish that package. See `docs/decisions/0025-hyprland-startup.md`.
 
 | Key | Action |
 | --- | --- |
 | Super+Return | Kitty |
 | Super+Shift+Return | Firefox |
+| Super+Shift+F | Files |
 | Super+W | Close the focused window |
 | Super+F | Fullscreen |
 | Super+V | Float or tile |
@@ -69,9 +70,11 @@ Firefox is Ubuntu's transitional snap package. Installing the desktop profile in
 
 Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium`. The snap's own `Chromium Web Browser` desktop files stay out of this menu.
 
-Super+Space lists Wallpaper. The entry says `install` until `hyprpaper` is installed. Choosing it installs the Ubuntu `hyprpaper` package when this archive has one. Ubuntu 24.04 does not. After it is installed, the same entry lists the Hyprland wallpapers and images in `~/Pictures` and `~/Pictures/Wallpapers`. The chosen image is saved under the user's state directory and drawn by `hyprpaper` on later logins. The desktop profile does not install `hyprpaper`. See `docs/decisions/0020-hyprpaper-menu.md`.
+Super+Space lists Wallpaper. The entry says `install` until `hyprpaper` is installed. Choosing it installs the Ubuntu `hyprpaper` package when this archive has one. Ubuntu 24.04 does not. After it is installed, the same entry lists the Corebrum wallpapers in `/usr/share/hypr` and images in `~/Pictures` and `~/Pictures/Wallpapers`. The chosen image is saved under the user's state directory and drawn by `hyprpaper` on later logins. The desktop profile does not install `hyprpaper`. See `docs/decisions/0020-hyprpaper-menu.md`.
 
 Super+Space also lists AI Agents. Each CLI says `install` until its command is present. Choosing it installs that CLI, or launches it in a terminal when it is already installed. The list is Antigravity CLI, Claude Code CLI, Codex CLI, Cursor CLI, Grok CLI, Hermes CLI, and OpenClaw. Gemini CLI is not listed: since June 18, 2026 it no longer signs in Gemini Code Assist for individuals, and Antigravity CLI is the replacement. The desktop profile does not install them. See `docs/decisions/0016-agent-menu.md`.
+
+Super+Space lists AgenticROS after ROS 2 is installed. The entry says `install` until `agenticros init` has written `~/.agenticros/config.json`. Choosing it installs `build-essential` and `python3` when they are missing, builds the AgenticROS clone next to this checkout, compiles `rclnodejs` against the installed ROS distro, and runs `agenticros init --yes`, which puts the CLI on the Zenoh RMW and registers every agent already installed. Installing an agent later writes that same registration into the agent. The top bar shows AgenticROS status and can connect or disconnect AgenticROS Cloud. The desktop profile does not install AgenticROS. See `docs/decisions/0026-agenticros-menu.md`.
 
 ## Node.js
 
@@ -103,4 +106,4 @@ This disables greetd, restores the previous default target when this installer c
 
 ## What is not done
 
-The operator continued to Phase 3 after this machine booted to Hyprland and showed Waybar. Confirm the key table above on the session if that has not been done. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, RealSense, AgenticROS, and Corebrum Mesh are not part of this install.
+The operator continued to Phase 3 after this machine booted to Hyprland and showed Waybar. Confirm the key table above on the session if that has not been done. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, RealSense, and Corebrum Mesh are not part of this install. AgenticROS is not installed by the desktop profile. Super+Space offers it after `corebrum install ros`.

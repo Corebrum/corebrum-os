@@ -6,7 +6,7 @@
   "spacing": 8,
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "tray", "clock"],
+  "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "custom/agenticros", "tray", "clock"],
   "hyprland/workspaces": {
     "format": "{id}",
     "all-outputs": true
@@ -45,6 +45,14 @@
   },
   "tray": {
     "spacing": 8
+  },
+  "custom/agenticros": {
+    "exec": "/usr/local/bin/corebrum-agenticros-status",
+    "return-type": "json",
+    "interval": 5,
+    "on-click": "/usr/local/bin/corebrum-agenticros-status click",
+    "format": "{text}",
+    "tooltip": true
   }
 },
 {

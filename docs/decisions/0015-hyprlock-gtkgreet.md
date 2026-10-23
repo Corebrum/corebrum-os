@@ -14,7 +14,7 @@ The default wallpaper file on 26.04 is `/usr/share/hypr/wall2.png` from `hyprlan
 ## Decision
 
 - When `apt-cache` has candidates for `hyprlock`, `gtkgreet`, and `cage`, the desktop profile installs them from the Ubuntu archive. Ubuntu 24.04 skips `hyprlock` and `gtkgreet` and keeps the `agreety` greeter.
-- The 26.04 greeter command is `cage -s -d` running `/usr/local/bin/corebrum-greeter`. That script runs `gtkgreet --command /usr/local/bin/corebrum-session`. The stylesheet is `/etc/corebrum/greetd/gtkgreet.css`, and it uses `wall2.png` as the login background. VT 7 stays the greeter. VT 1 stays a text console because cage is started with `-s`.
+- The 26.04 greeter command is `cage -s -d` running `/usr/local/bin/corebrum-greeter`. That script runs `gtkgreet --command /usr/local/bin/corebrum-session --disable-custom-commands`. The stylesheet is `/etc/corebrum/greetd/gtkgreet.css`, and it uses `wall2.png` as the login background. The command dropdown is hidden because that session command is the only choice. gtkgreet still asks for the username, then replaces that form with the password prompt. VT 7 stays the greeter. VT 1 stays a text console because cage is started with `-s`.
 - Super+Escape runs `/usr/local/bin/corebrum-lock`, which runs `hyprlock --config /etc/corebrum/hypr/hyprlock.conf`. The lock screen uses the same `wall2.png`. The installer does not write `~/.config/hypr/hyprlock.conf`.
 - A running session is left alone. greetd is not restarted by this change. The new login screen appears the next time the greeter starts.
 

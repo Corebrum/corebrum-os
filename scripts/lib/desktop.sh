@@ -48,6 +48,46 @@ corebrum_desktop_plan() {
   fi
 }
 
+# Replace packaged Hyprland walls with the images in this repo. A diversion keeps
+# a later hyprland-backgrounds upgrade from writing the upstream files back.
+corebrum_install_wallpapers() {
+  local name src dest
+  for name in wall0.png wall1.png wall2.png wall3.png; do
+    src="${COREBRUM_ROOT}/config/hypr/wallpapers/${name}"
+    dest="/usr/share/hypr/${name}"
+    if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+      corebrum_log "dry-run: divert ${dest} aside, then install ${src}"
+      continue
+    fi
+    [[ -f "$src" ]] || corebrum_die "missing wallpaper ${src}"
+    if ! dpkg-divert --list "$dest" 2>/dev/null | grep -Fq "diversion of ${dest} to "; then
+      corebrum_log "run: dpkg-divert --local --rename --divert ${dest}.hyprland --add ${dest}"
+      dpkg-divert --local --rename --divert "${dest}.hyprland" --add "$dest"
+    fi
+    corebrum_install_file "$src" "$dest" 644
+  done
+}
+
+corebrum_remove_wallpapers() {
+  local name dest
+  for name in wall0.png wall1.png wall2.png wall3.png; do
+    dest="/usr/share/hypr/${name}"
+    if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+      corebrum_log "dry-run: remove ${dest} and restore the diverted package file when one exists"
+      continue
+    fi
+    if dpkg-divert --list "$dest" 2>/dev/null | grep -Fq "diversion of ${dest} to "; then
+      rm -f "$dest"
+      if [[ -e "${dest}.hyprland" ]]; then
+        dpkg-divert --local --rename --remove "$dest"
+      else
+        dpkg-divert --local --remove "$dest"
+      fi
+      corebrum_log "restored ${dest}"
+    fi
+  done
+}
+
 corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
   corebrum_install_file "${root}/config/hypr/hyprland.conf" /etc/corebrum/hypr/hyprland.conf 644
@@ -78,6 +118,8 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.sh" /usr/local/bin/corebrum-launcher 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-menu.sh" /usr/local/bin/corebrum-agenticros-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-status.sh" /usr/local/bin/corebrum-agenticros-status 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-chromium-menu.sh" /usr/local/bin/corebrum-chromium-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
@@ -91,9 +133,12 @@ corebrum_install_desktop_files() {
   fi
   corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-install.sh" /usr/local/lib/corebrum/agenticros-install.sh 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-with-ros.sh" /usr/local/lib/corebrum/agenticros-with-ros.sh 755
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
+  corebrum_install_wallpapers
 }
 
 # gtkgreet needs cage. Ubuntu 24.04 has neither gtkgreet nor hyprlock.
@@ -166,6 +211,8 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-launcher
 /usr/local/bin/corebrum-ros-menu
 /usr/local/bin/corebrum-realsense-menu
+/usr/local/bin/corebrum-agenticros-menu
+/usr/local/bin/corebrum-agenticros-status
 /usr/local/bin/corebrum-chromium-menu
 /usr/local/bin/corebrum-agents-menu
 /usr/local/bin/corebrum-wallpaper-menu
@@ -177,6 +224,8 @@ corebrum_desktop_managed_paths() {
 /etc/systemd/user/hypridle.service.d/corebrum.conf
 /etc/corebrum/agents.conf
 /usr/local/lib/corebrum/realsense-install.sh
+/usr/local/lib/corebrum/agenticros-install.sh
+/usr/local/lib/corebrum/agenticros-with-ros.sh
 /etc/corebrum/ros-tools.conf
 /usr/local/bin/corebrum-ros-shell
 /usr/local/share/applications/corebrum-grid.desktop
@@ -200,6 +249,7 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: restore /etc/greetd/config.toml from the recorded backup when present"
     corebrum_log "dry-run: restore the previous default target when one was recorded"
     corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
+    corebrum_remove_wallpapers
     corebrum_remove_hyprland_ppa
     corebrum_log "desktop uninstall dry-run complete"
     return 0
@@ -216,6 +266,7 @@ corebrum_uninstall_desktop() {
     corebrum_install_file "${COREBRUM_ROOT}/config/greetd/ubuntu-default.toml" "$dest" 644
   fi
 
+  corebrum_remove_wallpapers
   while IFS= read -r path; do
     [[ -n "$path" ]] || continue
     if [[ -e "$path" ]]; then

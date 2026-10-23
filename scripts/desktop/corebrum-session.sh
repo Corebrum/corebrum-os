@@ -22,6 +22,12 @@ if [[ ! -f "$config" ]]; then
   exit 1
 fi
 
+# start-hyprland is the watchdog shipped with Hyprland. Starting the
+# compositor directly leaves a warning on the desktop. Arguments after --
+# are passed through, so the Corebrum config stays in use.
+if command -v start-hyprland >/dev/null 2>&1; then
+  exec start-hyprland -- --config "$config"
+fi
 if command -v Hyprland >/dev/null 2>&1; then
   exec Hyprland --config "$config"
 fi

@@ -8,6 +8,10 @@ COREBRUM_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${COREBRUM_ROOT}/scripts/lib/log.sh"
 # shellcheck source=../lib/manifest.sh
 source "${COREBRUM_ROOT}/scripts/lib/manifest.sh"
+# shellcheck source=../lib/archive.sh
+source "${COREBRUM_ROOT}/scripts/lib/archive.sh"
+# shellcheck source=../lib/ppa.sh
+source "${COREBRUM_ROOT}/scripts/lib/ppa.sh"
 
 DRY_RUN=0
 failed=0
@@ -87,6 +91,17 @@ for cmd in waybar kitty fuzzel wofi agreety; do
     failed=1
   fi
 done
+
+qt_version="$(corebrum_ubuntu_archive_version hyprland-qtutils)"
+if corebrum_candidate_installable "$qt_version"; then
+  status="$(dpkg-query -W -f='${Status}' hyprland-qtutils 2>/dev/null || true)"
+  if [[ "$status" == "install ok installed" ]] && command -v hyprland-dialog >/dev/null 2>&1; then
+    corebrum_log "ok: hyprland-dialog"
+  else
+    corebrum_log "missing: hyprland-dialog"
+    failed=1
+  fi
+fi
 
 for pkg in hyprlock gtkgreet cage hypridle; do
   policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"

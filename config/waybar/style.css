@@ -18,10 +18,19 @@ window#waybar {
 #network,
 #pulseaudio,
 #battery,
+#custom-agenticros,
 #tray,
 #clock,
 #window {
     padding: 0 8px;
+}
+
+#custom-agenticros.connected {
+    color: #3d9a8b;
+}
+
+#custom-agenticros.idle {
+    color: rgba(232, 230, 227, 0.55);
 }
 
 window#waybar.tagline {

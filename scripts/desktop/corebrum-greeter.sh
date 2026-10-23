@@ -4,4 +4,5 @@ set -euo pipefail
 
 exec gtkgreet \
   --command /usr/local/bin/corebrum-session \
+  --disable-custom-commands \
   --style /etc/corebrum/greetd/gtkgreet.css

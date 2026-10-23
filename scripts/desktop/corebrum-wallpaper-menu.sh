@@ -65,7 +65,7 @@ corebrum_wallpaper_menu_is_image() {
   esac
 }
 
-# Print "label<TAB>path" for each image. Hyprland walls come first.
+# Print "label<TAB>path" for each image. Corebrum walls come first.
 corebrum_wallpaper_menu_images() {
   local path base label dir nullglob_was=0
   local -a user_paths=()
@@ -78,7 +78,7 @@ corebrum_wallpaper_menu_images() {
   for path in "${COREBRUM_WALLPAPER_LIB_DIR}"/wall*.png; do
     [[ -f "$path" ]] || continue
     base="$(basename "$path")"
-    label="Hyprland ${base}"
+    label="Corebrum ${base}"
     seen["$label"]=1
     printf '%s\t%s\n' "$label" "$path"
   done

@@ -127,8 +127,40 @@ corebrum_agents_data_dir() {
   printf '%s\n' "${root}/corebrum"
 }
 
+corebrum_agents_mcp_flag() {
+  case "$1" in
+    antigravity) printf 'agy\n' ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
+# Write AgenticROS into an agent's config. Idempotent. Order of install does not matter.
+corebrum_agents_couple() {
+  local flag="${1:-}"
+  if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+    if [[ "${COREBRUM_AGENTICROS_READY:-0}" != 1 ]]; then
+      return 0
+    fi
+    if [[ -n "$flag" ]]; then
+      printf 'agenticros mcp setup --%s --quiet\n' "$flag"
+    else
+      printf 'agenticros mcp setup --installed --quiet\n'
+    fi
+    return 0
+  fi
+  if [[ ! -x /usr/local/bin/agenticros || ! -f "${HOME}/.agenticros/config.json" ]]; then
+    return 0
+  fi
+  if [[ -n "$flag" ]]; then
+    /usr/local/bin/agenticros mcp setup "--${flag}" --quiet || true
+  else
+    /usr/local/bin/agenticros mcp setup --installed --quiet || true
+  fi
+}
+
 corebrum_agents_refresh() {
   local dir
+  corebrum_agents_couple
   dir="$(corebrum_agents_data_dir)/applications"
   mkdir -p "$dir"
   cat >"${dir}/corebrum-agents.desktop" <<'EOF'
@@ -173,6 +205,9 @@ corebrum_agents_install() {
     allow="$(corebrum_agents_npm_package "$install")"
     if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
       printf 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=%s %s\n' "$allow" "$install"
+      if [[ "${COREBRUM_AGENTICROS_READY:-0}" == 1 ]]; then
+        corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
+      fi
       return 0
     fi
     # sudo's default PATH does not include nvm. npm is a script whose shebang
@@ -187,6 +222,8 @@ corebrum_agents_install() {
   else
     action="$install"
   fi
+  local couple_flag
+  couple_flag="$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
   corebrum_agents_terminal "$(cat <<EOF
 set +e
 export PATH="\$HOME/.local/bin:\$PATH"
@@ -195,6 +232,9 @@ ec=\$?
 set -e
 printf '\\n'
 if [ "\$ec" -eq 0 ]; then
+  if [ -x /usr/local/bin/agenticros ] && [ -f "\$HOME/.agenticros/config.json" ]; then
+    /usr/local/bin/agenticros mcp setup --${couple_flag} || true
+  fi
   printf '%s\\n' "${AGENTS_LABELS[$i]} is installed. Press Super+Space, choose AI Agents, and select it again to launch."
 else
   printf 'Install failed (%s).\\n' "\$ec"
@@ -216,9 +256,18 @@ corebrum_agents_launch() {
     fi
   fi
   if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+    if [[ "${COREBRUM_AGENTICROS_READY:-0}" == 1 ]]; then
+      corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
+    fi
     printf '%s\n' "$run"
     return 0
   fi
+  local flag
+  flag="$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
+  if [[ "$flag" == "openclaw" ]]; then
+    exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; /usr/local/bin/agenticros mcp setup --openclaw || true; exec $(printf '%q' "$run")"
+  fi
+  corebrum_agents_couple "$flag"
   exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; exec $(printf '%q' "$run")"
 }
 

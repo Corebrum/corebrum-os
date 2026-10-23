@@ -10,3 +10,9 @@ box#body {
     border-radius: 10px;
     padding: 48px;
 }
+
+/* gtkgreet shows this beside the username. The only command is corebrum-session. */
+#command-selector {
+    opacity: 0;
+    margin-bottom: -42px;
+}

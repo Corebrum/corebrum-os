@@ -16,6 +16,9 @@ assert_grep() {
 }
 
 assert_grep 'corebrum-wallpaper-menu refresh' "$launcher" "launcher does not refresh Wallpaper"
+assert_grep 'config/hypr/wallpapers/' "${ROOT}/scripts/lib/desktop.sh" "desktop install does not copy the Corebrum wallpapers"
+assert_grep 'wall3.png' "${ROOT}/scripts/lib/desktop.sh" "desktop install does not include wall3.png"
+assert_grep 'dpkg-divert --local --rename' "${ROOT}/scripts/lib/desktop.sh" "desktop install does not keep a package upgrade from replacing the wallpapers"
 assert_grep 'apt-get install -y hyprpaper' "$menu" "installer does not install Ubuntu hyprpaper"
 assert_grep 'systemctl --global disable hyprpaper.service' "$menu" "installer leaves the packaged hyprpaper service enabled"
 assert_grep 'splash = false' "$menu" "hyprpaper config leaves splash text on"
@@ -99,7 +102,7 @@ if [[ "$output" == *'waypaper'* ]]; then
 fi
 
 output="$(COREBRUM_WALLPAPER_READY=1 bash "$menu" open)"
-if [[ "$output" != $'Hyprland wall2.png\nDesk.png\nMy Vacation.jpg\nextra.webp' ]]; then
+if [[ "$output" != $'Corebrum wall2.png\nDesk.png\nMy Vacation.jpg\nextra.webp' ]]; then
   echo "FAIL: wallpaper list was ${output}" >&2
   fail=1
 fi

@@ -6,6 +6,7 @@ corebrum_keys_menu_lines() {
   cat <<'EOF'
 Super+Return           Open a terminal
 Super+Shift+Return     Open Firefox
+Super+Shift+F          Open Files
 Super+W                Close the focused window
 Super+F                Fullscreen
 Super+V                Float or tile the focused window
@@ -58,7 +59,7 @@ corebrum_keys_menu_open() {
     --dmenu \
     --prompt 'Keys  ' \
     --width 68 \
-    --lines 18 >/dev/null || return 0
+    --lines 19 >/dev/null || return 0
 }
 
 usage() {
