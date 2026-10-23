@@ -33,14 +33,17 @@ require_line "Super+Shift+Return     Open Firefox"
 require_line "Super+Shift+F          Open Files"
 require_line "Super+W                Close the focused window"
 require_line "Super+F                Fullscreen"
-require_line "Super+V                Float or tile the focused window"
+require_line "Super+T                Float or tile the focused window"
+require_line "Super+C                Copy"
+require_line "Super+X                Cut"
+require_line "Super+V                Paste"
 require_line "Super+Space            Open the application menu"
 require_line "Super+Alt+Space        Open the app grid"
 require_line "Super+S                Toggle the agent scratchpad terminal"
 require_line "Super+Escape           Lock the screen"
 require_line "Super+Shift+Escape     Pause autolock, or resume it"
 require_line "Super+Shift+E          Leave Hyprland and return to the login screen"
-require_line "Super+C                Clipboard history"
+require_line "Super+Shift+C          Clipboard history"
 require_line "Super+Print            Record the selected area"
 require_line "Super+Shift+Print      Stop recording"
 require_line "Super+Arrows           Move focus"
@@ -53,14 +56,17 @@ require_bind 'bind = $mainMod SHIFT, Return, exec, firefox'
 require_bind 'bind = $mainMod SHIFT, F, exec, thunar'
 require_bind 'bind = $mainMod, W, killactive'
 require_bind 'bind = $mainMod, F, fullscreen'
-require_bind 'bind = $mainMod, V, togglefloating'
+require_bind 'bind = $mainMod, T, togglefloating'
+require_bind 'bind = $mainMod, C, exec, /usr/local/bin/corebrum-edit-keys copy'
+require_bind 'bind = $mainMod, X, exec, /usr/local/bin/corebrum-edit-keys cut'
+require_bind 'bind = $mainMod, V, exec, /usr/local/bin/corebrum-edit-keys paste'
 require_bind 'bind = $mainMod, Space, exec, /usr/local/bin/corebrum-launcher'
 require_bind 'bind = $mainMod ALT, Space, exec, /usr/local/bin/corebrum-grid'
 require_bind 'bind = $mainMod, S, togglespecialworkspace, agent'
 require_bind 'bind = $mainMod, Escape, exec, /usr/local/bin/corebrum-lock'
 require_bind 'bind = $mainMod SHIFT, Escape, exec, /usr/local/bin/corebrum-autolock toggle'
 require_bind 'bind = $mainMod SHIFT, E, exit'
-require_bind 'bind = $mainMod, C, exec,'
+require_bind 'bind = $mainMod SHIFT, C, exec,'
 require_bind 'bind = $mainMod, Print, exec,'
 require_bind 'bind = $mainMod SHIFT, Print, exec,'
 require_bind 'bind = $mainMod, left, movefocus, l'

@@ -9,6 +9,7 @@ set -euo pipefail
 /usr/local/bin/corebrum-agents-menu refresh
 /usr/local/bin/corebrum-wallpaper-menu refresh
 /usr/local/bin/corebrum-autolock refresh
+/usr/local/bin/corebrum-vnc-menu refresh
 /usr/local/bin/corebrum-keys-menu refresh
 data_dir="$(/usr/local/bin/corebrum-ros-menu data-dir)"
 # The Thunar package names its desktop entry "Thunar File Manager". The same

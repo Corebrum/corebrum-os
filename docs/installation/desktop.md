@@ -41,7 +41,10 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Shift+F | Files |
 | Super+W | Close the focused window |
 | Super+F | Fullscreen |
-| Super+V | Float or tile |
+| Super+T | Float or tile |
+| Super+C | Copy |
+| Super+X | Cut |
+| Super+V | Paste |
 | Super+Space | Fuzzel launcher. ROS 2 is listed there as `ROS 2   install` until `corebrum install ros` has been run, then as `ROS`. `Zenoh network` appears beside it only after that install |
 | Super+Alt+Space | App grid |
 | Super+S | Agent scratchpad terminal |
@@ -51,8 +54,10 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Leave Hyprland and return to the greeter |
 | Print | Copy a selected area |
-| Super+C | Clipboard history |
+| Super+Shift+C | Clipboard history |
 | Ctrl+Alt+F1 | Text console |
+
+Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md`.
 
 Super+Space includes Keybindings. That entry lists the Super shortcuts in the table above. Choosing a row closes the list and does not run the shortcut.
 
@@ -71,6 +76,8 @@ Firefox is Ubuntu's transitional snap package. Installing the desktop profile in
 Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium`. The snap's own `Chromium Web Browser` desktop files stay out of this menu.
 
 Super+Space lists Wallpaper. The entry says `install` until `hyprpaper` is installed. Choosing it installs the Ubuntu `hyprpaper` package when this archive has one. Ubuntu 24.04 does not. After it is installed, the same entry lists the Corebrum wallpapers in `/usr/share/hypr` and images in `~/Pictures` and `~/Pictures/Wallpapers`. The chosen image is saved under the user's state directory and drawn by `hyprpaper` on later logins. The desktop profile does not install `hyprpaper`. See `docs/decisions/0020-hyprpaper-menu.md`.
+
+Super+Space lists Remote desktop. The entry says `install` until `wayvnc` is installed. Choosing it installs the Ubuntu package when this archive has one. Ubuntu 24.04 publishes `wayvnc` 0.7.2 and Ubuntu 26.04 publishes 0.9.1. After that, Start shares the logged-in desktop on port 5900 and opens the steps for a Mac on the same network, including the password Screen Sharing asks for. The picture uses the 24-bit color Screen Sharing can draw, so the Mac window shows the desktop. The Command key acts as Super. It does not ask for a name. Stop ends it. The server does not start at login, and the desktop profile does not install `wayvnc`. See `docs/decisions/0027-vnc-menu.md`.
 
 Super+Space also lists AI Agents. Each CLI says `install` until its command is present. Choosing it installs that CLI, or launches it in a terminal when it is already installed. The list is Antigravity CLI, Claude Code CLI, Codex CLI, Cursor CLI, Grok CLI, Hermes CLI, and OpenClaw. Gemini CLI is not listed: since June 18, 2026 it no longer signs in Gemini Code Assist for individuals, and Antigravity CLI is the replacement. The desktop profile does not install them. See `docs/decisions/0016-agent-menu.md`.
 

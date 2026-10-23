@@ -124,8 +124,11 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-keys-menu.sh" /usr/local/bin/corebrum-keys-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-edit-keys.sh" /usr/local/bin/corebrum-edit-keys 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-osd.sh" /usr/local/bin/corebrum-osd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-vnc-menu.sh" /usr/local/bin/corebrum-vnc-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-vnc-proxy.py" /usr/local/bin/corebrum-vnc-proxy 755
   corebrum_install_file "${root}/config/systemd/user/hyprpaper.service.d/corebrum.conf" /etc/systemd/user/hyprpaper.service.d/corebrum.conf 644
   corebrum_install_file "${root}/config/systemd/user/hypridle.service.d/corebrum.conf" /etc/systemd/user/hypridle.service.d/corebrum.conf 644
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
@@ -218,8 +221,11 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-wallpaper-menu
 /usr/local/bin/corebrum-waypaper-menu
 /usr/local/bin/corebrum-keys-menu
+/usr/local/bin/corebrum-edit-keys
 /usr/local/bin/corebrum-osd
 /usr/local/bin/corebrum-autolock
+/usr/local/bin/corebrum-vnc-menu
+/usr/local/bin/corebrum-vnc-proxy
 /etc/systemd/user/hyprpaper.service.d/corebrum.conf
 /etc/systemd/user/hypridle.service.d/corebrum.conf
 /etc/corebrum/agents.conf
