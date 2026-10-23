@@ -3,6 +3,8 @@
 set -euo pipefail
 
 COREBRUM_REALSENSE_INSTALL_MARK='   install'
+declare -A COREBRUM_REALSENSE_PKG_STATUS=()
+COREBRUM_REALSENSE_READY_CACHED=""
 
 corebrum_realsense_menu_die() {
   printf 'corebrum-realsense-menu: %s\n' "$1" >&2
@@ -33,8 +35,35 @@ corebrum_realsense_menu_distro() {
 
 corebrum_realsense_menu_pkg_installed() {
   local pkg="$1" status
+  if [[ -n "${COREBRUM_REALSENSE_PKG_STATUS[$pkg]+x}" ]]; then
+    [[ "${COREBRUM_REALSENSE_PKG_STATUS[$pkg]}" == 1 ]]
+    return
+  fi
   status="$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)"
   [[ "$status" == "install ok installed" ]]
+}
+
+corebrum_realsense_menu_prefetch() {
+  local name status pkg
+  [[ "$#" -gt 0 ]] || return 0
+  while IFS=$'\t' read -r name status; do
+    [[ -n "$name" ]] || continue
+    if [[ "$status" == "install ok installed" ]]; then
+      COREBRUM_REALSENSE_PKG_STATUS["$name"]=1
+    else
+      COREBRUM_REALSENSE_PKG_STATUS["$name"]=0
+    fi
+  done < <(dpkg-query -W -f='${Package}\t${Status}\n' "$@" 2>/dev/null || true)
+  for pkg in "$@"; do
+    if [[ -z "${COREBRUM_REALSENSE_PKG_STATUS[$pkg]+x}" ]]; then
+      COREBRUM_REALSENSE_PKG_STATUS["$pkg"]=0
+    fi
+  done
+}
+
+corebrum_realsense_menu_py_ready() {
+  # find_spec checks that the module is installed without loading librealsense.
+  python3 -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("pyrealsense2") else 1)' >/dev/null 2>&1
 }
 
 corebrum_realsense_menu_ready() {
@@ -43,12 +72,28 @@ corebrum_realsense_menu_ready() {
     [[ "${COREBRUM_REALSENSE_READY:-0}" == 1 ]]
     return
   fi
-  distro="$(corebrum_realsense_menu_distro)" || return 1
-  corebrum_realsense_menu_pkg_installed librealsense2-utils || return 1
-  corebrum_realsense_menu_pkg_installed "ros-${distro}-librealsense2" || return 1
-  corebrum_realsense_menu_pkg_installed "ros-${distro}-realsense2-camera" || return 1
-  command -v realsense-viewer >/dev/null 2>&1 || return 1
-  python3 -c 'import pyrealsense2' >/dev/null 2>&1
+  if [[ -n "$COREBRUM_REALSENSE_READY_CACHED" ]]; then
+    [[ "$COREBRUM_REALSENSE_READY_CACHED" == 1 ]]
+    return
+  fi
+  distro="$(corebrum_realsense_menu_distro)" || {
+    COREBRUM_REALSENSE_READY_CACHED=0
+    return 1
+  }
+  corebrum_realsense_menu_prefetch \
+    librealsense2-utils \
+    "ros-${distro}-librealsense2" \
+    "ros-${distro}-realsense2-camera"
+  if corebrum_realsense_menu_pkg_installed librealsense2-utils \
+    && corebrum_realsense_menu_pkg_installed "ros-${distro}-librealsense2" \
+    && corebrum_realsense_menu_pkg_installed "ros-${distro}-realsense2-camera" \
+    && command -v realsense-viewer >/dev/null 2>&1 \
+    && corebrum_realsense_menu_py_ready; then
+    COREBRUM_REALSENSE_READY_CACHED=1
+    return 0
+  fi
+  COREBRUM_REALSENSE_READY_CACHED=0
+  return 1
 }
 
 corebrum_realsense_menu_entry_name() {

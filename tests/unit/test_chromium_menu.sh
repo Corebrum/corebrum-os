@@ -53,6 +53,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-chromium-menu open$' "$desktop"; the
   echo "FAIL: desktop entry does not open the Chromium menu" >&2
   fail=1
 fi
+if ! grep -Eq '^Icon=(chromium|/snap/chromium/current/chromium.png)$' "$desktop"; then
+  echo "FAIL: Chromium row has no Chromium icon" >&2
+  fail=1
+fi
 for id in chromium_chromium.desktop chromium_daemon.desktop; do
   hidden="${runtime}/corebrum/applications/${id}"
   if ! grep -q '^NoDisplay=true$' "$hidden"; then

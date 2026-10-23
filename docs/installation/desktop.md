@@ -73,9 +73,9 @@ Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock
 
 That script checks packages, config files, that greetd is enabled, and that `Hyprland --verify-config` accepts `/etc/corebrum/hypr/hyprland.conf`. It does not prove the session tiled a window. After you log in, confirm Super+Return, two windows tiling, Super+1 and Super+2, Super+F, and that Waybar shows the clock. Then switch to VT 1 and back.
 
-Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap.
+Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap. Super+Space shows that Firefox row with the Firefox logo.
 
-Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium`. The snap's own `Chromium Web Browser` desktop files stay out of this menu.
+Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium` and shows the Chromium logo. The snap's own `Chromium Web Browser` desktop files stay out of this menu.
 
 Super+Space lists Wallpaper. The entry says `install` until `hyprpaper` is installed. Choosing it installs the Ubuntu `hyprpaper` package when this archive has one. Ubuntu 24.04 does not. After it is installed, the same entry lists the Corebrum wallpapers in `/usr/share/hypr` and images in `~/Pictures` and `~/Pictures/Wallpapers`. The chosen image is saved under the user's state directory and drawn by `hyprpaper` on later logins. The desktop profile does not install `hyprpaper`. See `docs/decisions/0020-hyprpaper-menu.md`.
 

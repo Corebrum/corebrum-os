@@ -19,16 +19,45 @@ corebrum_agents_catalog() {
 }
 
 corebrum_agents_prepare_path() {
+  local here helper
   if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
     return 0
   fi
-  if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
-    set +u
-    # shellcheck disable=SC1091
-    source /etc/profile.d/corebrum-node.sh || true
-    set -u
+  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [[ -f "${here}/corebrum-node-path.sh" ]]; then
+    helper="${here}/corebrum-node-path.sh"
+  else
+    helper=/usr/local/lib/corebrum/node-path.sh
   fi
-  export PATH="${HOME}/.local/bin:${PATH}"
+  if [[ -f "$helper" ]]; then
+    # shellcheck disable=SC1090
+    source "$helper"
+    corebrum_node_prepare_path
+  elif [[ -n "${HOME:-}" ]]; then
+    export PATH="${HOME}/.local/bin:${PATH}"
+  fi
+}
+
+# Register installed agents without holding Super+Space. The setup rewrites
+# agent config and does not change the desktop entries this refresh writes.
+corebrum_agents_couple_async() {
+  local lock_dir lock
+  if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+    corebrum_agents_couple
+    return 0
+  fi
+  if [[ ! -x /usr/local/bin/agenticros || ! -f "${HOME}/.agenticros/config.json" ]]; then
+    return 0
+  fi
+  if ! command -v setsid >/dev/null 2>&1 || ! command -v flock >/dev/null 2>&1; then
+    corebrum_agents_couple
+    return 0
+  fi
+  lock_dir="${XDG_RUNTIME_DIR:-/tmp}/corebrum"
+  mkdir -p "$lock_dir"
+  lock="${lock_dir}/agents-couple.lock"
+  setsid --fork flock -n "$lock" /usr/local/bin/agenticros mcp setup --installed --quiet \
+    </dev/null >/dev/null 2>&1 || true
 }
 
 corebrum_agents_load() {
@@ -169,7 +198,7 @@ corebrum_agents_clear_leaves() {
 
 corebrum_agents_refresh() {
   local dir i id label
-  corebrum_agents_couple
+  corebrum_agents_couple_async
   corebrum_agents_prepare_path
   corebrum_agents_load
   dir="$(corebrum_agents_data_dir)/applications"

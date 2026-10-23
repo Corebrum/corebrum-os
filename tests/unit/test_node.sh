@@ -28,6 +28,15 @@ require_file "$node_lib" 'corebrum_install_node'
 require_file "${ROOT}/scripts/phases/02-desktop.sh" "corebrum_install_node"
 require_file "${ROOT}/scripts/desktop/corebrum-session.sh" "/etc/profile.d/corebrum-node.sh"
 require_file "${ROOT}/scripts/desktop/corebrum-terminal.sh" "/etc/profile.d/corebrum-node.sh"
+require_file "${ROOT}/scripts/lib/desktop.sh" "/usr/local/lib/corebrum/node-path.sh"
+require_file "${ROOT}/scripts/desktop/corebrum-agents-menu.sh" "corebrum-node-path.sh"
+require_file "${ROOT}/scripts/desktop/corebrum-zenoh-fleet-menu.sh" "corebrum-node-path.sh"
+if grep -q '/etc/profile.d/corebrum-node.sh' \
+  "${ROOT}/scripts/desktop/corebrum-agents-menu.sh" \
+  "${ROOT}/scripts/desktop/corebrum-zenoh-fleet-menu.sh"; then
+  echo "FAIL: the Super+Space menus still source nvm.sh" >&2
+  exit 1
+fi
 require_file "${ROOT}/config/kitty/kitty.conf" "shell bash --login"
 require_file "$profile" 'NVM_DIR="/usr/local/nvm"'
 require_file "$profile" 'BASH_VERSION'
@@ -50,5 +59,24 @@ if [[ "$kept" != "kept" ]]; then
   echo "FAIL: the node profile cleared nounset" >&2
   exit 1
 fi
+
+nvm_root="$(mktemp -d)"
+mkdir -p "${nvm_root}/alias" "${nvm_root}/versions/node/v26.0.0/bin" "${nvm_root}/versions/node/v26.12.1/bin"
+printf '26\n' >"${nvm_root}/alias/default"
+printf '#!/bin/sh\nprintf v26.12.1\\n\n' >"${nvm_root}/versions/node/v26.12.1/bin/node"
+chmod 755 "${nvm_root}/versions/node/v26.12.1/bin/node"
+printf '#!/bin/sh\nprintf v26.0.0\\n\n' >"${nvm_root}/versions/node/v26.0.0/bin/node"
+chmod 755 "${nvm_root}/versions/node/v26.0.0/bin/node"
+found="$(COREBRUM_NVM_DIR="$nvm_root" PATH="/usr/bin:/bin" bash --noprofile --norc -c '
+set -euo pipefail
+source "$1"
+corebrum_node_prepare_path
+command -v node
+' bash "${ROOT}/scripts/desktop/corebrum-node-path.sh")"
+if [[ "$found" != "${nvm_root}/versions/node/v26.12.1/bin/node" ]]; then
+  echo "FAIL: node path did not select the newest 26.x (got ${found})" >&2
+  exit 1
+fi
+rm -rf "$nvm_root"
 
 echo "ok: node"

@@ -1,18 +1,39 @@
 #!/usr/bin/env bash
-# Super+Space. Refreshes the ROS entry, then opens Fuzzel.
+# Super+Space. Refreshes menu entries together, then opens the window.
 set -euo pipefail
 
-/usr/local/bin/corebrum-ros-menu refresh
-/usr/local/bin/corebrum-agenticros-menu refresh
-/usr/local/bin/corebrum-realsense-menu refresh
-/usr/local/bin/corebrum-chromium-menu refresh
-/usr/local/bin/corebrum-ollama-menu refresh
-/usr/local/bin/corebrum-zenoh-fleet-menu refresh
-/usr/local/bin/corebrum-agents-menu refresh
-/usr/local/bin/corebrum-wallpaper-menu refresh
-/usr/local/bin/corebrum-autolock refresh
-/usr/local/bin/corebrum-vnc-menu refresh
-/usr/local/bin/corebrum-keys-menu refresh
+# Each refresh rewrites its own desktop files. Running them one after another
+# held the menu for several seconds, mostly on agent setup and nvm.
+pids=()
+/usr/local/bin/corebrum-ros-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-agenticros-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-realsense-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-chromium-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-ollama-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-zenoh-fleet-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-agents-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-wallpaper-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-autolock refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-vnc-menu refresh &
+pids+=("$!")
+/usr/local/bin/corebrum-keys-menu refresh &
+pids+=("$!")
+refresh_status=0
+for pid in "${pids[@]}"; do
+  wait "$pid" || refresh_status=1
+done
+if [[ "$refresh_status" -ne 0 ]]; then
+  exit "$refresh_status"
+fi
 data_dir="$(/usr/local/bin/corebrum-ros-menu data-dir)"
 # The Thunar package names its desktop entry "Thunar File Manager". The same
 # desktop ID here is listed as Files and is the only copy Fuzzel sees.

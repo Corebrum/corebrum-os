@@ -176,11 +176,14 @@ def load_entries():
                 if fields is None:
                     continue
                 search_only = is_search_only(filename)
-                if not search_only:
-                    if fields.get("NoDisplay", "").lower() == "true":
-                        continue
-                    if not desktop_allowed(fields):
-                        continue
+                # The first desktop file for an id wins. A hidden copy in the
+                # runtime directory has to claim that id, or a later snap file
+                # with the same id is listed again.
+                if not search_only and (
+                    fields.get("NoDisplay", "").lower() == "true" or not desktop_allowed(fields)
+                ):
+                    found[app_id] = None
+                    continue
                 found[app_id] = Entry(
                     app_id=app_id,
                     name=fields.get("Name", app_id),
@@ -192,7 +195,21 @@ def load_entries():
                     terminal=fields.get("Terminal", "").lower() == "true",
                     search_only=search_only,
                 )
-    return list(found.values())
+    return [entry for entry in found.values() if entry is not None]
+
+
+def load_icon_pixbuf(theme, icon, size):
+    if not icon:
+        return None
+    path = os.path.expanduser(icon)
+    if icon.startswith("/") or icon.startswith("~/"):
+        if not os.path.isfile(path):
+            return None
+        import gi
+        gi.require_version("GdkPixbuf", "2.0")
+        from gi.repository import GdkPixbuf
+        return GdkPixbuf.Pixbuf.new_from_file_at_size(path, size, size)
+    return theme.load_icon(icon, size, 0)
 
 
 def normalize(text):
@@ -383,9 +400,10 @@ def run_window():
             line = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
             if entry.icon:
                 try:
-                    pix = theme.load_icon(entry.icon, 24, 0)
-                    image = Gtk.Image.new_from_pixbuf(pix)
-                    line.pack_start(image, False, False, 0)
+                    pix = load_icon_pixbuf(theme, entry.icon, 24)
+                    if pix is not None:
+                        image = Gtk.Image.new_from_pixbuf(pix)
+                        line.pack_start(image, False, False, 0)
                 except Exception:
                     pass
             label = Gtk.Label(label=entry.name, xalign=0)

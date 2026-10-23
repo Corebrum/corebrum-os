@@ -31,6 +31,17 @@ corebrum_chromium_menu_data_dir() {
   printf '%s\n' "${root}/corebrum"
 }
 
+# Papirus ships the Chromium mark as "chromium". The snap logo replaces it
+# after install so the row matches the browser that opens.
+corebrum_chromium_menu_icon() {
+  local icon="/snap/chromium/current/chromium.png"
+  if [[ -f "$icon" ]]; then
+    printf '%s\n' "$icon"
+    return 0
+  fi
+  printf '%s\n' "chromium"
+}
+
 # The Chromium snap also publishes these desktop IDs. Fuzzel lists both beside
 # Corebrum's entry: chromium_chromium.desktop launches the browser, and
 # chromium_daemon.desktop is named the same but runs /usr/bin/false.
@@ -49,9 +60,10 @@ EOF
 }
 
 corebrum_chromium_menu_refresh() {
-  local dir name
+  local dir name icon
   dir="$(corebrum_chromium_menu_data_dir)/applications"
   name="$(corebrum_chromium_menu_entry_name)"
+  icon="$(corebrum_chromium_menu_icon)"
   mkdir -p "$dir"
   corebrum_chromium_menu_hide_snap_entries "$dir"
   cat >"${dir}/corebrum-chromium.desktop" <<EOF
@@ -61,7 +73,7 @@ Name=${name}
 GenericName=${name}
 Comment=Chromium web browser
 Exec=/usr/local/bin/corebrum-chromium-menu open
-Icon=web-browser
+Icon=${icon}
 Terminal=false
 Categories=Network;WebBrowser;
 StartupNotify=false

@@ -110,6 +110,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/wofi/style.css" /etc/corebrum/wofi/style.css 644
   corebrum_install_file "${root}/apps/dashboard/tiles.conf" /etc/corebrum/dashboard/tiles.conf 644
   corebrum_install_file "${root}/scripts/lib/grid.sh" /usr/local/lib/corebrum/grid.sh 644
+  corebrum_install_file "${root}/scripts/desktop/corebrum-node-path.sh" /usr/local/lib/corebrum/node-path.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greeter.sh" /usr/local/bin/corebrum-greeter 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
@@ -209,6 +210,7 @@ corebrum_desktop_managed_paths() {
 /etc/corebrum/wofi/style.css
 /etc/corebrum/dashboard/tiles.conf
 /usr/local/lib/corebrum/grid.sh
+/usr/local/lib/corebrum/node-path.sh
 /usr/local/bin/corebrum-session
 /usr/local/bin/corebrum-greeter
 /usr/local/bin/corebrum-lock

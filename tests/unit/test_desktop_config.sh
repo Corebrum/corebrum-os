@@ -40,8 +40,8 @@ if ! grep -q 'applications/thunar.desktop' "${ROOT}/scripts/desktop/corebrum-lau
   echo "FAIL: Super+Space does not override the Thunar desktop entry" >&2
   exit 1
 fi
-if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
-  echo "FAIL: Super+Space does not refresh the AI Agents entry" >&2
+if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space refreshes AI Agents in series" >&2
   exit 1
 fi
 if ! grep -q '/usr/local/bin/corebrum-chromium-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -64,8 +64,12 @@ if grep -q 'corebrum-waypaper-menu refresh' "${ROOT}/scripts/desktop/corebrum-la
   echo "FAIL: Super+Space still refreshes Waypaper" >&2
   exit 1
 fi
-if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the Keybindings entry" >&2
+  exit 1
+fi
+if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 11 ]]; then
+  echo "FAIL: Super+Space still refreshes some menu entries in series" >&2
   exit 1
 fi
 if ! grep -q '/usr/local/bin/corebrum-realsense-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -132,6 +136,10 @@ if ! grep -q 'corebrum_ubuntu_archive_version hyprland-qtutils' "${ROOT}/scripts
 fi
 if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-terminal.sh"; then
   echo "FAIL: a new terminal does not source the ROS profile" >&2
+  exit 1
+fi
+if ! grep -q '\[\[ "\$#" -gt 0 \]\]' "${ROOT}/scripts/desktop/corebrum-terminal.sh"; then
+  echo "FAIL: Super+Return sources node and ROS before Kitty opens" >&2
   exit 1
 fi
 if ! grep -q "agreety --cmd /usr/local/bin/corebrum-session" "${ROOT}/config/greetd/config.toml"; then

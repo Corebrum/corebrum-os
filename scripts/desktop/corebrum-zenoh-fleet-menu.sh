@@ -7,14 +7,20 @@ COREBRUM_ZENOH_FLEET_PACKAGE='@agenticros/zenoh-fleet@0.1.4'
 COREBRUM_ZENOH_FLEET_ALLOW='@agenticros/zenoh-fleet'
 
 corebrum_zenoh_fleet_prepare_path() {
+  local here helper
   if [[ "${COREBRUM_ZENOH_FLEET_STUB:-0}" == 1 ]]; then
     return 0
   fi
-  if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
-    set +u
-    # shellcheck disable=SC1091
-    source /etc/profile.d/corebrum-node.sh || true
-    set -u
+  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [[ -f "${here}/corebrum-node-path.sh" ]]; then
+    helper="${here}/corebrum-node-path.sh"
+  else
+    helper=/usr/local/lib/corebrum/node-path.sh
+  fi
+  if [[ -f "$helper" ]]; then
+    # shellcheck disable=SC1090
+    source "$helper"
+    corebrum_node_prepare_path
   fi
 }
 

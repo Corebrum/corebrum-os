@@ -14,8 +14,12 @@ assert_eq() {
   fi
 }
 
-if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh' "$launcher"; then
+if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh &' "$launcher"; then
   echo "FAIL: Super+Space does not refresh the AI Agents entry" >&2
+  exit 1
+fi
+if ! grep -q 'setsid --fork flock' "$menu"; then
+  echo "FAIL: Super+Space refresh waits on agenticros mcp setup" >&2
   exit 1
 fi
 if grep -q 'x.ai/cli/install.sh' "$catalog"; then

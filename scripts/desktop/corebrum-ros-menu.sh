@@ -4,6 +4,7 @@ set -euo pipefail
 
 COREBRUM_ROS_INSTALL_MARK='   install'
 COREBRUM_ROS_TOOLS_DEFAULT="/etc/corebrum/ros-tools.conf"
+declare -A COREBRUM_ROS_MENU_PKG_STATUS=()
 
 corebrum_ros_menu_die() {
   printf 'corebrum-ros-menu: %s\n' "$1" >&2
@@ -38,8 +39,32 @@ corebrum_ros_menu_pkg_installed() {
     [[ " ${COREBRUM_ROS_MENU_INSTALLED:-} " == *" ${pkg} "* ]]
     return
   fi
+  if [[ -n "${COREBRUM_ROS_MENU_PKG_STATUS[$pkg]+x}" ]]; then
+    [[ "${COREBRUM_ROS_MENU_PKG_STATUS[$pkg]}" == 1 ]]
+    return
+  fi
   status="$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)"
   [[ "$status" == "install ok installed" ]]
+}
+
+# Ask dpkg once for every package this refresh will check.
+corebrum_ros_menu_prefetch() {
+  local name status pkg
+  [[ "${COREBRUM_ROS_MENU_STUB:-0}" == 1 ]] && return 0
+  [[ "$#" -gt 0 ]] || return 0
+  while IFS=$'\t' read -r name status; do
+    [[ -n "$name" ]] || continue
+    if [[ "$status" == "install ok installed" ]]; then
+      COREBRUM_ROS_MENU_PKG_STATUS["$name"]=1
+    else
+      COREBRUM_ROS_MENU_PKG_STATUS["$name"]=0
+    fi
+  done < <(dpkg-query -W -f='${Package}\t${Status}\n' "$@" 2>/dev/null || true)
+  for pkg in "$@"; do
+    if [[ -z "${COREBRUM_ROS_MENU_PKG_STATUS[$pkg]+x}" ]]; then
+      COREBRUM_ROS_MENU_PKG_STATUS["$pkg"]=0
+    fi
+  done
 }
 
 corebrum_ros_menu_base_pkg() {
@@ -179,8 +204,13 @@ EOF
 }
 
 corebrum_ros_menu_refresh() {
-  local dir name zenoh_file
+  local dir name zenoh_file base
   dir="$(corebrum_ros_menu_data_dir)/applications"
+  if [[ "${COREBRUM_ROS_MENU_STUB:-0}" != 1 ]]; then
+    base="$(corebrum_ros_menu_base_pkg)"
+    corebrum_ros_menu_load
+    corebrum_ros_menu_prefetch "$base" "${ROS_MENU_PKGS[@]}"
+  fi
   name="$(corebrum_ros_menu_entry_name)"
   mkdir -p "$dir"
   cat >"${dir}/corebrum-ros.desktop" <<EOF
