@@ -16,6 +16,7 @@ With authentication off, `wayvnc` 0.9.1 offers only VNC security type None. With
 - The config is written under the runtime directory and passed with `--config`. `XDG_CONFIG_HOME` for that process is the same directory, so wayvnc does not read `~/.config/wayvnc/config`. The menu does not write `~/.config`.
 - `wayvnc` listens on `127.0.0.1` port 5901 and does not require a login there. `corebrum-vnc-proxy` listens on port 5900 and checks an 8-character VNC password before connecting the client to `wayvnc`. Screen Sharing asks for that password and does not ask for a name. The instructions show the password. It is removed when the session ends.
 - The proxy asks wayvnc for ZRLE, then raw, and keeps DesktopSize when the Mac asked for a size change. It does not forward Tight, the cursor image, or the extension messages. The first update request is a full frame.
+- The connection to wayvnc is given five seconds to open. That limit used to stay on the open connection, so a quiet screen closed it and Screen Sharing drew a new picture a few seconds later. The limit now applies only while connecting.
 - Screen Sharing asks for 32 bits per pixel with depth 32. `wayvnc` 0.9 then writes 4 bytes into each ZRLE pixel, and Screen Sharing reads 3, so the Mac window flashes and the desktop never appears. The proxy reports that format as depth 24. That is the 3-byte pixel Screen Sharing draws.
 - Screen Sharing sends Command as Alt and Option as Meta, which is what another Mac expects. The proxy forwards Command as Super and Option as Alt.
 

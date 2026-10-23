@@ -6,8 +6,10 @@ those and reports a firewall error before it asks for a password. This process
 listens on the network, checks the 8-character VNC password, and then connects
 the Mac to wayvnc on localhost. Screen Sharing asks for depth 32. wayvnc then
 writes 4 bytes per pixel, while the Mac reads 3, so the window flashes with
-no desktop. This process reports depth 24, asks for a ZRLE or raw picture, and
-turns the Mac Command key into Super.
+no desktop. This process reports depth 24, asks for a ZRLE or raw picture,
+and turns the Mac Command key into Super. The local connection is not left
+on the connect timer, or Screen Sharing closes and redraws after a few quiet
+seconds.
 """
 import argparse
 import hmac
@@ -281,6 +283,9 @@ def serve_client(client, password, upstream_host, upstream_port):
         client.sendall(b"\x00\x00\x00\x00")
         shared = recvn(client, 1)[0]
         upstream = socket.create_connection((upstream_host, upstream_port), 5)
+        # create_connection leaves this timeout on the socket. A quiet desktop
+        # then closes after 5 seconds and Screen Sharing opens a new picture.
+        upstream.settimeout(None)
         try:
             handshake_upstream(upstream, shared)
         except (ConnectionError, OSError, RuntimeError):
