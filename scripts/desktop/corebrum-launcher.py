@@ -296,21 +296,64 @@ def run_window():
     window.set_default_size(680, 460)
     window.set_keep_above(True)
     layered = use_layer_shell(window)
+    window.get_style_context().add_class("corebrum-menu")
 
+    # Same colors as config/fuzzel/fuzzel.ini. The desktop GTK theme is light,
+    # and it paints the entry, list, and viewport unless these nodes are set too.
     css = Gtk.CssProvider()
-    css.load_from_data(b"""
-window { background: rgba(28, 28, 28, 0.93); border: 2px solid #3d9a8b; border-radius: 8px; }
-entry { background: transparent; color: #e8e6e3; caret-color: #3d9a8b;
-        font: 12pt "Noto Sans Mono"; border: none; padding: 10px 14px; }
-row { color: #e8e6e3; padding: 4px 10px; }
-row:selected { background: #3d9a8b; color: #1c1c1c; }
-label { color: inherit; font: 12pt "Noto Sans Mono"; }
+    loaded = css.load_from_data(b"""
+.corebrum-menu {
+  background-color: #1c1c1c;
+  color: #e8e6e3;
+  border: 2px solid #3d9a8b;
+  border-radius: 8px;
+}
+.corebrum-menu box,
+.corebrum-menu scrolledwindow,
+.corebrum-menu viewport,
+.corebrum-menu list,
+.corebrum-menu row,
+.corebrum-menu entry {
+  background-color: #1c1c1c;
+  background-image: none;
+  color: #e8e6e3;
+  border-color: #1c1c1c;
+  box-shadow: none;
+}
+.corebrum-menu entry {
+  caret-color: #3d9a8b;
+  font-family: "Noto Sans Mono";
+  font-size: 12pt;
+  padding: 10px 14px;
+}
+.corebrum-menu entry selection {
+  background-color: #3d9a8b;
+  color: #1c1c1c;
+}
+.corebrum-menu row {
+  padding: 4px 10px;
+}
+.corebrum-menu label {
+  background-color: transparent;
+  color: #e8e6e3;
+  font-family: "Noto Sans Mono";
+  font-size: 12pt;
+}
+.corebrum-menu row:selected,
+.corebrum-menu row:selected label {
+  background-color: #3d9a8b;
+  color: #1c1c1c;
+}
 """)
+    if loaded is False:
+        print("corebrum-launcher: dark theme stylesheet was rejected", file=sys.stderr)
     Gtk.StyleContext.add_provider_for_screen(
-        Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_USER
     )
     try:
-        Gtk.Settings.get_default().set_property("gtk-icon-theme-name", "Papirus")
+        settings = Gtk.Settings.get_default()
+        settings.set_property("gtk-application-prefer-dark-theme", True)
+        settings.set_property("gtk-icon-theme-name", "Papirus")
     except Exception:
         pass
 

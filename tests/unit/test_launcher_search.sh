@@ -6,6 +6,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ui="${ROOT}/scripts/desktop/corebrum-launcher.py"
 launcher="${ROOT}/scripts/desktop/corebrum-launcher.sh"
 
+if ! grep -q 'background-color: #1c1c1c' "$ui"; then
+  echo "FAIL: Super+Space is not using the dark Fuzzel background" >&2
+  exit 1
+fi
+if ! grep -q 'gtk-application-prefer-dark-theme' "$ui"; then
+  echo "FAIL: Super+Space does not request the dark GTK theme" >&2
+  exit 1
+fi
 if ! grep -q 'corebrum-launcher.py' "$launcher"; then
   echo "FAIL: Super+Space does not open the search window" >&2
   exit 1
