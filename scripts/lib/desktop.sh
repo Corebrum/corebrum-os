@@ -123,6 +123,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-status.sh" /usr/local/bin/corebrum-agenticros-status 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-chromium-menu.sh" /usr/local/bin/corebrum-chromium-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-ollama-menu.sh" /usr/local/bin/corebrum-ollama-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-zenoh-fleet-menu.sh" /usr/local/bin/corebrum-zenoh-fleet-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-keys-menu.sh" /usr/local/bin/corebrum-keys-menu 755
@@ -221,6 +222,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-agenticros-status
 /usr/local/bin/corebrum-chromium-menu
 /usr/local/bin/corebrum-ollama-menu
+/usr/local/bin/corebrum-zenoh-fleet-menu
 /usr/local/bin/corebrum-agents-menu
 /usr/local/bin/corebrum-wallpaper-menu
 /usr/local/bin/corebrum-waypaper-menu
