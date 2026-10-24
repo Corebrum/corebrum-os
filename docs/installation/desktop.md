@@ -2,7 +2,7 @@
 
 Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Hyprland with dwindle tiling, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, Mako, and a greetd login.
 
-On Ubuntu 26.04 the greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. The first screen asks for the username. The password is the next screen. The session dropdown is hidden. Super+Escape locks the screen with `hyprlock`. Ubuntu 24.04 does not publish `gtkgreet` or `hyprlock`, so that release keeps `agreety`, the text greeter inside `greetd`. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decision is `docs/decisions/0015-hyprlock-gtkgreet.md`.
+On Ubuntu 26.04 the greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. The Corebrum logo sits above the clock and the login card. The first screen asks for the username. The password is the next screen. The session dropdown is hidden. Super+Escape locks the screen with `hyprlock`, and the same logo sits above the password field. Ubuntu 24.04 does not publish `gtkgreet` or `hyprlock`, so that release keeps `agreety`, the text greeter inside `greetd`. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decisions are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`.
 
 ## Hyprland source
 
@@ -32,7 +32,7 @@ The same install from the checkout is `sudo ./scripts/corebrum.sh install deskto
 
 That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. If the Ubuntu archive later contains `hyprland`, this command does not add the PPA.
 
-When the archive publishes `hyprland-backgrounds`, the same command installs it, then replaces `wall0.png`, `wall1.png`, and `wall2.png` with the Corebrum images in `config/hypr/wallpapers`. It also installs `wall3.png`. Login and lock use `wall2.png`, so they show that Corebrum image. Ubuntu 24.04 has no `hyprland-backgrounds` package; the same four files are still copied to `/usr/share/hypr`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`.
+When the archive publishes `hyprland-backgrounds`, the same command installs it, then replaces `wall0.png`, `wall1.png`, and `wall2.png` with the Corebrum images in `config/hypr/wallpapers`. It also installs `wall3.png`. Login and lock use `wall2.png`, so they show that Corebrum image. Ubuntu 24.04 has no `hyprland-backgrounds` package; the same four files are still copied to `/usr/share/hypr`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`. The same install copies `config/brand/logo.png` to `/usr/share/corebrum/logo.png` for the login and lock screens. See `docs/decisions/0037-login-lock-logo.md`.
 
 ## After a successful install
 

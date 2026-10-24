@@ -145,6 +145,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
+  corebrum_install_file "${root}/config/brand/logo.png" /usr/share/corebrum/logo.png 644
   corebrum_install_wallpapers
 }
 
@@ -243,6 +244,7 @@ corebrum_desktop_managed_paths() {
 /etc/corebrum/ros-tools.conf
 /usr/local/bin/corebrum-ros-shell
 /usr/local/share/applications/corebrum-grid.desktop
+/usr/share/corebrum/logo.png
 /etc/profile.d/corebrum-node.sh
 /etc/corebrum/node/versions
 EOF
@@ -263,6 +265,7 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: restore /etc/greetd/config.toml from the recorded backup when present"
     corebrum_log "dry-run: restore the previous default target when one was recorded"
     corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
+    corebrum_log "dry-run: remove /usr/share/corebrum/logo.png"
     corebrum_remove_wallpapers
     corebrum_remove_hyprland_ppa
     corebrum_log "desktop uninstall dry-run complete"
@@ -316,6 +319,7 @@ corebrum_uninstall_desktop() {
     /etc/corebrum \
     /usr/local/lib/corebrum \
     /usr/local/share/applications \
+    /usr/share/corebrum \
     2>/dev/null || true
   corebrum_log "desktop uninstall complete; Ubuntu packages were left installed; reboot to leave the graphical login"
 }

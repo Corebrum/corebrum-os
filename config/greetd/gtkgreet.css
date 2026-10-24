@@ -5,6 +5,16 @@ window {
     background-position: center;
 }
 
+/* gtkgreet puts the clock and the login card in this box. The logo file is 1104x320. */
+box#window {
+    background-image: url("file:///usr/share/corebrum/logo.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: 759px 220px;
+    min-width: 759px;
+    padding-top: 244px;
+}
+
 box#body {
     background-color: rgba(28, 28, 28, 0.72);
     border-radius: 10px;

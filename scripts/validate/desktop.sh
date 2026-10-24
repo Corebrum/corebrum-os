@@ -36,6 +36,7 @@ for path in \
   /etc/corebrum/hypr/hypridle.conf \
   /etc/xdg/hypr/hypridle.conf \
   /etc/corebrum/greetd/gtkgreet.css \
+  /usr/share/corebrum/logo.png \
   /usr/local/bin/corebrum-greeter \
   /usr/local/bin/corebrum-lock \
   /etc/corebrum/waybar/config.json \

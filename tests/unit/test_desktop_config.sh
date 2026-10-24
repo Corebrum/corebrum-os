@@ -174,6 +174,35 @@ if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/greetd/gtkgreet.css"; t
   echo "FAIL: the login screen does not use the Hyprland wallpaper" >&2
   exit 1
 fi
+if ! grep -q '/usr/share/corebrum/logo.png' "${ROOT}/config/hypr/hyprlock.conf"; then
+  echo "FAIL: the lock screen does not show the Corebrum logo" >&2
+  exit 1
+fi
+if ! grep -q 'rounding = 0' "${ROOT}/config/hypr/hyprlock.conf"; then
+  echo "FAIL: the lock logo uses hyprlock's circle crop" >&2
+  exit 1
+fi
+if ! grep -q 'border_size = 0' "${ROOT}/config/hypr/hyprlock.conf"; then
+  echo "FAIL: the lock logo keeps hyprlock's default border" >&2
+  exit 1
+fi
+if ! grep -q 'box#window' "${ROOT}/config/greetd/gtkgreet.css"; then
+  echo "FAIL: the login screen does not place the Corebrum logo above the clock" >&2
+  exit 1
+fi
+if ! grep -q '/usr/share/corebrum/logo.png' "${ROOT}/config/greetd/gtkgreet.css"; then
+  echo "FAIL: the login screen does not show the Corebrum logo" >&2
+  exit 1
+fi
+if ! grep -q 'config/brand/logo.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the Corebrum logo" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/logo.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/logo.png is not a PNG" >&2
+  exit 1
+fi
 if ! grep -q 'hyprlock gtkgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then
   echo "FAIL: the desktop profile does not consider hyprlock, gtkgreet, and cage" >&2
   exit 1
