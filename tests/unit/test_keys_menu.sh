@@ -31,6 +31,7 @@ fi
 require_line "Super+Return           Open a terminal"
 require_line "Super+Shift+Return     Open Firefox"
 require_line "Super+Shift+F          Open Files"
+require_line "Super+Shift+N          Open Text Editor"
 require_line "Super+W                Close the focused window"
 require_line "Super+F                Fullscreen"
 require_line "Super+T                Float or tile the focused window"
@@ -54,6 +55,7 @@ require_line "Super+Shift+1 … 5      Move the focused window to that workspace
 require_bind 'bind = $mainMod, Return, exec, /usr/local/bin/corebrum-terminal'
 require_bind 'bind = $mainMod SHIFT, Return, exec, firefox'
 require_bind 'bind = $mainMod SHIFT, F, exec, thunar'
+require_bind 'bind = $mainMod SHIFT, N, exec, gnome-text-editor'
 require_bind 'bind = $mainMod, W, killactive'
 require_bind 'bind = $mainMod, F, fullscreen'
 require_bind 'bind = $mainMod, T, togglefloating'

@@ -17,6 +17,7 @@ wofi
 greetd
 thunar
 firefox
+gnome-text-editor
 mako-notifier
 libnotify-bin
 espeak-ng-espeak

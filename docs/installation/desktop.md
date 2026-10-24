@@ -1,6 +1,6 @@
 # Hyprland desktop
 
-Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Hyprland with dwindle tiling, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, Mako, and a greetd login.
+Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Hyprland with dwindle tiling, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, GNOME Text Editor, Mako, and a greetd login.
 
 On Ubuntu 26.04 the greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. The Corebrum logo sits above the clock and the login card. The first screen asks for the username. The password is the next screen. The session dropdown is hidden. Super+Escape locks the screen with `hyprlock`, and the same logo sits above the password field. Ubuntu 24.04 does not publish `gtkgreet` or `hyprlock`, so that release keeps `agreety`, the text greeter inside `greetd`. `tuigreet` is not in Ubuntu 24.04. Quickshell is not either, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decisions are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`.
 
@@ -11,6 +11,8 @@ Ubuntu 24.04 does not publish `hyprland`. The desktop profile then adds `ppa:cpp
 Quickshell is still not in Ubuntu 24.04, so the bar is Waybar. Super+Space is a GTK window: the idle list keeps parent menus such as AI Agents and ROS, and typing `grok` or `gazebo` adds that submenu item. Fuzzel still opens the submenus. The desktop packages are `python3-gi`, `gir1.2-gtk-3.0`, and `libgtk-layer-shell0`. See `docs/decisions/0030-menu-search-submenus.md`.
 
 The same profile installs Ubuntu `espeak-ng-espeak`. That package depends on `espeak-ng` and provides the `espeak` command. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. Speech recognition and `corebrum speak` are not part of this install. See `docs/decisions/0031-espeak-ng.md`.
+
+The same profile installs Ubuntu `gnome-text-editor`. Noble publishes 46.3-0ubuntu2 and resolute publishes 50.1-0ubuntu0.1. Super+Space lists that application as Text Editor. Typing `notepad` finds the same row. See `docs/decisions/0039-text-editor.md`.
 
 The same profile installs Ubuntu GStreamer so `agenticros desktop` can send the screen to AgenticROS Cloud: `gstreamer1.0-tools`, `gstreamer1.0-plugins-base`, `gstreamer1.0-plugins-good`, `gstreamer1.0-plugins-ugly`, and `gstreamer1.0-pipewire`. The ugly plugins package supplies `x264enc`. PipeWire, WirePlumber, and `xdg-desktop-portal` are already part of this install. Screen capture stays on `xdg-desktop-portal-wlr`. See `docs/decisions/0036-gstreamer-desktop.md`.
 
@@ -43,6 +45,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Return | Kitty |
 | Super+Shift+Return | Firefox |
 | Super+Shift+F | Files |
+| Super+Shift+N | Text Editor |
 | Super+W | Close the focused window |
 | Super+F | Fullscreen |
 | Super+T | Float or tile |
@@ -76,6 +79,8 @@ Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock
 That script checks packages, config files, that greetd is enabled, and that `Hyprland --verify-config` accepts `/etc/corebrum/hypr/hyprland.conf`. It does not prove the session tiled a window. After you log in, confirm Super+Return, two windows tiling, Super+1 and Super+2, Super+F, and that Waybar shows the clock. Then switch to VT 1 and back.
 
 Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap. Super+Space shows that Firefox row with the Firefox logo.
+
+Super+Space lists Text Editor from the `gnome-text-editor` package installed with this profile. Choosing it opens a window for a new document. Typing `notepad` finds that row. Super+Shift+N opens it directly. See `docs/decisions/0039-text-editor.md`.
 
 Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium` and shows the Chromium logo. The snap's own `Chromium Web Browser` desktop files stay out of this menu.
 

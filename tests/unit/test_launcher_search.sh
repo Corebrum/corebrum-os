@@ -47,6 +47,17 @@ Type=Application
 Name=Firefox
 Exec=firefox
 EOF
+cat >"${share}/applications/org.gnome.TextEditor.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Text Editor
+GenericName=Text Editor
+Comment=View and edit text files
+Keywords=write;notepad;
+Exec=gnome-text-editor %U
+Icon=org.gnome.TextEditor
+Terminal=false
+EOF
 cat >"${share}/applications/corebrum-ros.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -93,10 +104,10 @@ EOF
 export XDG_DATA_HOME="$home"
 export XDG_DATA_DIRS="$share"
 export COREBRUM_LAUNCHER_LIST=1
-unset XDG_CURRENT_DESKTOP
+export XDG_CURRENT_DESKTOP=Hyprland
 
 idle="$(COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
-if ! grep -qx 'AI Agents' <<<"$idle" || ! grep -qx 'Firefox' <<<"$idle" || ! grep -qx 'ROS' <<<"$idle" || ! grep -qx 'Chromium' <<<"$idle"; then
+if ! grep -qx 'AI Agents' <<<"$idle" || ! grep -qx 'Firefox' <<<"$idle" || ! grep -qx 'ROS' <<<"$idle" || ! grep -qx 'Chromium' <<<"$idle" || ! grep -qx 'Text Editor' <<<"$idle"; then
   echo "FAIL: the idle menu dropped a parent entry" >&2
   printf '%s\n' "$idle" >&2
   exit 1
@@ -115,6 +126,13 @@ if ! grep -qx 'Grok CLI   install' <<<"$grok"; then
 fi
 if grep -qx 'Gazebo   install' <<<"$grok"; then
   echo "FAIL: typing grok also listed Gazebo" >&2
+  exit 1
+fi
+
+notepad="$(COREBRUM_LAUNCHER_QUERY=notepad python3 "$ui")"
+if ! grep -qx 'Text Editor' <<<"$notepad"; then
+  echo "FAIL: typing notepad did not find Text Editor" >&2
+  printf '%s\n' "$notepad" >&2
   exit 1
 fi
 

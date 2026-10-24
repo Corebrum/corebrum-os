@@ -21,6 +21,7 @@ fi
 require "/usr/local/bin/corebrum-terminal"
 require "bind = \$mainMod SHIFT, Return, exec, firefox"
 require "bind = \$mainMod SHIFT, F, exec, thunar"
+require "bind = \$mainMod SHIFT, N, exec, gnome-text-editor"
 require "bind = \$mainMod, W, killactive"
 if grep -q 'bind = $mainMod, Q, killactive' "$conf"; then
   echo "FAIL: Super+Q still closes the focused window" >&2
