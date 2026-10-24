@@ -47,6 +47,10 @@ require_line "Super+Shift+E          Leave Hyprland and return to the login scre
 require_line "Super+Shift+C          Clipboard history"
 require_line "Super+Print            Record the selected area"
 require_line "Super+Shift+Print      Stop recording"
+require_line "Super+P                Copy a selected area"
+require_line "Super+Shift+P          Copy the whole screen"
+require_line "Super+Alt+P            Record the selected area"
+require_line "Super+Alt+Shift+P      Stop recording"
 require_line "Super+Arrows           Move focus"
 require_line "Super+H J K L          Move focus: H left, J down, K up, L right"
 require_line "Super+1 … Super+5      Switch to that workspace"
@@ -71,6 +75,10 @@ require_bind 'bind = $mainMod SHIFT, E, exit'
 require_bind 'bind = $mainMod SHIFT, C, exec,'
 require_bind 'bind = $mainMod, Print, exec,'
 require_bind 'bind = $mainMod SHIFT, Print, exec,'
+require_bind 'bind = $mainMod, P, exec,'
+require_bind 'bind = $mainMod SHIFT, P, exec,'
+require_bind 'bind = $mainMod ALT, P, exec,'
+require_bind 'bind = $mainMod ALT SHIFT, P, exec,'
 require_bind 'bind = $mainMod, left, movefocus, l'
 require_bind 'bind = $mainMod, H, movefocus, l'
 require_bind 'bind = $mainMod, J, movefocus, d'

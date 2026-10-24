@@ -23,6 +23,10 @@ Super+Shift+E          Leave Hyprland and return to the login screen
 Super+Shift+C          Clipboard history
 Super+Print            Record the selected area
 Super+Shift+Print      Stop recording
+Super+P                Copy a selected area
+Super+Shift+P          Copy the whole screen
+Super+Alt+P            Record the selected area
+Super+Alt+Shift+P      Stop recording
 Super+Arrows           Move focus
 Super+H J K L          Move focus: H left, J down, K up, L right
 Super+1 … Super+5      Switch to that workspace
@@ -63,7 +67,7 @@ corebrum_keys_menu_open() {
     --dmenu \
     --prompt 'Keys  ' \
     --width 68 \
-    --lines 23 >/dev/null || return 0
+    --lines 27 >/dev/null || return 0
 }
 
 usage() {

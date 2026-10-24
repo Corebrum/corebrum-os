@@ -30,6 +30,10 @@ Log in again if the bar and tray did not refresh. Waybar adds volume, Bluetooth,
 | Shift+Print | Copy the whole screen |
 | Super+Print | Record a selected area to `~/Videos` |
 | Super+Shift+Print | Stop the recording |
+| Super+P | Copy a selected area |
+| Super+Shift+P | Copy the whole screen |
+| Super+Alt+P | Record a selected area to `~/Videos` |
+| Super+Alt+Shift+P | Stop the recording |
 | Super+C | Clipboard history |
 
 Wi-Fi is configured with Network (`nm-connection-editor`) or `nmtui`. Ethernet remains the existing Netplan connection. Volume is `pavucontrol` or the volume keys. Bluetooth is `blueman-manager`. Displays are `wdisplays`. A USB disk should show up in Thunar; mounting asks for the polkit prompt from `mate-polkit`.

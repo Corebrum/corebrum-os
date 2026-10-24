@@ -13,6 +13,7 @@ The operator asked for a Super+Space entry that lists and explains the Super sho
 - The list covers terminal, Firefox, Files, Text Editor, close, fullscreen, float, this menu, the app grid, the agent scratchpad, lock, leave the session, clipboard, screen recording, focus movement, and workspaces. Super+Shift+N runs `gnome-text-editor`. See `docs/decisions/0039-text-editor.md`.
 - Super+Space lists the file manager as `Files`. The launcher writes that name over the Thunar desktop entry for the menu only. Super+Shift+F runs `thunar`.
 - Volume, brightness, Print without Super, and the text console are not on this list.
+- Super+P copies a selected area, Super+Shift+P copies the whole screen, Super+Alt+P records a selected area, and Super+Alt+Shift+P stops that recording. Those four shortcuts run the same commands as Print, Shift+Print, Super+Print, and Super+Shift+Print.
 
 ## Consequences
 

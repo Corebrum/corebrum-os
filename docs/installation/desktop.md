@@ -61,6 +61,10 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Leave Hyprland and return to the greeter |
 | Print | Copy a selected area |
+| Super+P | Copy a selected area |
+| Super+Shift+P | Copy the whole screen |
+| Super+Alt+P | Record a selected area to `~/Videos` |
+| Super+Alt+Shift+P | Stop the recording |
 | Super+Shift+C | Clipboard history |
 | Ctrl+Alt+F1 | Text console |
 
