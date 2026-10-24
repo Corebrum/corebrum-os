@@ -23,7 +23,12 @@ corebrum_install_file() {
   fi
   mkdir -p "$(dirname "$dest")"
   if [[ -f "$dest" ]] && cmp -s "$src" "$dest"; then
-    corebrum_log "unchanged: ${dest}"
+    if [[ "$(stat -c %a "$dest")" != "$mode" ]]; then
+      chmod "$mode" "$dest"
+      corebrum_log "updated mode of ${dest} to ${mode}"
+    else
+      corebrum_log "unchanged: ${dest}"
+    fi
     return 0
   fi
   if [[ -e "$dest" ]]; then

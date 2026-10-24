@@ -21,11 +21,11 @@ Super+Escape           Lock the screen
 Super+Shift+Escape     Pause autolock, or resume it
 Super+Shift+E          Leave Hyprland and return to the login screen
 Super+Shift+C          Clipboard history
-Super+Print            Record the selected area
+Super+Print            Record the area, camera, or audio
 Super+Shift+Print      Stop recording
 Super+P                Copy a selected area
 Super+Shift+P          Copy the whole screen
-Super+Alt+P            Record the selected area
+Super+Alt+P            Record the area, camera, or audio
 Super+Alt+Shift+P      Stop recording
 Super+Arrows           Move focus
 Super+H J K L          Move focus: H left, J down, K up, L right

@@ -36,6 +36,8 @@ Log in again if the bar and tray did not refresh. Waybar adds volume, Bluetooth,
 | Super+Alt+Shift+P | Stop the recording |
 | Super+C | Clipboard history |
 
+Super+Print and Super+Alt+P ask which picture and microphone to include. Screen and audio records the default microphone and no camera. A webcam other than RealSense is listed on its own, with or without audio. RealSense is listed when `pyrealsense2` is installed, and choosing it uses that camera. See `docs/decisions/0040-record-camera.md`.
+
 Wi-Fi is configured with Network (`nm-connection-editor`) or `nmtui`. Ethernet remains the existing Netplan connection. Volume is `pavucontrol` or the volume keys. Bluetooth is `blueman-manager`. Displays are `wdisplays`. A USB disk should show up in Thunar; mounting asks for the polkit prompt from `mate-polkit`.
 
 Firefox screen sharing uses `xdg-desktop-portal-wlr`. The portal choice is `/etc/xdg/xdg-desktop-portal/hyprland-portals.conf`.

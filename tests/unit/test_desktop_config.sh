@@ -22,10 +22,20 @@ require "/usr/local/bin/corebrum-terminal"
 require "bind = \$mainMod SHIFT, Return, exec, firefox"
 require "bind = \$mainMod SHIFT, F, exec, thunar"
 require "bind = \$mainMod SHIFT, N, exec, gnome-text-editor"
+require "bind = \$mainMod, Print, exec, /usr/local/bin/corebrum-record start"
+require "bind = \$mainMod SHIFT, Print, exec, /usr/local/bin/corebrum-record stop"
 require "bind = \$mainMod, P, exec,"
 require "bind = \$mainMod SHIFT, P, exec,"
-require "bind = \$mainMod ALT, P, exec,"
-require "bind = \$mainMod ALT SHIFT, P, exec,"
+require "bind = \$mainMod ALT, P, exec, /usr/local/bin/corebrum-record start"
+require "bind = \$mainMod ALT SHIFT, P, exec, /usr/local/bin/corebrum-record stop"
+if grep -q 'wf-recorder' "$conf"; then
+  echo "FAIL: recording still calls wf-recorder from hyprland.conf" >&2
+  exit 1
+fi
+if ! grep -q 'match:class = \^(corebrum-camera)\$' "$conf"; then
+  echo "FAIL: the camera preview has no window rule" >&2
+  exit 1
+fi
 require "bind = \$mainMod, W, killactive"
 if grep -q 'bind = $mainMod, Q, killactive' "$conf"; then
   echo "FAIL: Super+Q still closes the focused window" >&2

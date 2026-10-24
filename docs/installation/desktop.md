@@ -63,12 +63,16 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Print | Copy a selected area |
 | Super+P | Copy a selected area |
 | Super+Shift+P | Copy the whole screen |
+| Super+Print | Record a selected area to `~/Videos` |
+| Super+Shift+Print | Stop the recording |
 | Super+Alt+P | Record a selected area to `~/Videos` |
 | Super+Alt+Shift+P | Stop the recording |
 | Super+Shift+C | Clipboard history |
 | Ctrl+Alt+F1 | Text console |
 
 Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md`.
+
+`corebrum install desktop` installs the recorder and the camera preview as executable files. Running that install again marks an older copy executable when its contents are already current. Super+Print and Super+Alt+P record the selected area to `~/Videos`. The list offers Screen, Screen and audio when a microphone is present, Screen and webcam when a camera other than RealSense is present, and Screen and RealSense when `pyrealsense2` is installed. Audio and camera can be chosen together. Audio uses the default microphone. Webcam and RealSense video sit in the bottom-right of the selection. Choosing RealSense uses that camera, so a demo that needs it should choose Screen, audio, or the webcam. With none of those devices, the shortcut records the screen immediately. See `docs/decisions/0040-record-camera.md`.
 
 Super+Space includes Keybindings. That entry lists the Super shortcuts in the table above. Choosing a row closes the list and does not run the shortcut.
 

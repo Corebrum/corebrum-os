@@ -24,6 +24,18 @@ if ! cmp -s "$src" "$dest"; then
   echo "FAIL: identical install changed the destination" >&2
   exit 1
 fi
+chmod 644 "$dest"
+mode_log="$(corebrum_install_file "$src" "$dest" 755 2>&1)"
+if [[ "$(stat -c %a "$dest")" != "755" ]]; then
+  echo "FAIL: identical install left the destination non-executable" >&2
+  printf '%s\n' "$mode_log" >&2
+  exit 1
+fi
+if ! grep -q "updated mode of ${dest} to 755" <<<"$mode_log"; then
+  echo "FAIL: identical install did not record the mode change" >&2
+  printf '%s\n' "$mode_log" >&2
+  exit 1
+fi
 
 corebrum_state_set_once example first
 corebrum_state_set_once example second

@@ -64,6 +64,8 @@ for path in \
   /usr/local/bin/corebrum-autolock \
   /usr/local/bin/corebrum-vnc-menu \
   /usr/local/bin/corebrum-vnc-proxy \
+  /usr/local/bin/corebrum-record \
+  /usr/local/lib/corebrum/corebrum-camera-preview.py \
   /etc/systemd/user/hypridle.service.d/corebrum.conf \
   /etc/corebrum/agents.conf \
   /etc/corebrum/ros-tools.conf
@@ -72,6 +74,18 @@ do
     corebrum_log "ok: ${path}"
   else
     corebrum_log "missing: ${path}"
+    failed=1
+  fi
+done
+
+for path in \
+  /usr/local/bin/corebrum-record \
+  /usr/local/lib/corebrum/corebrum-camera-preview.py
+do
+  if [[ -x "$path" ]]; then
+    corebrum_log "ok: ${path} is executable"
+  else
+    corebrum_log "not executable: ${path}"
     failed=1
   fi
 done

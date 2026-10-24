@@ -39,7 +39,7 @@ fi
 
 desktop=()
 corebrum_load_manifest "${ROOT}/manifests/packages/desktop.txt" desktop
-assert_eq "${#desktop[@]}" "31" "desktop package count"
+assert_eq "${#desktop[@]}" "33" "desktop package count"
 assert_eq "${desktop[0]}" "hyprland" "desktop manifest starts with hyprland"
 found_waybar=0
 found_greetd=0
@@ -49,6 +49,8 @@ found_editor=0
 found_gst=0
 found_gst_ugly=0
 found_gst_pipewire=0
+found_gst_gir=0
+found_gst_base_gir=0
 for pkg in "${desktop[@]}"; do
   [[ "$pkg" == "waybar" ]] && found_waybar=1
   [[ "$pkg" == "greetd" ]] && found_greetd=1
@@ -58,12 +60,14 @@ for pkg in "${desktop[@]}"; do
   [[ "$pkg" == "gstreamer1.0-tools" ]] && found_gst=1
   [[ "$pkg" == "gstreamer1.0-plugins-ugly" ]] && found_gst_ugly=1
   [[ "$pkg" == "gstreamer1.0-pipewire" ]] && found_gst_pipewire=1
+  [[ "$pkg" == "gir1.2-gstreamer-1.0" ]] && found_gst_gir=1
+  [[ "$pkg" == "gir1.2-gst-plugins-base-1.0" ]] && found_gst_base_gir=1
 done
 if [[ "$found_waybar" -ne 1 || "$found_greetd" -ne 1 || "$found_mako" -ne 1 || "$found_espeak" -ne 1 || "$found_editor" -ne 1 ]]; then
   echo "FAIL: desktop manifest is missing waybar, greetd, mako-notifier, espeak-ng-espeak, or gnome-text-editor" >&2
   exit 1
 fi
-if [[ "$found_gst" -ne 1 || "$found_gst_ugly" -ne 1 || "$found_gst_pipewire" -ne 1 ]]; then
+if [[ "$found_gst" -ne 1 || "$found_gst_ugly" -ne 1 || "$found_gst_pipewire" -ne 1 || "$found_gst_gir" -ne 1 || "$found_gst_base_gir" -ne 1 ]]; then
   echo "FAIL: desktop manifest is missing the GStreamer packages AgenticROS desktop uses" >&2
   exit 1
 fi
