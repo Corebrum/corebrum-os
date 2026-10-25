@@ -152,6 +152,44 @@ corebrum_setup_agenticros_ready() {
   [[ -x /usr/local/bin/agenticros && -f "${HOME}/.agenticros/config.json" ]]
 }
 
+corebrum_setup_agents_ready() {
+  local id label ready binary any=0 rows
+  rows="$(corebrum_setup_agent_rows)" || return 1
+  [[ -n "$rows" ]] || return 1
+  while IFS=$'\t' read -r id label ready binary; do
+    [[ -n "$id" ]] || continue
+    any=1
+    [[ "$ready" == 1 ]] || return 1
+  done <<<"$rows"
+  [[ "$any" == 1 ]]
+}
+
+# ROS 2, RealSense, AgenticROS, and every catalog agent. A missing piece
+# still opens the wizard. A finished set writes the marker and stays closed.
+corebrum_setup_complete() {
+  corebrum_setup_ros_ready || return 1
+  corebrum_setup_realsense_ready || return 1
+  corebrum_setup_agenticros_ready || return 1
+  corebrum_setup_agents_ready
+}
+
+corebrum_setup_login() {
+  local marker
+  marker="$(corebrum_setup_state_file)"
+  if [[ -f "$marker" ]]; then
+    exit 0
+  fi
+  if corebrum_setup_complete; then
+    corebrum_setup_mark_done
+    exit 0
+  fi
+  if [[ "${COREBRUM_SETUP_STUB:-0}" == 1 ]]; then
+    printf '%s\n' "open-wizard"
+    exit 0
+  fi
+  exec /usr/local/bin/corebrum-terminal --class corebrum-setup /usr/local/bin/corebrum-setup
+}
+
 corebrum_setup_install_ros() {
   if corebrum_setup_run sudo corebrum install ros; then
     COREBRUM_SETUP_ROS=1
@@ -357,6 +395,10 @@ corebrum_setup_install_agent() {
 corebrum_setup_step_agents() {
   local choice id label ready binary n
   local -a ids=() labels=() readies=() binaries=()
+  if corebrum_setup_agents_ready; then
+    corebrum_setup_say "AI agents are already installed."
+    corebrum_setup_finish
+  fi
   while true; do
     ids=()
     labels=()
@@ -409,8 +451,15 @@ corebrum_setup_step_agents() {
 
 corebrum_setup_main() {
   local marker
+  if [[ "${1:-}" == "login" ]]; then
+    corebrum_setup_login
+  fi
   marker="$(corebrum_setup_state_file)"
   if [[ "${1:-}" != "again" && -f "$marker" ]]; then
+    exit 0
+  fi
+  if [[ "${1:-}" != "again" ]] && corebrum_setup_complete; then
+    corebrum_setup_mark_done
     exit 0
   fi
   if [[ "${COREBRUM_SETUP_STUB:-0}" == 1 ]]; then

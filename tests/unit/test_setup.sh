@@ -19,6 +19,14 @@ if ! grep -qF 'corebrum/setup-done' "$conf"; then
   echo "FAIL: first login does not check the setup marker" >&2
   exit 1
 fi
+if ! grep -qF '/usr/local/bin/corebrum-setup login' "$conf"; then
+  echo "FAIL: first login does not ask the wizard whether to open" >&2
+  exit 1
+fi
+if ! grep -qF '/usr/local/bin/corebrum-terminal --class corebrum-setup /usr/local/bin/corebrum-setup' "$setup"; then
+  echo "FAIL: an unfinished setup does not open in a terminal" >&2
+  exit 1
+fi
 if ! grep -qF '/usr/local/bin/corebrum-setup' "${ROOT}/scripts/lib/desktop.sh"; then
   echo "FAIL: the desktop install does not copy the setup wizard" >&2
   exit 1
@@ -36,6 +44,15 @@ run_setup() {
   export COREBRUM_SETUP_ANSWERS
   if [[ -n "${COREBRUM_SETUP_ROS+x}" ]]; then
     export COREBRUM_SETUP_ROS
+  fi
+  if [[ -n "${COREBRUM_SETUP_REALSENSE+x}" ]]; then
+    export COREBRUM_SETUP_REALSENSE
+  fi
+  if [[ -n "${COREBRUM_SETUP_AGENTICROS+x}" ]]; then
+    export COREBRUM_SETUP_AGENTICROS
+  fi
+  if [[ -n "${COREBRUM_AGENTS_INSTALLED+x}" ]]; then
+    export COREBRUM_AGENTS_INSTALLED
   fi
   "$setup" "$@"
 }
@@ -154,6 +171,41 @@ agent_line="$(line_of <(printf '%s\n' "$out") 'https://claude.ai/install.sh' || 
 ros_line="$(line_of <(printf '%s\n' "$out") 'run: sudo corebrum install ros' || true)"
 if [[ -z "$agent_line" || -z "$ros_line" || "$ros_line" -ge "$agent_line" ]]; then
   echo "FAIL: an agent installed before ROS 2" >&2
+  exit 1
+fi
+
+installed_agents="$(awk -F'^' 'NF && $1 !~ /^#/ { printf "%s ", $3 }' "$catalog")"
+installed_agents="${installed_agents%" "}"
+
+state="$(mktemp -d)"
+out="$(COREBRUM_SETUP_ROS=1 COREBRUM_SETUP_REALSENSE=1 COREBRUM_SETUP_AGENTICROS=1 COREBRUM_AGENTS_INSTALLED="$installed_agents" run_setup "$state" login)"
+assert_eq "$out" "" "a fully installed machine opens the wizard on login"
+if [[ ! -f "${state}/corebrum/setup-done" ]]; then
+  echo "FAIL: a fully installed machine did not remember setup" >&2
+  exit 1
+fi
+
+state="$(mktemp -d)"
+out="$(COREBRUM_SETUP_ROS=1 COREBRUM_SETUP_REALSENSE=1 COREBRUM_SETUP_AGENTICROS=1 COREBRUM_AGENTS_INSTALLED="$installed_agents" run_setup "$state")"
+assert_eq "$out" "" "a fully installed machine still shows the wizard"
+if [[ ! -f "${state}/corebrum/setup-done" ]]; then
+  echo "FAIL: a fully installed machine did not remember setup when started directly" >&2
+  exit 1
+fi
+
+state="$(mktemp -d)"
+out="$(COREBRUM_SETUP_ROS=1 COREBRUM_SETUP_REALSENSE=1 COREBRUM_SETUP_AGENTICROS=1 COREBRUM_AGENTS_INSTALLED="$installed_agents" run_setup "$state" again)"
+if ! grep -q 'AI agents are already installed.' <<<"$out"; then
+  echo "FAIL: again did not see the installed agents" >&2
+  printf '%s\n' "$out" >&2
+  exit 1
+fi
+
+state="$(mktemp -d)"
+out="$(COREBRUM_SETUP_ROS=1 COREBRUM_SETUP_REALSENSE=1 COREBRUM_SETUP_AGENTICROS=1 COREBRUM_AGENTS_INSTALLED=claude run_setup "$state" login)"
+assert_eq "$out" "open-wizard" "a missing agent stays quiet on login"
+if [[ -e "${state}/corebrum/setup-done" ]]; then
+  echo "FAIL: a missing agent wrote the setup marker" >&2
   exit 1
 fi
 

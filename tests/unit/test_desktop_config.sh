@@ -110,7 +110,7 @@ require "/usr/local/bin/corebrum-osd brightness-down"
 require "/usr/local/bin/corebrum-autolock start"
 require 'corebrum/setup-done'
 require '/usr/local/bin/corebrum-updates-menu remind'
-require '/usr/local/bin/corebrum-terminal --class corebrum-setup /usr/local/bin/corebrum-setup'
+require '/usr/local/bin/corebrum-setup login'
 require 'match:class = ^(corebrum-setup)$'
 require 'cmd=$(command -v hyprpaper)'
 require 'corebrum/hyprpaper.conf'
