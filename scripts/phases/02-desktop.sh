@@ -7,7 +7,7 @@ fi
 
 corebrum_phase_desktop() {
   local manifest="${COREBRUM_ROOT}/manifests/packages/desktop.txt"
-  local candidate
+  local candidate ubuntu_hyprpaper codename
   local -a packages=()
   corebrum_install_hyprland_ppa
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
@@ -27,6 +27,22 @@ corebrum_phase_desktop() {
     packages+=(hyprland-backgrounds)
   else
     corebrum_log "hyprland-backgrounds is not in the archive; skipping the split wallpaper package"
+  fi
+  # hyprpaper draws the session wallpaper. The menu only lists images.
+  # resolute publishes hyprpaper in universe. noble does not, so that
+  # release installs the build from the pinned Hyprland PPA.
+  ubuntu_hyprpaper="$(corebrum_ubuntu_archive_version hyprpaper)"
+  if corebrum_candidate_installable "$ubuntu_hyprpaper"; then
+    corebrum_log "hyprpaper candidate ${ubuntu_hyprpaper} from the Ubuntu archive"
+    packages+=(hyprpaper)
+  else
+    codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
+    if [[ "$codename" == "noble" ]]; then
+      corebrum_log "hyprpaper is not in the Ubuntu archive; installing hyprpaper from ppa:cppiber/hyprland"
+      packages+=(hyprpaper)
+    else
+      corebrum_log "hyprpaper is not in the Ubuntu archive; the session wallpaper stays unset"
+    fi
   fi
   # hyprlock and gtkgreet are in Ubuntu 26.04. Ubuntu 24.04 publishes neither,
   # and that release keeps the agreety greeter.

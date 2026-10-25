@@ -88,6 +88,22 @@ corebrum_remove_wallpapers() {
   done
 }
 
+# The package enables hyprpaper.service for every graphical session. That
+# unit starts hyprpaper with no config path. The session starts it later
+# with the image chosen from the wallpaper menu.
+corebrum_disable_packaged_hyprpaper() {
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: systemctl --global disable hyprpaper.service"
+    return 0
+  fi
+  if [[ ! -f /usr/lib/systemd/user/hyprpaper.service ]]; then
+    corebrum_log "hyprpaper.service is not installed; not disabling it"
+    return 0
+  fi
+  corebrum_log "run: systemctl --global disable hyprpaper.service"
+  systemctl --global disable hyprpaper.service || corebrum_log "could not disable hyprpaper.service"
+}
+
 corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
   corebrum_install_file "${root}/config/hypr/hyprland.conf" /etc/corebrum/hypr/hyprland.conf 644
@@ -137,6 +153,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-record.sh" /usr/local/bin/corebrum-record 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-camera-preview.py" /usr/local/lib/corebrum/corebrum-camera-preview.py 755
   corebrum_install_file "${root}/config/systemd/user/hyprpaper.service.d/corebrum.conf" /etc/systemd/user/hyprpaper.service.d/corebrum.conf 644
+  corebrum_disable_packaged_hyprpaper
   corebrum_install_file "${root}/config/systemd/user/hypridle.service.d/corebrum.conf" /etc/systemd/user/hypridle.service.d/corebrum.conf 644
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
     rm -f /usr/local/bin/corebrum-waypaper-menu

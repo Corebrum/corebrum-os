@@ -123,7 +123,7 @@ if corebrum_candidate_installable "$qt_version"; then
   fi
 fi
 
-for pkg in hyprlock gtkgreet cage hypridle; do
+for pkg in hyprlock gtkgreet cage hypridle hyprpaper; do
   policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"
   candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$policy")"
   if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then

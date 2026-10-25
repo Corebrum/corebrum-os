@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Super+Space wallpaper list. Installs Ubuntu hyprpaper, then sets one image.
+# Super+Space wallpaper list. hyprpaper is installed with the desktop.
 set -euo pipefail
 
-COREBRUM_WALLPAPER_INSTALL_MARK='   install'
 COREBRUM_WALLPAPER_LIB_DIR="${COREBRUM_WALLPAPER_LIB_DIR:-/usr/share/hypr}"
 COREBRUM_WALLPAPER_PICTURES="${COREBRUM_WALLPAPER_PICTURES:-${HOME}/Pictures}"
 
@@ -11,20 +10,8 @@ corebrum_wallpaper_menu_die() {
   exit 1
 }
 
-corebrum_wallpaper_menu_ready() {
-  if [[ "${COREBRUM_WALLPAPER_STUB:-0}" == 1 ]]; then
-    [[ "${COREBRUM_WALLPAPER_READY:-0}" == 1 ]]
-    return
-  fi
-  command -v hyprpaper >/dev/null 2>&1
-}
-
 corebrum_wallpaper_menu_entry_name() {
-  if corebrum_wallpaper_menu_ready; then
-    printf 'Wallpaper\n'
-  else
-    printf 'Wallpaper%s\n' "$COREBRUM_WALLPAPER_INSTALL_MARK"
-  fi
+  printf 'Wallpaper\n'
 }
 
 corebrum_wallpaper_menu_data_dir() {
@@ -113,42 +100,6 @@ corebrum_wallpaper_menu_labels() {
   done
 }
 
-corebrum_wallpaper_menu_terminal() {
-  local script="$1"
-  if [[ "${COREBRUM_WALLPAPER_STUB:-0}" == 1 ]]; then
-    printf '%s\n' "$script"
-    return 0
-  fi
-  exec /usr/local/bin/corebrum-terminal bash -c "$script"
-}
-
-corebrum_wallpaper_menu_install_script() {
-  cat <<'EOF'
-set +e
-candidate=$(apt-cache policy hyprpaper | awk '/Candidate:/ { print $2; exit }')
-if [ -z "$candidate" ] || [ "$candidate" = "(none)" ]; then
-  printf '%s\n' "hyprpaper is not in this Ubuntu archive."
-  printf '\n'
-  read -r -p 'Press Enter to close. '
-  exit 0
-fi
-sudo apt-get update && sudo apt-get install -y hyprpaper
-ec=$?
-if [ "$ec" -eq 0 ]; then
-  sudo systemctl --global disable hyprpaper.service
-  ec=$?
-fi
-set -e
-printf '\n'
-if [ "$ec" -eq 0 ]; then
-  printf '%s\n' "Wallpaper is installed. Press Super+Space and choose Wallpaper."
-else
-  printf 'Install failed (%s).\n' "$ec"
-fi
-read -r -p 'Press Enter to close. '
-EOF
-}
-
 corebrum_wallpaper_menu_config() {
   local path="$1"
   # hyprpaper 0.8.3 drops a wallpaper block with an empty monitor name, and it
@@ -197,16 +148,14 @@ corebrum_wallpaper_menu_apply() {
       sleep 0.1
     done
   fi
+  if ! command -v hyprpaper >/dev/null 2>&1; then
+    corebrum_wallpaper_menu_die "hyprpaper is installed with the desktop and is not on PATH"
+  fi
   setsid --fork -- hyprpaper --config "$cfg" </dev/null >/dev/null 2>&1
 }
 
 corebrum_wallpaper_menu_open() {
   local choice line label path
-  if ! corebrum_wallpaper_menu_ready; then
-    corebrum_wallpaper_menu_terminal "$(corebrum_wallpaper_menu_install_script)"
-    return 0
-  fi
-
   local -a rows=()
   while IFS= read -r line; do
     [[ -n "$line" ]] || continue

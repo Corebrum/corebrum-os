@@ -24,4 +24,4 @@ Launchpad labels personal archives untrusted. This decision accepts that for thi
 
 ## Consequences
 
-A desktop install on Ubuntu 24.04 upgrades libinput and libxkbcommon to the PPA versions. That is a core input-stack change, accepted here because Hyprland 0.56.2 will not install against the Ubuntu versions. Quickshell is still not part of this phase. Ubuntu 26.04 publishes `hyprland` in the archive, so that release does not add this PPA. See `docs/decisions/0010-ubuntu-2604-packages.md`.
+A desktop install on Ubuntu 24.04 upgrades libinput and libxkbcommon to the PPA versions. That is a core input-stack change, accepted here because Hyprland 0.56.2 will not install against the Ubuntu versions. Quickshell is still not part of this phase. Ubuntu 26.04 publishes `hyprland` in the archive, so that release does not add this PPA. See `docs/decisions/0010-ubuntu-2604-packages.md`. Decision 0043 also installs `hyprpaper` and `libhyprtoolkit6` from this PPA on noble. Those names are in the same pin list.

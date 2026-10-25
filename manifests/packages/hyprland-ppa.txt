@@ -21,3 +21,7 @@ libxcb-errors1
 libxkbcommon0
 libxkbcommon-x11-0
 libxkbregistry0
+# hyprpaper 0.8.4-1ppa3 is not in noble. It depends on libhyprtoolkit6,
+# which noble also does not publish. resolute uses Ubuntu's hyprpaper.
+hyprpaper
+libhyprtoolkit6

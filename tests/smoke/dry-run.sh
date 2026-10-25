@@ -82,6 +82,10 @@ if ! grep -Eq 'hyprland-backgrounds candidate |hyprland-backgrounds is not in th
   echo "FAIL: desktop dry-run did not record the wallpaper asset decision" >&2
   exit 1
 fi
+if ! grep -Eq 'hyprpaper candidate |installing hyprpaper from ppa:cppiber/hyprland' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the hyprpaper install" >&2
+  exit 1
+fi
 if grep -q 'hyprland is not in the Ubuntu archive' <<<"$desktop_output"; then
   if ! grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then
     echo "FAIL: desktop dry-run did not name the Hyprland PPA" >&2

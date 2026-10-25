@@ -1,7 +1,7 @@
 # 0020. Wallpaper is a hyprpaper image list
 
 Date: 2026-10-22
-Status: Accepted
+Status: Superseded by docs/decisions/0043-hyprpaper-desktop.md
 
 ## Context
 
