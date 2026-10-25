@@ -257,7 +257,21 @@ corebrum_agents_npm_package() {
   fi
 }
 
-corebrum_agents_install() {
+corebrum_agents_find() {
+  local id="$1" i
+  [[ "$id" =~ ^[a-z0-9-]+$ ]] || corebrum_agents_die "invalid agent id"
+  for i in "${!AGENTS_IDS[@]}"; do
+    if [[ "${AGENTS_IDS[$i]}" == "$id" ]]; then
+      printf '%s\n' "$i"
+      return 0
+    fi
+  done
+  corebrum_agents_die "unknown agent ${id}"
+}
+
+# Shell command that installs one agent. The setup wizard runs this in its
+# own terminal. Super+Space still wraps it with a pause and the MCP setup.
+corebrum_agents_install_action() {
   local i="$1" kind install action allow npm_bin node_bin node_dir path_value
   kind="${AGENTS_KINDS[$i]}"
   install="${AGENTS_INSTALLS[$i]}"
@@ -265,9 +279,6 @@ corebrum_agents_install() {
     allow="$(corebrum_agents_npm_package "$install")"
     if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
       printf 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=%s %s\n' "$allow" "$install"
-      if [[ "${COREBRUM_AGENTICROS_READY:-0}" == 1 ]]; then
-        corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
-      fi
       return 0
     fi
     # sudo's default PATH does not include nvm. npm is a script whose shebang
@@ -279,10 +290,36 @@ corebrum_agents_install() {
     node_dir="$(dirname "$node_bin")"
     path_value="${node_dir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     action="sudo env PATH=$(printf '%q' "$path_value") $(printf '%q' "$node_bin") $(printf '%q' "$npm_bin") install -g --allow-scripts=$(printf '%q' "$allow") $(printf '%q' "$install")"
-  else
-    action="$install"
+    printf '%s\n' "$action"
+    return 0
   fi
-  local couple_flag
+  printf '%s\n' "$install"
+}
+
+corebrum_agents_rows() {
+  local i ready
+  corebrum_agents_prepare_path
+  corebrum_agents_load
+  for i in "${!AGENTS_IDS[@]}"; do
+    if corebrum_agents_ready "$i"; then
+      ready=1
+    else
+      ready=0
+    fi
+    printf '%s\t%s\t%s\t%s\n' "${AGENTS_IDS[$i]}" "${AGENTS_LABELS[$i]}" "$ready" "${AGENTS_BINS[$i]}"
+  done
+}
+
+corebrum_agents_install() {
+  local i="$1" action couple_flag
+  if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 && "${AGENTS_KINDS[$i]}" == "npm" ]]; then
+    corebrum_agents_install_action "$i"
+    if [[ "${COREBRUM_AGENTICROS_READY:-0}" == 1 ]]; then
+      corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
+    fi
+    return 0
+  fi
+  action="$(corebrum_agents_install_action "$i")"
   couple_flag="$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
   corebrum_agents_terminal "$(cat <<EOF
 set +e
@@ -393,7 +430,7 @@ corebrum_agents_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-agents-menu refresh|open|launch ID|labels|data-dir
+Usage: corebrum-agents-menu refresh|open|launch ID|labels|rows|command ID|couple ID|data-dir
 EOF
 }
 
@@ -403,6 +440,20 @@ case "$cmd" in
   open) corebrum_agents_open ;;
   launch) corebrum_agents_launch_id "${2:-}" ;;
   labels) corebrum_agents_labels ;;
+  rows)
+    corebrum_agents_rows
+    ;;
+  command)
+    corebrum_agents_prepare_path
+    corebrum_agents_load
+    corebrum_agents_install_action "$(corebrum_agents_find "${2:-}")"
+    ;;
+  couple)
+    corebrum_agents_prepare_path
+    corebrum_agents_load
+    i="$(corebrum_agents_find "${2:-}")"
+    corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
+    ;;
   data-dir) corebrum_agents_data_dir ;;
   -h | --help | help) usage ;;
   *)

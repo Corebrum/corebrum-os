@@ -104,6 +104,9 @@ require "disable_splash_rendering = true"
 require "/usr/local/bin/corebrum-osd volume-up"
 require "/usr/local/bin/corebrum-osd brightness-down"
 require "/usr/local/bin/corebrum-autolock start"
+require 'corebrum/setup-done'
+require '/usr/local/bin/corebrum-terminal --class corebrum-setup /usr/local/bin/corebrum-setup'
+require 'match:class = ^(corebrum-setup)$'
 require 'cmd=$(command -v hyprpaper)'
 require 'corebrum/hyprpaper.conf'
 if grep -q 'waypaper --restore' "$conf"; then

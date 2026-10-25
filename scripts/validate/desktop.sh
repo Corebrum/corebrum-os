@@ -48,6 +48,7 @@ for path in \
   /etc/corebrum/dashboard/tiles.conf \
   /etc/greetd/config.toml \
   /usr/local/bin/corebrum-session \
+  /usr/local/bin/corebrum-setup \
   /usr/local/bin/corebrum-terminal \
   /usr/local/bin/corebrum-grid \
   /usr/local/bin/corebrum-launcher \

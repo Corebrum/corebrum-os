@@ -38,7 +38,7 @@ When the archive publishes `hyprland-backgrounds`, the same command installs it,
 
 ## After a successful install
 
-Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hyprland starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/hypr/hyprland.conf`. When `start-hyprland` is installed, the session runs through that watchdog and still passes the Corebrum config. When the Ubuntu archive publishes `hyprland-qtutils`, the same install provides `hyprland-dialog`, which Hyprland uses for its dialogs. Ubuntu 24.04 does not publish that package. See `docs/decisions/0025-hyprland-startup.md`.
+Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hyprland starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/hypr/hyprland.conf`. The first login opens a setup wizard: ROS 2, then RealSense, then AgenticROS, then one or more AI agents. RealSense and AgenticROS stay closed until ROS 2 is installed, because RealSense stops when the ROS apt source is missing. Each step accepts Install, Skip, or Exit. Exit writes `${XDG_STATE_HOME:-~/.local/state}/corebrum/setup-done` and later logins do not open the wizard. `corebrum-setup again` opens it after that. Super+Space can still install each piece on its own. See `docs/decisions/0042-setup-wizard.md`. When `start-hyprland` is installed, the session runs through that watchdog and still passes the Corebrum config. When the Ubuntu archive publishes `hyprland-qtutils`, the same install provides `hyprland-dialog`, which Hyprland uses for its dialogs. Ubuntu 24.04 does not publish that package. See `docs/decisions/0025-hyprland-startup.md`.
 
 | Key | Action |
 | --- | --- |

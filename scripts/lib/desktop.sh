@@ -112,6 +112,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/lib/grid.sh" /usr/local/lib/corebrum/grid.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-node-path.sh" /usr/local/lib/corebrum/node-path.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-setup.sh" /usr/local/bin/corebrum-setup 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greeter.sh" /usr/local/bin/corebrum-greeter 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
@@ -215,6 +216,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/lib/corebrum/grid.sh
 /usr/local/lib/corebrum/node-path.sh
 /usr/local/bin/corebrum-session
+/usr/local/bin/corebrum-setup
 /usr/local/bin/corebrum-greeter
 /usr/local/bin/corebrum-lock
 /usr/local/bin/corebrum-terminal
