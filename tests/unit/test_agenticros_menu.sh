@@ -56,6 +56,10 @@ if ! grep -q 'build-essential' "$install_script" || ! grep -q 'python3' "$instal
   echo "FAIL: AgenticROS install does not install the rclnodejs toolchain" >&2
   exit 1
 fi
+if ! grep -q 'prebuild-install' "$install_script" || ! grep -q 'node-datachannel' "$install_script"; then
+  echo "FAIL: AgenticROS install does not install the node-datachannel prebuild" >&2
+  exit 1
+fi
 if ! grep -q 'https://github.com/agenticros/agenticros.git' "$install_script"; then
   echo "FAIL: AgenticROS install does not clone github.com/agenticros/agenticros" >&2
   exit 1

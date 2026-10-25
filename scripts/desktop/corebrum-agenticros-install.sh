@@ -139,6 +139,27 @@ corebrum_agenticros_build_rclnodejs() {
   )
 }
 
+# pnpm install --ignore-scripts skips the node-datachannel prebuild. connect
+# loads that native module before it opens the ARC socket.
+corebrum_agenticros_install_node_datachannel() {
+  local pkg bin native
+  pkg="$(find "$root/node_modules/.pnpm" -path '*/node_modules/node-datachannel/package.json' -print -quit)"
+  [[ -n "$pkg" ]] || corebrum_agenticros_install_die "node-datachannel is not installed"
+  pkg="$(dirname "$pkg")"
+  native="${pkg}/build/Release/node_datachannel.node"
+  if [[ -f "$native" ]] && (cd "$pkg" && node -e "require('node-datachannel')"); then
+    return 0
+  fi
+  bin="$(find "$root/node_modules/.pnpm" -path '*/prebuild-install/bin.js' -print -quit)"
+  [[ -n "$bin" ]] || corebrum_agenticros_install_die "prebuild-install is not installed"
+  printf 'Installing the node-datachannel prebuild\n'
+  (
+    cd "$pkg"
+    node "$bin" -r napi
+  ) || corebrum_agenticros_install_die "node-datachannel prebuild failed"
+  [[ -f "$native" ]] || corebrum_agenticros_install_die "node-datachannel binary is missing"
+}
+
 corebrum_agenticros_install_main() {
 root="$(corebrum_agenticros_prepare_clone)"
 
@@ -157,6 +178,7 @@ printf 'Building AgenticROS at %s\n' "$root"
   pnpm install --ignore-scripts
   pnpm -r build
 )
+corebrum_agenticros_install_node_datachannel
 corebrum_agenticros_build_rclnodejs
 
 helper_src="$(corebrum_agenticros_checkout)/scripts/desktop/corebrum-agenticros-with-ros.sh"
