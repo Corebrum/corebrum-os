@@ -1,0 +1,7 @@
+component: agenticros
+ubuntu: 24.04 and 26.04
+arch: x86_64
+source: https://github.com/agenticros/agenticros.git
+packages: git from the base profile
+pin: default branch, shallow clone on first install
+notes: An existing checkout with pnpm-workspace.yaml is left in place. The menu then builds that checkout and compiles rclnodejs. Verified the repository HEAD on 2026-10-24. This is not part of the desktop package install.

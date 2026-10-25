@@ -56,6 +56,108 @@ if ! grep -q 'build-essential' "$install_script" || ! grep -q 'python3' "$instal
   echo "FAIL: AgenticROS install does not install the rclnodejs toolchain" >&2
   exit 1
 fi
+if ! grep -q 'https://github.com/agenticros/agenticros.git' "$install_script"; then
+  echo "FAIL: AgenticROS install does not clone github.com/agenticros/agenticros" >&2
+  exit 1
+fi
+
+agenticros_prepare() {
+  bash --noprofile --norc -c '
+set -euo pipefail
+source "$1"
+corebrum_agenticros_prepare_clone
+' bash "$install_script"
+}
+
+clone_tmp="$(mktemp -d)"
+clone_bin="${clone_tmp}/bin"
+clone_log="${clone_tmp}/git.log"
+mkdir -p "$clone_bin"
+cat >"${clone_bin}/git" <<'EOF'
+#!/bin/bash
+printf '%s\n' "$*" >>"${GIT_LOG:?}"
+if [[ "${GIT_MODE:-clone}" != clone ]]; then
+  dest="${@: -1}"
+  mkdir -p "$dest"
+  exit 0
+fi
+[[ "$1" == clone ]] || exit 1
+dest="${@: -1}"
+mkdir -p "$dest"
+printf 'packages:\n' >"$dest/pnpm-workspace.yaml"
+EOF
+chmod 755 "${clone_bin}/git"
+
+checkout="${clone_tmp}/home/corebrum-os"
+mkdir -p "${checkout}/scripts"
+touch "${checkout}/scripts/corebrum.sh"
+got="$(
+  export GIT_LOG="$clone_log"
+  export PATH="${clone_bin}:/usr/bin:/bin"
+  export COREBRUM_ROOT="$checkout"
+  unset COREBRUM_AGENTICROS_ROOT COREBRUM_AGENTICROS_URL
+  agenticros_prepare 2>/dev/null
+)"
+assert_eq "$got" "${clone_tmp}/home/agenticros" "missing AgenticROS is cloned beside the Corebrum checkout"
+if ! grep -qF "clone --depth 1 https://github.com/agenticros/agenticros.git ${clone_tmp}/home/agenticros" "$clone_log"; then
+  echo "FAIL: clone did not use https://github.com/agenticros/agenticros.git" >&2
+  printf '%s\n' "$(cat "$clone_log")" >&2
+  exit 1
+fi
+printf 'keep\n' >"${clone_tmp}/home/agenticros/marker"
+: >"$clone_log"
+got="$(
+  export GIT_LOG="$clone_log"
+  export PATH="${clone_bin}:/usr/bin:/bin"
+  export COREBRUM_AGENTICROS_ROOT="${clone_tmp}/home/agenticros"
+  unset COREBRUM_AGENTICROS_URL
+  agenticros_prepare
+)"
+assert_eq "$got" "${clone_tmp}/home/agenticros" "existing AgenticROS checkout is reused"
+if [[ -s "$clone_log" ]]; then
+  echo "FAIL: an existing AgenticROS checkout was cloned again" >&2
+  exit 1
+fi
+assert_eq "$(cat "${clone_tmp}/home/agenticros/marker")" "keep" "existing AgenticROS checkout was replaced"
+
+mkdir -p "${clone_tmp}/occupied"
+: >"$clone_log"
+if (
+  export GIT_LOG="$clone_log"
+  export PATH="${clone_bin}:/usr/bin:/bin"
+  export COREBRUM_AGENTICROS_ROOT="${clone_tmp}/occupied"
+  unset COREBRUM_AGENTICROS_URL
+  agenticros_prepare >/dev/null 2>"${clone_tmp}/occupied.err"
+); then
+  echo "FAIL: a non-clone path was accepted" >&2
+  exit 1
+fi
+if ! grep -q 'exists but is not a clone' "${clone_tmp}/occupied.err"; then
+  echo "FAIL: a non-clone path did not stop the install" >&2
+  exit 1
+fi
+if [[ -s "$clone_log" ]]; then
+  echo "FAIL: a non-clone path was overwritten" >&2
+  exit 1
+fi
+
+: >"$clone_log"
+if (
+  export GIT_LOG="$clone_log"
+  export GIT_MODE=blank
+  export PATH="${clone_bin}:/usr/bin:/bin"
+  export COREBRUM_AGENTICROS_ROOT="${clone_tmp}/blank"
+  unset COREBRUM_AGENTICROS_URL
+  agenticros_prepare >/dev/null 2>"${clone_tmp}/blank.err"
+); then
+  echo "FAIL: a clone without pnpm-workspace.yaml was accepted" >&2
+  exit 1
+fi
+if ! grep -q 'no pnpm-workspace.yaml' "${clone_tmp}/blank.err"; then
+  echo "FAIL: a clone without pnpm-workspace.yaml did not stop the install" >&2
+  exit 1
+fi
+rm -rf "$clone_tmp"
 
 export COREBRUM_AGENTICROS_READY=1
 assert_eq "$("$menu" entry-name)" "AgenticROS" "initialized AgenticROS has no install indicator"

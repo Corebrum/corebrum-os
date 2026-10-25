@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Build the local AgenticROS clone and link /usr/local/bin/agenticros.
+# Clone AgenticROS when this machine has no checkout, build it, and link
+# /usr/local/bin/agenticros.
 set -euo pipefail
+
+# Missing checkouts are cloned from this URL. An existing workspace is left in place.
+COREBRUM_AGENTICROS_URL="${COREBRUM_AGENTICROS_URL:-https://github.com/agenticros/agenticros.git}"
 
 corebrum_agenticros_install_die() {
   printf 'corebrum-agenticros-install: %s\n' "$1" >&2
@@ -32,17 +36,42 @@ corebrum_agenticros_clone() {
   printf '%s\n' "$(cd "$(dirname "$checkout")" && pwd)/agenticros"
 }
 
-root="$(corebrum_agenticros_clone)"
-if [[ ! -f "${root}/pnpm-workspace.yaml" ]]; then
-  corebrum_agenticros_install_die "AgenticROS clone not found at ${root}"
-fi
+corebrum_agenticros_ensure_git() {
+  if command -v git >/dev/null 2>&1; then
+    return 0
+  fi
+  printf 'Installing git\n'
+  sudo DEBIAN_FRONTEND=noninteractive apt-get update
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git
+  command -v git >/dev/null 2>&1 || corebrum_agenticros_install_die "git is not installed"
+}
 
-if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
-  # shellcheck disable=SC1091
-  source /etc/profile.d/corebrum-node.sh
-fi
-command -v pnpm >/dev/null 2>&1 || corebrum_agenticros_install_die "pnpm is not installed"
-command -v node >/dev/null 2>&1 || corebrum_agenticros_install_die "node is not installed"
+# Print the checkout path. An existing workspace is left in place. A missing
+# directory is cloned. A path that exists without the workspace file is left
+# untouched and the install stops.
+corebrum_agenticros_prepare_clone() {
+  local root parent
+  root="$(corebrum_agenticros_clone)"
+  if [[ -f "${root}/pnpm-workspace.yaml" ]]; then
+    printf '%s\n' "$root"
+    return 0
+  fi
+  if [[ -e "$root" ]]; then
+    corebrum_agenticros_install_die "AgenticROS path exists but is not a clone: ${root}"
+  fi
+  parent="$(dirname "$root")"
+  if [[ ! -d "$parent" || ! -w "$parent" ]]; then
+    corebrum_agenticros_install_die "cannot clone AgenticROS into ${root}"
+  fi
+  corebrum_agenticros_ensure_git
+  printf 'Cloning AgenticROS into %s\n' "$root" >&2
+  GIT_TERMINAL_PROMPT=0 git clone --depth 1 "$COREBRUM_AGENTICROS_URL" "$root" \
+    || corebrum_agenticros_install_die "could not clone ${COREBRUM_AGENTICROS_URL}"
+  if [[ ! -f "${root}/pnpm-workspace.yaml" ]]; then
+    corebrum_agenticros_install_die "cloned AgenticROS has no pnpm-workspace.yaml at ${root}"
+  fi
+  printf '%s\n' "$root"
+}
 
 corebrum_agenticros_pkg_installed() {
   local status
@@ -110,6 +139,16 @@ corebrum_agenticros_build_rclnodejs() {
   )
 }
 
+corebrum_agenticros_install_main() {
+root="$(corebrum_agenticros_prepare_clone)"
+
+if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/corebrum-node.sh
+fi
+command -v pnpm >/dev/null 2>&1 || corebrum_agenticros_install_die "pnpm is not installed"
+command -v node >/dev/null 2>&1 || corebrum_agenticros_install_die "node is not installed"
+
 corebrum_agenticros_ensure_toolchain
 
 printf 'Building AgenticROS at %s\n' "$root"
@@ -143,3 +182,8 @@ printf '%s\n' "$root" | sudo tee /etc/corebrum/agenticros.root >/dev/null
 sudo install -m 755 "$wrapper" /usr/local/bin/agenticros
 rm -f "$wrapper"
 printf 'AgenticROS CLI is linked at /usr/local/bin/agenticros\n'
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  corebrum_agenticros_install_main
+fi
