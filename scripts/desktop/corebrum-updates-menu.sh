@@ -115,13 +115,41 @@ corebrum_updates_fleet_ready() {
   command -v zenoh-fleet >/dev/null 2>&1
 }
 
+# .mcp.json is tracked with a relative command. agenticros mcp setup, which
+# init runs, rewrites it with this machine's ROS wrapper. That is not an edit
+# the operator made.
+corebrum_updates_generated_path() {
+  local name="$1" line="$2" path
+  [[ "$name" == agenticros ]] || return 1
+  path="${line:3}"
+  [[ "$path" == ".mcp.json" ]]
+}
+
 corebrum_updates_git_dirty() {
-  local name="$1" root="$2"
+  local name="$1" root="$2" status line
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
     [[ "${COREBRUM_UPDATES_DIRTY:-}" == "$name" ]]
     return
   fi
-  [[ -n "$(git -C "$root" status --porcelain --untracked-files=no)" ]]
+  status="$(git -C "$root" status --porcelain --untracked-files=no)" || return 0
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    corebrum_updates_generated_path "$name" "$line" && continue
+    return 0
+  done <<< "$status"
+  return 1
+}
+
+corebrum_updates_restore_agenticros_mcp() {
+  local root="$1"
+  if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
+    printf 'run: git -C %s checkout -- .mcp.json\n' "$root"
+    return 0
+  fi
+  if [[ -n "$(git -C "$root" status --porcelain --untracked-files=no -- .mcp.json)" ]]; then
+    printf 'Restoring .mcp.json. MCP setup writes this machine'\''s ROS wrapper there, and init writes it again.\n'
+    git -C "$root" checkout -- .mcp.json
+  fi
 }
 
 corebrum_updates_run() {
@@ -251,6 +279,7 @@ corebrum_updates_apply_agenticros() {
   if corebrum_updates_git_dirty agenticros "$root"; then
     corebrum_updates_die "AgenticROS checkout has local changes (${root}). Update stopped."
   fi
+  corebrum_updates_restore_agenticros_mcp "$root"
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
     printf 'run: git -C %s fetch --depth 1 origin main\n' "$root"
     printf 'run: git -C %s merge --ff-only FETCH_HEAD\n' "$root"
@@ -391,6 +420,7 @@ Usage: corebrum-updates-menu refresh|open|labels|apply NAME|remind|data-dir
 EOF
 }
 
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_updates_refresh ;;
@@ -405,3 +435,4 @@ case "$cmd" in
     exit 1
     ;;
 esac
+fi

@@ -79,7 +79,11 @@ printf '%s\n' "$full" | grep -F "$lib_pin" >/dev/null || fail "Zenoh client libr
 printf '%s\n' "$full" | grep -F "$tool_pin" >/dev/null || fail "Zenoh client tool pin was not reinstalled"
 printf '%s\n' "$full" | grep -F 'scripts/ros/zenoh-cli.sh' >/dev/null || fail "Zenoh client wrapper was not copied"
 printf '%s\n' "$full" | grep -F '@agenticros/zenoh-fleet@0.1.4' >/dev/null || fail "installed Zenoh fleet was not reinstalled"
+printf '%s\n' "$full" | grep -F 'git -C agenticros checkout -- .mcp.json' >/dev/null || fail "AgenticROS did not restore .mcp.json"
 printf '%s\n' "$full" | grep -F 'git -C agenticros fetch --depth 1 origin main' >/dev/null || fail "AgenticROS was not fetched"
+mcp_at="$(line_of 'checkout -- .mcp.json' <(printf '%s\n' "$full"))"
+fetch_at="$(line_of 'fetch --depth 1 origin main' <(printf '%s\n' "$full"))"
+[[ "$mcp_at" -lt "$fetch_at" ]] || fail ".mcp.json was restored after the fetch"
 printf '%s\n' "$full" | grep -F 'merge --ff-only FETCH_HEAD' >/dev/null || fail "AgenticROS was not fast-forwarded"
 printf '%s\n' "$full" | grep -F 'agenticros init --yes' >/dev/null || fail "AgenticROS init did not run"
 printf '%s\n' "$full" | grep -F 'https://claude.ai/install.sh' >/dev/null || fail "installed Claude was not updated"
@@ -114,6 +118,26 @@ XDG_RUNTIME_DIR="$runtime" "$menu" refresh
 desktop="${runtime}/corebrum/applications/corebrum-updates.desktop"
 grep -F 'Name=Updates' "$desktop" >/dev/null || fail "Updates desktop entry is missing"
 grep -F 'Keywords=update;upgrade;apt' "$desktop" >/dev/null || fail "typing update cannot find Updates"
+
+repo="$(mktemp -d)"
+git -C "$repo" init -q
+printf '{}\n' >"${repo}/.mcp.json"
+printf 'keep\n' >"${repo}/keep.txt"
+git -C "$repo" add .mcp.json keep.txt
+GIT_AUTHOR_NAME=Corebrum GIT_AUTHOR_EMAIL=test@example.com \
+  GIT_COMMITTER_NAME=Corebrum GIT_COMMITTER_EMAIL=test@example.com \
+  git -C "$repo" commit -q -m init
+printf '{"wrapper":true}\n' >"${repo}/.mcp.json"
+# shellcheck disable=SC1090
+source "$menu"
+if COREBRUM_UPDATES_STUB=0 corebrum_updates_git_dirty agenticros "$repo"; then
+  fail "a rewritten .mcp.json stopped the AgenticROS update"
+fi
+printf 'edited\n' >"${repo}/keep.txt"
+if ! COREBRUM_UPDATES_STUB=0 corebrum_updates_git_dirty agenticros "$repo"; then
+  fail "a real AgenticROS edit was ignored"
+fi
+rm -rf "$repo"
 
 grep -F 'corebrum-updates-menu.sh' "${ROOT}/scripts/lib/desktop.sh" >/dev/null || fail "desktop install does not ship Updates"
 grep -F '/usr/local/bin/corebrum-updates-menu remind' "${ROOT}/config/hypr/hyprland.conf" >/dev/null \
