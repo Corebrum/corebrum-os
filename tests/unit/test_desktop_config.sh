@@ -83,7 +83,7 @@ if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh &' "${ROOT}/scripts/desk
   echo "FAIL: Super+Space does not refresh the Keybindings entry" >&2
   exit 1
 fi
-if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 11 ]]; then
+if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 12 ]]; then
   echo "FAIL: Super+Space still refreshes some menu entries in series" >&2
   exit 1
 fi

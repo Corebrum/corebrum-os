@@ -23,6 +23,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-autolock refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-power-menu refresh &
+pids+=("$!")
 /usr/local/bin/corebrum-vnc-menu refresh &
 pids+=("$!")
 /usr/local/bin/corebrum-keys-menu refresh &

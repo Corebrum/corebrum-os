@@ -19,7 +19,7 @@ Super+Alt+Space        Open the app grid
 Super+S                Toggle the agent scratchpad terminal
 Super+Escape           Lock the screen
 Super+Shift+Escape     Pause autolock, or resume it
-Super+Shift+E          Leave Hyprland and return to the login screen
+Super+Shift+E          Log out and return to the login screen
 Super+Shift+C          Clipboard history
 Super+Print            Record the area, camera, or audio
 Super+Shift+Print      Stop recording

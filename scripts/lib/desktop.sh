@@ -148,6 +148,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-edit-keys.sh" /usr/local/bin/corebrum-edit-keys 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-osd.sh" /usr/local/bin/corebrum-osd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-power-menu.sh" /usr/local/bin/corebrum-power-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-vnc-menu.sh" /usr/local/bin/corebrum-vnc-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-vnc-proxy.py" /usr/local/bin/corebrum-vnc-proxy 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-record.sh" /usr/local/bin/corebrum-record 755
@@ -254,6 +255,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-edit-keys
 /usr/local/bin/corebrum-osd
 /usr/local/bin/corebrum-autolock
+/usr/local/bin/corebrum-power-menu
 /usr/local/bin/corebrum-vnc-menu
 /usr/local/bin/corebrum-vnc-proxy
 /usr/local/bin/corebrum-record

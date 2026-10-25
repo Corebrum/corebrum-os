@@ -63,6 +63,7 @@ for path in \
   /usr/local/bin/corebrum-keys-menu \
   /usr/local/bin/corebrum-osd \
   /usr/local/bin/corebrum-autolock \
+  /usr/local/bin/corebrum-power-menu \
   /usr/local/bin/corebrum-vnc-menu \
   /usr/local/bin/corebrum-vnc-proxy \
   /usr/local/bin/corebrum-record \

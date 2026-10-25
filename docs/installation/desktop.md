@@ -59,7 +59,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
 | Super+Escape | Lock the screen with hyprlock |
 | Super+Shift+Escape | Pause autolock, or resume it |
-| Super+Shift+E | Leave Hyprland and return to the greeter |
+| Super+Shift+E | Log out and return to the greeter |
 | Print | Copy a selected area |
 | Super+P | Copy a selected area |
 | Super+Shift+P | Copy the whole screen |
@@ -77,6 +77,8 @@ Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A termin
 Super+Space includes Keybindings. That entry lists the Super shortcuts in the table above. Choosing a row closes the list and does not run the shortcut.
 
 Super+Space also lists Autolock. The screen locks after 10 minutes idle unless that menu, or Super+Shift+Escape, turns on Stay awake. The other rows are 5 minutes, 30 minutes, and 1 hour. Stay awake lasts until it is turned off or the session ends. Ubuntu 24.04 has no `hypridle` package, so that release keeps Super+Escape as the only lock. See `docs/decisions/0022-autolock.md`.
+
+Super+Space lists Power. The rows are Log out, Reboot, and Power off. Choosing a row asks for that action again, and Cancel leaves the session running. Log out is the same exit as Super+Shift+E: Hyprland exits and the greeter returns. Reboot runs `systemctl reboot`. Power off runs `systemctl poweroff`. Typing reboot, shutdown, or log out finds Power and opens that list. See `docs/decisions/0044-power-menu.md`.
 
 Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock. Volume, mute, microphone mute, and brightness keys change the level and show a notification at the top right. Other applications use the same Mako popups. Hyprland's splash quotes are turned off. A transparent bar on the wallpaper reads `Corebrum: The Physical AI Operating System`. The grid starts with Terminal, Files, and Browser. Add a robotics tool later by appending `Label|command` to `/etc/corebrum/dashboard/tiles.conf`. Do not put `|` or `#` in the command.
 
