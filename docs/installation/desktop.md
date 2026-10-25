@@ -57,6 +57,8 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+S | Agent scratchpad terminal |
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
+| Super+Shift+Arrows | Swap the focused tile with the one in that direction |
+| Super+Shift+H J K L | Swap the focused tile: H left, J down, K up, L right |
 | Super+Escape | Lock the screen with hyprlock |
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Log out and return to the greeter |

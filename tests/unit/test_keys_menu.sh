@@ -53,6 +53,8 @@ require_line "Super+Alt+P            Record the area, camera, or audio"
 require_line "Super+Alt+Shift+P      Stop recording"
 require_line "Super+Arrows           Move focus"
 require_line "Super+H J K L          Move focus: H left, J down, K up, L right"
+require_line "Super+Shift+Arrows     Swap the focused tile"
+require_line "Super+Shift+H J K L    Swap the focused tile: H left, J down, K up, L right"
 require_line "Super+1 … Super+5      Switch to that workspace"
 require_line "Super+Shift+1 … 5      Move the focused window to that workspace"
 
@@ -84,6 +86,10 @@ require_bind 'bind = $mainMod, H, movefocus, l'
 require_bind 'bind = $mainMod, J, movefocus, d'
 require_bind 'bind = $mainMod, K, movefocus, u'
 require_bind 'bind = $mainMod, L, movefocus, r'
+require_bind 'bind = $mainMod SHIFT, left, swapwindow, l'
+require_bind 'bind = $mainMod SHIFT, J, swapwindow, d'
+require_bind 'bind = $mainMod SHIFT, K, swapwindow, u'
+require_bind 'bind = $mainMod SHIFT, L, swapwindow, r'
 require_bind 'bind = $mainMod, 1, workspace, 1'
 require_bind 'bind = $mainMod, 5, workspace, 5'
 require_bind 'bind = $mainMod SHIFT, 1, movetoworkspace, 1'
