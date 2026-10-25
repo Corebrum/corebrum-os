@@ -125,15 +125,31 @@ corebrum_vnc_addresses() {
   done < <(ip -4 -o addr show scope global 2>/dev/null | awk '{ split($4, a, "/"); print a[1] }')
 }
 
+corebrum_vnc_print_addresses() {
+  local style="$1" ip any=0
+  while IFS= read -r ip; do
+    [[ -n "$ip" ]] || continue
+    any=1
+    case "$style" in
+      mac) printf 'vnc://%s\n' "$ip" ;;
+      windows) printf '%s::5900\n' "$ip" ;;
+      linux) printf '%s:5900\n' "$ip" ;;
+    esac
+  done < <(corebrum_vnc_addresses)
+  if [[ "$any" -eq 0 ]]; then
+    printf '%s\n' "This machine has no network address yet."
+  fi
+}
+
 corebrum_vnc_instructions() {
-  local ip any=0 password_file
+  local password_file
   password_file="$(corebrum_vnc_runtime_dir)/wayvnc.password"
   if corebrum_vnc_running; then
     printf '%s\n' "Remote desktop is running."
   else
     printf '%s\n' "Remote desktop is not running. Choose Start in this menu first."
   fi
-  printf '\n%s\n' "Screen Sharing password"
+  printf '\n%s\n' "Password"
   if [[ -f "$password_file" ]]; then
     printf 'Password: %s\n' "$(tr -d '[:space:]' <"$password_file")"
   else
@@ -144,20 +160,31 @@ corebrum_vnc_instructions() {
   printf '%s\n' "2. Choose Go, then Connect to Server."
   printf '%s\n' "3. Enter one of these addresses and choose Connect."
   printf '\n'
-  while IFS= read -r ip; do
-    [[ -n "$ip" ]] || continue
-    any=1
-    printf 'vnc://%s\n' "$ip"
-  done < <(corebrum_vnc_addresses)
-  if [[ "$any" -eq 0 ]]; then
-    printf '%s\n' "This machine has no network address yet."
-  fi
+  corebrum_vnc_print_addresses mac
   printf '\n%s\n' "Screen Sharing can connect to the same address without the vnc:// prefix."
   printf '%s\n' "It asks for the password above and does not ask for a name."
   printf '%s\n' "That is not the Mac password."
   printf '%s\n' "The Mac keyboard and pointer control the desktop already on this screen."
   printf '%s\n' "The Command key is Super. Option stays Alt. Command+V pastes."
   printf '%s\n' "Screen Sharing leaves its clipboard commands gray unless the other computer is a Mac."
+  printf '\n%s\n' "On Windows:"
+  printf '%s\n' "1. Open TigerVNC Viewer."
+  printf '%s\n' "2. Enter one of these addresses and choose Connect."
+  printf '%s\n' "3. Enter the password above."
+  printf '\n'
+  corebrum_vnc_print_addresses windows
+  printf '\n%s\n' "Type both colons. TigerVNC reads one colon as a display number."
+  printf '%s\n' "That password is not the Windows password."
+  printf '%s\n' "The Remote Desktop app on Windows does not open this session."
+  printf '\n%s\n' "On Linux:"
+  printf '%s\n' "1. Open Remmina and create a connection."
+  printf '%s\n' "2. Set the protocol to VNC."
+  printf '%s\n' "3. Set the server to one of these addresses and choose Connect."
+  printf '%s\n' "4. Leave the username empty and enter the password above."
+  printf '\n'
+  corebrum_vnc_print_addresses linux
+  printf '\n%s\n' "That password is not the Linux password."
+  printf '%s\n' "TigerVNC on Linux uses the Windows addresses, with both colons."
   printf '%s\n' "Choose Remote desktop, then Stop, when you are done."
 }
 
@@ -301,7 +328,7 @@ corebrum_vnc_lines() {
     printf 'Start\n'
   fi
   printf 'Stop\n'
-  printf 'How to connect from a Mac\n'
+  printf 'How to connect\n'
 }
 
 corebrum_vnc_open() {
@@ -339,7 +366,7 @@ corebrum_vnc_open() {
     Stop)
       corebrum_vnc_stop
       ;;
-    "How to connect from a Mac")
+    "How to connect")
       corebrum_vnc_show
       ;;
     *)

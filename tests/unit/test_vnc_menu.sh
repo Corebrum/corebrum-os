@@ -27,6 +27,10 @@ assert_grep 'Connect to Server' "$menu" "instructions do not tell a Mac how to c
 assert_grep 'corebrum-vnc-proxy' "$menu" "Screen Sharing is still talking to wayvnc directly"
 assert_grep 'does not ask for a name' "$menu" "instructions still tell the Mac to enter a name"
 assert_grep 'Command key is Super' "$menu" "instructions do not say Command is Super"
+assert_grep 'TigerVNC Viewer' "$menu" "instructions do not tell Windows how to connect"
+assert_grep '::5900' "$menu" "Windows instructions use a single colon"
+assert_grep 'Remmina' "$menu" "instructions do not tell Linux how to connect"
+assert_grep 'Leave the username empty' "$menu" "Linux instructions ask for a username"
 if grep -qE '^wayvnc$' "${ROOT}/manifests/packages/desktop.txt"; then
   echo "FAIL: desktop profile preinstalls wayvnc" >&2
   fail=1
@@ -68,7 +72,7 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-vnc-menu open$' "$desktop"; then
 fi
 
 lines="$(COREBRUM_VNC_READY=1 COREBRUM_VNC_RUNNING=1 bash "$menu" open)"
-if [[ "$lines" != $'Start   on\nStop\nHow to connect from a Mac' ]]; then
+if [[ "$lines" != $'Start   on\nStop\nHow to connect' ]]; then
   echo "FAIL: running menu lines were ${lines}" >&2
   fail=1
 fi
@@ -90,6 +94,14 @@ if ! grep -q 'vnc://10.1.1.5' <<<"$started"; then
   echo "FAIL: Start hides an extra network address" >&2
   fail=1
 fi
+if ! grep -q '192.168.8.190::5900' <<<"$started"; then
+  echo "FAIL: Start does not show the TigerVNC address" >&2
+  fail=1
+fi
+if ! grep -q '192.168.8.190:5900' <<<"$started"; then
+  echo "FAIL: Start does not show the Remmina address" >&2
+  fail=1
+fi
 if ! grep -q '^address=127.0.0.1$' "${runtime}/corebrum/wayvnc.conf"; then
   echo "FAIL: wayvnc config is reachable from the network" >&2
   fail=1
@@ -102,8 +114,8 @@ if ! grep -q '^testpass$' "${runtime}/corebrum/wayvnc.password"; then
   echo "FAIL: the Screen Sharing password was not saved" >&2
   fail=1
 fi
-if ! grep -q 'Screen Sharing password' <<<"$started"; then
-  echo "FAIL: Start does not label the Screen Sharing password" >&2
+if ! grep -q $'^Password$' <<<"$started"; then
+  echo "FAIL: Start does not label the password" >&2
   fail=1
 fi
 if ! grep -q 'Password: testpass' <<<"$started"; then
@@ -117,13 +129,21 @@ if [[ "$stopped" != "stop wayvnc" ]]; then
   fail=1
 fi
 
-how="$(COREBRUM_VNC_READY=1 COREBRUM_VNC_RUNNING=0 COREBRUM_VNC_CHOICE='How to connect from a Mac' bash "$menu" open)"
+how="$(COREBRUM_VNC_READY=1 COREBRUM_VNC_RUNNING=0 COREBRUM_VNC_CHOICE='How to connect' bash "$menu" open)"
 if ! grep -q 'Choose Start in this menu first' <<<"$how"; then
-  echo "FAIL: the Mac instructions do not say the server is stopped" >&2
+  echo "FAIL: the instructions do not say the server is stopped" >&2
   fail=1
 fi
 if ! grep -q 'Open Finder' <<<"$how"; then
   echo "FAIL: the Mac instructions skip Finder" >&2
+  fail=1
+fi
+if ! grep -q 'Open TigerVNC Viewer' <<<"$how"; then
+  echo "FAIL: the Windows instructions skip TigerVNC Viewer" >&2
+  fail=1
+fi
+if ! grep -q 'Set the protocol to VNC' <<<"$how"; then
+  echo "FAIL: the Linux instructions skip the Remmina protocol" >&2
   fail=1
 fi
 

@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""Classic VNC password login for macOS Screen Sharing.
+"""Classic VNC password login for remote desktop viewers.
 
 Ubuntu wayvnc 0.9 offers Apple and VeNCrypt logins. Screen Sharing refuses
 those and reports a firewall error before it asks for a password. This process
 listens on the network, checks the 8-character VNC password, and then connects
-the Mac to wayvnc on localhost. Screen Sharing asks for depth 32. wayvnc then
-writes 4 bytes per pixel, while the Mac reads 3, so the window flashes with
-no desktop. This process reports depth 24, asks for a ZRLE or raw picture,
-and turns the Mac Command key into Super. Copied Mac text is placed on
-the Wayland clipboard, and Command+V pastes it after Super is released.
-The local connection is not left on the connect timer, or Screen Sharing
-closes and redraws after a few quiet seconds.
+the viewer to wayvnc on localhost. Screen Sharing speaks protocol 3.3, asks
+for depth 32, and reads 3 bytes per pixel, so the window flashes with no
+desktop. For that client this process reports depth 24 and turns the Command
+key into Super. Copied Mac text is placed on the Wayland clipboard, and
+Command+V pastes it after Super is released. TigerVNC and Remmina speak
+protocol 3.8, so they keep the pixel format and the Alt key they send.
+Every client gets a ZRLE or raw picture. The local connection is not left
+on the connect timer, or Screen Sharing closes and redraws after a few
+quiet seconds.
 """
 import argparse
 import hmac
@@ -194,7 +196,8 @@ def rewrite_encodings(requested):
 class ClientMessages:
     """Forward client messages, with the picture request adjusted."""
 
-    def __init__(self):
+    def __init__(self, mac=False):
+        self.mac = mac
         self.buf = bytearray()
         self.passthrough = False
         self.full_frame_sent = False
@@ -230,7 +233,9 @@ class ClientMessages:
             msg = self.take(20)
             if msg is None:
                 return None
-            return screen_pixel_format(msg)
+            if self.mac:
+                return screen_pixel_format(msg)
+            return msg
         if kind == 2:
             if len(self.buf) < 4:
                 return None
@@ -285,6 +290,8 @@ class ClientMessages:
         return self.pass_rest()
 
     def command_key(self, msg):
+        if not self.mac:
+            return msg
         down = msg[1] != 0
         keysym = int.from_bytes(msg[4:8], "big")
         if keysym in COMMAND_TO_SUPER:
@@ -323,9 +330,9 @@ class ClientMessages:
         return rest
 
 
-def splice(left, right):
+def splice(left, right, mac=False):
     def pump(src, dst, client_side):
-        messages = ClientMessages() if client_side else None
+        messages = ClientMessages(mac=mac) if client_side else None
         try:
             while True:
                 data = src.recv(65536)
@@ -414,7 +421,7 @@ def serve_client(client, password, upstream_host, upstream_port):
         except (ConnectionError, OSError, RuntimeError):
             upstream.close()
             return
-        splice(client, upstream)
+        splice(client, upstream, mac=legacy)
         upstream.close()
     except (ConnectionError, OSError, RuntimeError):
         return
@@ -453,7 +460,7 @@ def self_test():
         raise SystemExit("Tight-only clients were not given a raw picture")
     if rewrite_encodings([16, EXTENDED_CLIPBOARD]) != [16, EXTENDED_CLIPBOARD]:
         raise SystemExit("extended clipboard was dropped")
-    pasted = ClientMessages()
+    pasted = ClientMessages(mac=True)
     copied = bytes([6, 0, 0, 0, 0, 0, 0, 5]) + b"hello"
     command_down = key_event(True, 0xFFE9)
     vee_down = key_event(True, 0x76)
@@ -467,7 +474,7 @@ def self_test():
     expected = copied + key_event(True, 0xFFEB) + key_event(False, 0xFFEB) + key_event(False, 0xFFEB)
     if forwarded != expected:
         raise SystemExit("Command+V was still forwarded as Super+V")
-    extended = ClientMessages()
+    extended = ClientMessages(mac=True)
     payload = bytes([6, 0, 0, 0]) + (-4).to_bytes(4, "big", signed=True) + b"\x00\x00\x00\x01"
     followed = extended.feed(payload + command_down)
     if followed != payload + key_event(True, 0xFFEB):
@@ -481,6 +488,12 @@ def self_test():
     option = bytes([4, 1, 0, 0]) + (0xFFE7).to_bytes(4, "big")
     if int.from_bytes(mac_command_key(option)[4:8], "big") != 0xFFE9:
         raise SystemExit("Option was not mapped to Alt")
+    other = ClientMessages()
+    alt_down = key_event(True, 0xFFE9)
+    if other.feed(alt_down) != alt_down:
+        raise SystemExit("Alt from another computer was mapped to Super")
+    if other.feed(depth32)[5] != 32:
+        raise SystemExit("another computer was told to use 3-byte pixels")
 
     upstream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     upstream.bind(("127.0.0.1", 0))
@@ -513,18 +526,23 @@ def self_test():
             conn.sendall(b"SERVERINIT")
             if index == 0:
                 pixel_format = recvn(conn, 20)
-                if pixel_format[5] != 24:
-                    raise SystemExit("wayvnc was still told to use 4-byte pixels")
+                if pixel_format[5] != 32:
+                    raise SystemExit("a current client was told to use 3-byte pixels")
                 if read_encodings(conn) != [16, 0, -223]:
                     raise SystemExit("wayvnc was still offered the flashing formats")
                 request = recvn(conn, 10)
                 if request[1] != 0:
                     raise SystemExit("the first picture request was not a full frame")
+                key = recvn(conn, 8)
+                if int.from_bytes(key[4:8], "big") != 0xFFE9:
+                    raise SystemExit("Alt from another computer was mapped to Super")
             else:
-                try:
-                    recvn(conn, 4)
-                except ConnectionError:
-                    pass
+                pixel_format = recvn(conn, 20)
+                if pixel_format[5] != 24:
+                    raise SystemExit("Screen Sharing was still told to use 4-byte pixels")
+                key = recvn(conn, 8)
+                if int.from_bytes(key[4:8], "big") != 0xFFEB:
+                    raise SystemExit("Command was not mapped to Super")
             conn.close()
 
     threading.Thread(target=fake_wayvnc, daemon=True).start()
@@ -562,6 +580,7 @@ def self_test():
     client.sendall(bytes([0, 0, 0, 0, 32, 32, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0, 0, 0, 0]))
     client.sendall(encoding_message([7, -239, -308, -313, 16, 0, -223]))
     client.sendall(bytes([3, 1, 0, 0, 0, 0, 7, 128, 4, 56]))
+    client.sendall(key_event(True, 0xFFE9))
     client.close()
     legacy = socket.create_connection(("127.0.0.1", proxy_port), 2)
     if recvn(legacy, 12) != b"RFB 003.008\n":
@@ -576,6 +595,8 @@ def self_test():
     legacy.sendall(bytes([1]))
     if recvn(legacy, len(b"SERVERINIT")) != b"SERVERINIT":
         raise SystemExit("protocol 3.3 desktop data did not pass through")
+    legacy.sendall(bytes([0, 0, 0, 0, 32, 32, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0, 0, 0, 0]))
+    legacy.sendall(key_event(True, 0xFFE9))
     legacy.close()
     print("vnc proxy self-test passed")
 
