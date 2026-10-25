@@ -58,6 +58,7 @@ for path in \
   /usr/local/bin/corebrum-ollama-menu \
   /usr/local/bin/corebrum-zenoh-fleet-menu \
   /usr/local/bin/corebrum-agents-menu \
+  /usr/local/bin/corebrum-updates-menu \
   /usr/local/bin/corebrum-wallpaper-menu \
   /etc/systemd/user/hyprpaper.service.d/corebrum.conf \
   /usr/local/bin/corebrum-keys-menu \

@@ -428,9 +428,30 @@ corebrum_agents_open() {
   corebrum_agents_run "$choice"
 }
 
+# Reinstall CLIs that are already on PATH, then couple each one when AgenticROS is configured.
+corebrum_agents_update_installed() {
+  local i action found=0
+  corebrum_agents_prepare_path
+  corebrum_agents_load
+  for i in "${!AGENTS_IDS[@]}"; do
+    corebrum_agents_ready "$i" || continue
+    found=1
+    action="$(corebrum_agents_install_action "$i")"
+    if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+      printf '%s\n' "$action"
+    else
+      bash -c "$action"
+    fi
+    corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
+  done
+  if [[ "$found" -eq 0 ]]; then
+    printf 'No AI agents are installed.\n'
+  fi
+}
+
 usage() {
   cat <<'EOF'
-Usage: corebrum-agents-menu refresh|open|launch ID|labels|rows|command ID|couple ID|data-dir
+Usage: corebrum-agents-menu refresh|open|launch ID|labels|rows|command ID|couple ID|update-installed|data-dir
 EOF
 }
 
@@ -454,6 +475,7 @@ case "$cmd" in
     i="$(corebrum_agents_find "${2:-}")"
     corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
     ;;
+  update-installed) corebrum_agents_update_installed ;;
   data-dir) corebrum_agents_data_dir ;;
   -h | --help | help) usage ;;
   *)

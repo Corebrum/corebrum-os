@@ -75,6 +75,26 @@ corebrum_zenoh_fleet_terminal() {
   exec /usr/local/bin/corebrum-terminal bash -c "$script"
 }
 
+corebrum_zenoh_fleet_install_action() {
+  local node_bin npm_bin node_dir path_value
+  if [[ "${COREBRUM_ZENOH_FLEET_STUB:-0}" == 1 ]]; then
+    printf 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=%s %s\n' \
+      "$COREBRUM_ZENOH_FLEET_ALLOW" "$COREBRUM_ZENOH_FLEET_PACKAGE"
+    return 0
+  fi
+  corebrum_zenoh_fleet_prepare_path
+  node_bin="$(command -v node || true)"
+  npm_bin="$(command -v npm || true)"
+  if [[ -z "$node_bin" || ! -x "$node_bin" || -z "$npm_bin" || ! -x "$npm_bin" ]]; then
+    printf 'Node.js from the desktop profile is required before Zenoh fleet can be installed.\n' >&2
+    return 1
+  fi
+  node_dir="$(dirname "$node_bin")"
+  path_value="${node_dir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  printf 'sudo env PATH=%q %q %q install -g --allow-scripts=%q %q\n' \
+    "$path_value" "$node_bin" "$npm_bin" "$COREBRUM_ZENOH_FLEET_ALLOW" "$COREBRUM_ZENOH_FLEET_PACKAGE"
+}
+
 corebrum_zenoh_fleet_install() {
   local node_bin npm_bin node_dir path_value action
   if [[ "${COREBRUM_ZENOH_FLEET_STUB:-0}" == 1 ]]; then
@@ -142,7 +162,7 @@ corebrum_zenoh_fleet_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-zenoh-fleet-menu refresh|open|entry-name|data-dir
+Usage: corebrum-zenoh-fleet-menu refresh|open|command|entry-name|data-dir
 EOF
 }
 
@@ -150,6 +170,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_zenoh_fleet_refresh ;;
   open) corebrum_zenoh_fleet_open ;;
+  command) corebrum_zenoh_fleet_install_action ;;
   entry-name) corebrum_zenoh_fleet_entry_name ;;
   data-dir) corebrum_zenoh_fleet_data_dir ;;
   -h | --help | help) usage ;;

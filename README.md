@@ -40,6 +40,10 @@ sudo ./scripts/install.sh --profile desktop --enable-ssh
 
 The Cursor agent install, `agent login`, and a `PATH` line in `~/.bashrc` stay on your account. The installer does not write a home directory and does not install Cursor. The editor in the base profile is `nano`.
 
+### Updates
+
+Super+Space **Updates** upgrades Ubuntu, this checkout, ROS 2, Zenoh, AgenticROS, and the AI agents already installed. **All** runs those six steps in order. A login reminder once a week points at that menu and does not apply upgrades. The row-by-row commands are in `docs/installation/desktop.md` and `docs/decisions/0045-software-updates.md`.
+
 ### Headless server
 
 The base profile is the Ubuntu Server foundation. It runs `apt-get update` and installs `curl`, `ca-certificates`, `tmux`, and `nano`. `--enable-ssh` installs OpenSSH and enables the `ssh` service. `hostname -I` prints an address you can connect to.

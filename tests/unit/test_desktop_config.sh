@@ -83,7 +83,11 @@ if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh &' "${ROOT}/scripts/desk
   echo "FAIL: Super+Space does not refresh the Keybindings entry" >&2
   exit 1
 fi
-if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 12 ]]; then
+if ! grep -q '/usr/local/bin/corebrum-updates-menu refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Updates entry" >&2
+  exit 1
+fi
+if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 13 ]]; then
   echo "FAIL: Super+Space still refreshes some menu entries in series" >&2
   exit 1
 fi
@@ -105,6 +109,7 @@ require "/usr/local/bin/corebrum-osd volume-up"
 require "/usr/local/bin/corebrum-osd brightness-down"
 require "/usr/local/bin/corebrum-autolock start"
 require 'corebrum/setup-done'
+require '/usr/local/bin/corebrum-updates-menu remind'
 require '/usr/local/bin/corebrum-terminal --class corebrum-setup /usr/local/bin/corebrum-setup'
 require 'match:class = ^(corebrum-setup)$'
 require 'cmd=$(command -v hyprpaper)'

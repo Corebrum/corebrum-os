@@ -29,6 +29,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-keys-menu refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-updates-menu refresh &
+pids+=("$!")
 refresh_status=0
 for pid in "${pids[@]}"; do
   wait "$pid" || refresh_status=1
