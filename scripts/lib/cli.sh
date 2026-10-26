@@ -96,6 +96,7 @@ corebrum_cmd_status() {
     printf 'skills helper: not installed\n'
   fi
   corebrum_speech_status_line
+  corebrum_stt_status_line
   if [[ -L /var/log/corebrum/install-latest.log || -f /var/log/corebrum/install-latest.log ]]; then
     printf 'log: /var/log/corebrum/install-latest.log\n'
   else
@@ -203,6 +204,12 @@ corebrum_cmd_doctor() {
   else
     corebrum_log "doctor: espeak is not installed"
     corebrum_log "optional: sudo corebrum install desktop"
+  fi
+  if corebrum_stt_ready; then
+    corebrum_log "doctor: speech recognition is installed"
+  else
+    corebrum_log "doctor: speech recognition is not installed"
+    corebrum_log "optional: corebrum voice hear --install"
   fi
   duplicates="$(corebrum_state_duplicates || true)"
   if [[ -n "$duplicates" ]]; then
@@ -520,6 +527,152 @@ corebrum_speech_status_line() {
   printf 'speech: espeak\n'
 }
 
+corebrum_stt_model_dir() {
+  printf '%s\n' "${COREBRUM_STT_MODEL_DIR:-/usr/share/pocketsphinx/model/en-us}"
+}
+
+corebrum_stt_bin() {
+  if [[ -n "${COREBRUM_STT_BIN:-}" && -x "${COREBRUM_STT_BIN}" ]]; then
+    printf '%s\n' "$COREBRUM_STT_BIN"
+    return 0
+  fi
+  if command -v pocketsphinx >/dev/null 2>&1; then
+    command -v pocketsphinx
+    return 0
+  fi
+  if command -v pocketsphinx_continuous >/dev/null 2>&1; then
+    command -v pocketsphinx_continuous
+    return 0
+  fi
+  return 1
+}
+
+corebrum_stt_ready() {
+  local bin
+  bin="$(corebrum_stt_bin)" || return 1
+  if [[ -n "${COREBRUM_STT_BIN:-}" ]]; then
+    return 0
+  fi
+  [[ -d "$(corebrum_stt_model_dir)/en-us" ]]
+}
+
+corebrum_stt_status_line() {
+  if corebrum_stt_ready; then
+    printf 'speech recognition: installed\n'
+  else
+    printf 'speech recognition: not installed\n'
+  fi
+}
+
+corebrum_record_bin() {
+  if [[ -n "${COREBRUM_RECORD_BIN:-}" && -x "${COREBRUM_RECORD_BIN}" ]]; then
+    printf '%s\n' "$COREBRUM_RECORD_BIN"
+    return 0
+  fi
+  command -v pw-record
+}
+
+corebrum_apt_candidate() {
+  local policy
+  policy="$(apt-cache policy "$1" 2>/dev/null || true)"
+  awk '/Candidate:/ { print $2; exit }' <<<"$policy"
+}
+
+corebrum_stt_install() {
+  local candidate model
+  candidate="$(corebrum_apt_candidate pocketsphinx)"
+  model="$(corebrum_apt_candidate pocketsphinx-en-us)"
+  if [[ -z "$candidate" || "$candidate" == "(none)" || -z "$model" || "$model" == "(none)" ]]; then
+    corebrum_die "pocketsphinx is not in the Ubuntu archive on this release."
+  fi
+  if [[ "$(id -u)" -eq 0 ]]; then
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends pocketsphinx pocketsphinx-en-us
+  else
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends pocketsphinx pocketsphinx-en-us
+  fi
+  hash -r
+  if ! corebrum_stt_bin >/dev/null; then
+    corebrum_die "pocketsphinx installed but the recognizer is not on PATH"
+  fi
+  corebrum_stt_ready || corebrum_die "pocketsphinx-en-us is not installed"
+}
+
+corebrum_stt_text() {
+  local bin="$1" wav="$2" name json text hmm lm dict
+  hmm="$(corebrum_stt_model_dir)/en-us"
+  lm="$(corebrum_stt_model_dir)/en-us.lm.bin"
+  dict="$(corebrum_stt_model_dir)/cmudict-en-us.dict"
+  name="$(basename "$bin")"
+  if [[ "$name" == "pocketsphinx_continuous" ]]; then
+    text="$("$bin" -infile "$wav" -hmm "$hmm" -lm "$lm" -dict "$dict" -logfn /dev/null)" \
+      || return 1
+    text="$(printf '%s\n' "$text" | awk 'NF { line=$0 } END { print line }')"
+    text="${text//<s>/}"
+    text="${text//<\/s>/}"
+    printf '%s' "$text" | awk '{$1=$1; print}'
+    return 0
+  fi
+  json="$("$bin" -hmm "$hmm" -lm "$lm" -dict "$dict" single "$wav")" \
+    || return 1
+  printf '%s\n' "$json" | python3 -c 'import json,sys
+raw=sys.stdin.read().strip()
+try:
+    obj=json.loads(raw)
+except json.JSONDecodeError:
+    sys.exit(2)
+sys.stdout.write((obj.get("t") or "").strip())'
+}
+
+corebrum_cmd_voice_hear() {
+  local install=0 seconds=5 rec wav bytes text bin
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --install)
+        install=1
+        ;;
+      *)
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+          seconds="$1"
+        else
+          corebrum_die "usage: corebrum voice hear [--install] [seconds]"
+        fi
+        ;;
+    esac
+    shift
+  done
+  if [[ "$seconds" -lt 1 || "$seconds" -gt 30 ]]; then
+    corebrum_die "record between 1 and 30 seconds"
+  fi
+  if ! corebrum_stt_ready; then
+    if [[ "$install" -eq 1 ]]; then
+      corebrum_stt_install
+    else
+      corebrum_die "Speech recognition is not installed. corebrum speak still works. Install it with: corebrum voice hear --install"
+    fi
+  fi
+  rec="$(corebrum_record_bin)" || corebrum_die "pw-record is not installed. sudo corebrum install desktop"
+  wav="$(mktemp "${TMPDIR:-/tmp}/corebrum-hear.XXXXXX.wav")"
+  "$rec" --rate 16000 --channels 1 --format s16 -n "$((seconds * 16000))" "$wav" >/dev/null 2>&1 || true
+  bytes=0
+  if [[ -f "$wav" ]]; then
+    bytes="$(wc -c <"$wav")"
+  fi
+  if [[ "$bytes" -le 44 ]]; then
+    rm -f "$wav"
+    corebrum_die "could not record the default microphone"
+  fi
+  bin="$(corebrum_stt_bin)"
+  if ! text="$(corebrum_stt_text "$bin" "$wav")"; then
+    rm -f "$wav"
+    corebrum_die "speech recognition failed"
+  fi
+  rm -f "$wav"
+  if [[ -z "$text" ]]; then
+    corebrum_die "no speech recognized"
+  fi
+  printf '%s\n' "$text"
+}
+
 corebrum_speak_now() {
   local text="$1" enabled bin voice pidfile pid
   local -a args=()
@@ -637,6 +790,10 @@ corebrum_cmd_voice() {
     test)
       corebrum_speak_now "Hello from Corebrum."
       ;;
+    hear)
+      shift
+      corebrum_cmd_voice_hear "$@"
+      ;;
     enable)
       corebrum_speech_set enabled 1
       printf 'speech: enabled\n'
@@ -668,7 +825,7 @@ corebrum_cmd_voice() {
       ;;
     "" | -h | --help | help)
       cat <<'EOF'
-Usage: corebrum voice list|test|set|enable|disable
+Usage: corebrum voice list|test|set|enable|disable|hear
 
   list              List espeak-ng voices
   test              Say "Hello from Corebrum."
@@ -676,7 +833,10 @@ Usage: corebrum voice list|test|set|enable|disable
   set espeak <name> Use one voice from voice list
   enable            Turn local speech on
   disable           Turn local speech off
+  hear [seconds]    Transcribe the default microphone
+  hear --install    Install Ubuntu pocketsphinx, then transcribe
 
+hear records up to 30 seconds. The desktop profile does not install it.
 These commands do not call a cloud speech API.
 EOF
       [[ -n "$sub" ]] || return 1

@@ -30,7 +30,7 @@ Usage: corebrum <command> [arguments]
   update status            List the Updates rows without upgrading
   speak "text"             Say text with espeak-ng
   speak listen             Say ROS 2 strings on /corebrum/say
-  voice list|test|set      List voices, speak a sample, or select espeak
+  voice list|test|set|hear List voices, speak, select espeak, or transcribe
   help                     Show this help
 
 install profiles are base, headless, desktop, and ros. headless is the base profile.

@@ -21,4 +21,4 @@ Speech recognition, a wake word, microphone selection, and ElevenLabs are later 
 
 ## Consequences
 
-A desktop machine can say text from the shell and from a ROS 2 publisher without a cloud account. A headless machine can turn that off. Speech recognition, wake word, microphone selection, and ElevenLabs remain unbuilt. The desktop package list is unchanged.
+A desktop machine can say text from the shell and from a ROS 2 publisher without a cloud account. A headless machine can turn that off. Wake word, microphone selection, and ElevenLabs remain unbuilt. Local speech recognition is `docs/decisions/0054-local-speech-recognition.md`. The desktop package list is unchanged.

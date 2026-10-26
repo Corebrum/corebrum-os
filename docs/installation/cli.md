@@ -1,6 +1,6 @@
 # Corebrum command
 
-Phase 4 is the `corebrum` command. It installs the profiles from Phases 1–3, reports what is present, and diagnoses a broken install. The decision is `docs/decisions/0008-corebrum-command.md`. `corebrum install ros`, `corebrum ros`, and `corebrum zenoh` came with Phase 5. `camera list`, `agents list`, and `update status` report the Super+Space menus and do not install or upgrade. `speak` and `voice` use the desktop `espeak-ng` package and do not call a cloud speech API. See `docs/decisions/0048-cli-catch-up.md`, `docs/decisions/0052-local-speech.md`, and `docs/installation/ros.md`.
+Phase 4 is the `corebrum` command. It installs the profiles from Phases 1–3, reports what is present, and diagnoses a broken install. The decision is `docs/decisions/0008-corebrum-command.md`. `corebrum install ros`, `corebrum ros`, and `corebrum zenoh` came with Phase 5. `camera list`, `agents list`, and `update status` report the Super+Space menus and do not install or upgrade. `speak` and `voice` use the desktop `espeak-ng` package and do not call a cloud speech API. `voice hear` transcribes the default microphone with Ubuntu `pocketsphinx` after `voice hear --install`. The desktop profile does not install that package. See `docs/decisions/0048-cli-catch-up.md`, `docs/decisions/0052-local-speech.md`, and `docs/installation/ros.md`.
 
 From a checkout:
 
@@ -38,6 +38,8 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | `corebrum voice test` | Say “Hello from Corebrum.” |
 | `corebrum voice set espeak` | Keep local speech on `espeak-ng` |
 | `corebrum voice disable` | Stop speech until `corebrum voice enable` |
+| `corebrum voice hear` | Transcribe the default microphone for 5 seconds |
+| `corebrum voice hear --install` | Install Ubuntu `pocketsphinx` and `pocketsphinx-en-us`, then transcribe |
 | `corebrum uninstall desktop` | Remove Corebrum desktop files, not Ubuntu packages |
 
 `--dry-run` prints the plan and does not change the system. A real install must be root. It does not write `~/.config` and it does not edit existing Netplan files. A second install copies a file again only when the checkout copy differs, and it keeps the first recorded state value.

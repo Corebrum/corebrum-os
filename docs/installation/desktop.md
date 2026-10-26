@@ -10,7 +10,7 @@ Ubuntu 24.04 does not publish `hyprland`. The desktop profile then adds `ppa:cpp
 
 Quickshell is still not in Ubuntu 24.04, so the bar is Waybar. Super+Space is a GTK window: the idle list keeps parent menus such as AI Agents and ROS, and typing `grok` or `gazebo` adds that submenu item. Fuzzel still opens the submenus. The desktop packages are `python3-gi`, `gir1.2-gtk-3.0`, and `libgtk-layer-shell0`. See `docs/decisions/0030-menu-search-submenus.md`.
 
-The same profile installs Ubuntu `espeak-ng-espeak`. That package depends on `espeak-ng` and provides the `espeak` command. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. `corebrum speak` uses that command. Speech recognition is not part of this install. See `docs/decisions/0031-espeak-ng.md` and `docs/decisions/0052-local-speech.md`.
+The same profile installs Ubuntu `espeak-ng-espeak`. That package depends on `espeak-ng` and provides the `espeak` command. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. `corebrum speak` uses that command. Speech recognition is not part of this install. `corebrum voice hear --install` adds Ubuntu `pocketsphinx` when the operator asks for it. See `docs/decisions/0031-espeak-ng.md`, `docs/decisions/0052-local-speech.md`, and `docs/decisions/0054-local-speech-recognition.md`.
 
 The same profile installs Ubuntu `gnome-text-editor`. Noble publishes 46.3-0ubuntu2 and resolute publishes 50.1-0ubuntu0.1. Super+Space lists that application as Text Editor. Typing `notepad` finds the same row. See `docs/decisions/0039-text-editor.md`.
 
@@ -43,6 +43,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Key | Action |
 | --- | --- |
 | Super+Return | Kitty |
+| Super+K | Clear the terminal screen |
 | Super+Shift+Return | Firefox |
 | Super+Shift+F | Files |
 | Super+Shift+N | Text Editor |
@@ -57,8 +58,8 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+S | Agent scratchpad terminal |
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
+| Super+Arrows | Move focus |
 | Super+Shift+Arrows | Swap the focused tile with the one in that direction |
-| Super+Shift+H J K L | Swap the focused tile: H left, J down, K up, L right |
 | Super+Escape | Lock the screen with hyprlock |
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Log out and return to the greeter |
@@ -73,6 +74,8 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Ctrl+Alt+F1 | Text console |
 
 Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md`.
+
+Super+K clears the focused Kitty window to the prompt and erases its scrollback. That is Kitty's Command+K action. Another window ignores the key. A Kitty window that is already open picks up the shortcut the next time it starts. Super+Arrows move focus. Super+Shift+Arrows swap the focused tile. See `docs/decisions/0053-terminal-clear.md`.
 
 `corebrum install desktop` installs the recorder and the camera preview as executable files. Running that install again marks an older copy executable when its contents are already current. Super+Print and Super+Alt+P record the selected area to `~/Videos`. The list offers Screen, Screen and audio when a microphone is present, Screen and webcam when a camera other than RealSense is present, and Screen and RealSense when `pyrealsense2` is installed. Audio and camera can be chosen together. Audio uses the default microphone. Webcam and RealSense video sit in the bottom-right of the selection. Choosing RealSense uses that camera, so a demo that needs it should choose Screen, audio, or the webcam. With none of those devices, the shortcut records the screen immediately. See `docs/decisions/0040-record-camera.md`.
 
