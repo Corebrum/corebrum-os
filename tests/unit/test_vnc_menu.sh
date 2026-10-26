@@ -70,6 +70,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-vnc-menu open$' "$desktop"; then
   echo "FAIL: desktop entry does not open the remote desktop menu" >&2
   fail=1
 fi
+if ! grep -q '^Icon=preferences-desktop-remote-desktop$' "$desktop"; then
+  echo "FAIL: Remote desktop does not use the Papirus remote desktop icon" >&2
+  fail=1
+fi
 
 lines="$(COREBRUM_VNC_READY=1 COREBRUM_VNC_RUNNING=1 bash "$menu" open)"
 if [[ "$lines" != $'Start   on\nStop\nHow to connect' ]]; then
