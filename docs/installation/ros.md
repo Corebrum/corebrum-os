@@ -71,15 +71,16 @@ sudo ./scripts/validate/ros-graph.sh
 
 ## A second machine
 
-`make check` does not cover a second computer. On the other Ubuntu 24.04 machine, install this same profile, then point its sessions at this machine's router instead of only at localhost:
+`make check` does not cover a second computer. Install this same profile on the other machine. Each machine may keep its own router. The shells that exchange messages connect to one router as Zenoh clients.
 
-1. On this machine, run `corebrum zenoh peers` and choose an address.
-2. On the other machine, copy `/opt/ros/<distro>/share/rmw_zenoh_cpp/config/DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5` (`jazzy` or `lyrical`) and add `tcp/<this-address>:7447` to the session connect endpoints.
-3. Export `ZENOH_SESSION_CONFIG_URI` to that file, and `RMW_IMPLEMENTATION=rmw_zenoh_cpp`, in the shells that should join this router.
-4. Leave both machines on `ROS_DOMAIN_ID` 0, or set both to the same other value.
-5. Run a talker here and a listener there.
+1. On the machine whose router will carry the messages, run `corebrum zenoh peers` and choose an address.
+2. On both machines, copy `/opt/ros/<distro>/share/rmw_zenoh_cpp/config/DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5` (`jazzy` or `lyrical`).
+3. In that copy, set `mode` to `client` and set the connect endpoint to `tcp/<router-address>:7447`. Leave the listen endpoint on `tcp/localhost:0`.
+4. Export `ZENOH_SESSION_CONFIG_URI` to that file, and `RMW_IMPLEMENTATION=rmw_zenoh_cpp`, in the talker shell and the listener shell.
+5. Leave both machines on `ROS_DOMAIN_ID` 0, or set both to the same other value.
+6. Run a talker on one machine and a listener on the other.
 
-Do not start a second `rmw_zenohd` on the machine that is only connecting.
+A publisher left on the default peer session listens on `127.0.0.1`. The other machine can see that session and cannot open it. On 2026-10-26 a client session on both sides carried `/corebrum_link` from 192.168.8.100 to 192.168.8.193. The clocks differed by about 11 seconds, so Zenoh replaced timestamps more than 500 ms off, and the message text still arrived. See `docs/decisions/0049-two-machine-zenoh.md`.
 
 ## DDS fallback
 

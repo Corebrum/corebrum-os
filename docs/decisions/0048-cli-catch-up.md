@@ -17,4 +17,4 @@ Phases 6, 7, and 10 through 13 shipped as Super+Space menus. `corebrum status` a
 
 ## Consequences
 
-`docs/decisions/0008-corebrum-command.md` still describes the Phase 4 command. This decision is the later catch-up. A two-machine Zenoh test and the Phase 6 camera acceptance check remain open. Neither starts from these report commands.
+`docs/decisions/0008-corebrum-command.md` still describes the Phase 4 command. This decision is the later catch-up. The two-machine Zenoh topic check is `docs/decisions/0049-two-machine-zenoh.md`. The RealSense check is `docs/decisions/0050-realsense-acceptance.md`. The AgenticROS skill check is `docs/decisions/0051-agenticros-acceptance.md`. None of those start from these report commands.
