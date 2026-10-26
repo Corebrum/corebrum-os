@@ -77,7 +77,7 @@ chmod 755 "${stub}/espeak-ng" "${stub}/pw-record" "${recog}/pocketsphinx" \
 export XDG_STATE_HOME="$state"
 export XDG_RUNTIME_DIR="$runtime"
 export COREBRUM_SPEECH_BIN="${stub}/espeak-ng"
-for tool in bash python3 awk grep rm mkdir mv mktemp id wc dd chmod cp cat date basename dirname readlink; do
+for tool in bash python3 awk grep rm mkdir mv mktemp id wc dd chmod cp cat date basename dirname readlink flock setsid sleep; do
   target="$(command -v "$tool" || true)"
   if [[ -n "$target" ]]; then
     ln -s "$target" "${tools}/${tool}"
@@ -191,6 +191,69 @@ if ! grep -q 'not in the Ubuntu archive' "${state}/none.err"; then
   echo "FAIL: a missing archive package was not reported" >&2
   exit 1
 fi
+
+export COREBRUM_HEAR_STUB=1
+missing_toggle="$("$CMD" voice hear toggle)"
+if ! grep -q 'Transcription was not installed.' <<<"$missing_toggle"; then
+  echo "FAIL: toggle did not decline a missing recognizer: ${missing_toggle}" >&2
+  exit 1
+fi
+if grep -q 'pocketsphinx pocketsphinx-en-us' <<<"$missing_toggle"; then
+  echo "FAIL: declining the prompt installed transcription" >&2
+  exit 1
+fi
+export COREBRUM_HEAR_INSTALL_ANSWER=Yes
+yes_toggle="$("$CMD" voice hear toggle)"
+if ! grep -q 'pocketsphinx pocketsphinx-en-us' <<<"$yes_toggle"; then
+  echo "FAIL: Yes did not install Ubuntu pocketsphinx: ${yes_toggle}" >&2
+  exit 1
+fi
+if ! grep -q 'Press Super+H to listen.' <<<"$yes_toggle"; then
+  echo "FAIL: Yes did not say how to listen after install" >&2
+  exit 1
+fi
+unset COREBRUM_HEAR_INSTALL_ANSWER
+
+cat >"${recog}/listen" <<'EOF'
+#!/usr/bin/env python3
+import signal
+import sys
+import time
+
+signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
+path = sys.argv[-1]
+with open(path, "wb") as handle:
+    handle.write(b"x" * 100)
+time.sleep(30)
+EOF
+chmod 755 "${recog}/listen"
+export COREBRUM_STT_BIN="${recog}/pocketsphinx"
+export COREBRUM_RECORD_BIN="${recog}/listen"
+export COREBRUM_HEAR_LOG="${state}/hear.log"
+: >"${state}/hear.log"
+started="$("$CMD" voice hear toggle)"
+if ! grep -q 'Listening. Press Super+H to finish.' <<<"$started"; then
+  echo "FAIL: toggle did not start listening: ${started}" >&2
+  exit 1
+fi
+"$CMD" voice hear toggle >/dev/null
+heard=""
+for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+  if grep -q 'hello from the microphone' "${state}/hear.log"; then
+    heard="$(cat "${state}/hear.log")"
+    break
+  fi
+  sleep 0.1
+done
+if ! grep -q 'hello from the microphone' <<<"$heard"; then
+  echo "FAIL: toggle did not transcribe: ${heard}" >&2
+  exit 1
+fi
+if ! grep -q 'copy hello from the microphone' <<<"$heard"; then
+  echo "FAIL: toggle did not copy the words: ${heard}" >&2
+  exit 1
+fi
+unset COREBRUM_HEAR_STUB COREBRUM_HEAR_LOG
 
 if ! grep -q 'doctor: speech recognition is not installed' "${ROOT}/scripts/lib/cli.sh"; then
   echo "FAIL: doctor does not report a missing recognizer" >&2

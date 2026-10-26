@@ -623,25 +623,242 @@ except json.JSONDecodeError:
 sys.stdout.write((obj.get("t") or "").strip())'
 }
 
+corebrum_hear_dir() {
+  local dir="${XDG_RUNTIME_DIR:-/tmp}/corebrum-hear-$(id -u)"
+  mkdir -p "$dir"
+  printf '%s\n' "$dir"
+}
+
+corebrum_hear_notify() {
+  local summary="$1" body="$2"
+  if [[ -n "${COREBRUM_HEAR_LOG:-}" ]]; then
+    printf 'notify %s|%s\n' "$summary" "$body" >>"${COREBRUM_HEAR_LOG}"
+  fi
+  if [[ "${COREBRUM_HEAR_STUB:-0}" == 1 ]]; then
+    printf 'notify %s|%s\n' "$summary" "$body"
+    return 0
+  fi
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send --app-name=Corebrum "$summary" "$body" || true
+  fi
+}
+
+corebrum_hear_copy() {
+  local text="$1"
+  if [[ -n "${COREBRUM_HEAR_LOG:-}" ]]; then
+    printf 'copy %s\n' "$text" >>"${COREBRUM_HEAR_LOG}"
+  fi
+  if [[ "${COREBRUM_HEAR_STUB:-0}" == 1 ]]; then
+    printf 'copy %s\n' "$text"
+    return 0
+  fi
+  if command -v wl-copy >/dev/null 2>&1; then
+    printf '%s' "$text" | wl-copy || true
+  fi
+}
+
+corebrum_hear_alive() {
+  local pid="$1"
+  [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null
+}
+
+corebrum_hear_finish() {
+  local wav="$1" text="" bytes=0 bin
+  if [[ ! -f "$wav" ]]; then
+    corebrum_hear_notify "Transcribe" "The recording was empty."
+    return 0
+  fi
+  bytes="$(wc -c <"$wav")"
+  if [[ "$bytes" -le 44 ]]; then
+    rm -f "$wav"
+    corebrum_hear_notify "Transcribe" "The recording was empty."
+    return 0
+  fi
+  bin="$(corebrum_stt_bin)" || {
+    rm -f "$wav"
+    corebrum_hear_notify "Transcribe" "Speech recognition is not installed."
+    return 0
+  }
+  if ! text="$(corebrum_stt_text "$bin" "$wav")"; then
+    rm -f "$wav"
+    corebrum_hear_notify "Transcribe" "Speech recognition failed."
+    return 0
+  fi
+  rm -f "$wav"
+  if [[ -z "$text" ]]; then
+    corebrum_hear_notify "Transcribe" "No speech recognized."
+    return 0
+  fi
+  corebrum_hear_copy "$text"
+  corebrum_hear_notify "Transcribe" "$text"
+  printf '%s\n' "$text"
+}
+
+corebrum_hear_ask_install() {
+  local choice=""
+  if [[ "${COREBRUM_HEAR_STUB:-0}" == 1 ]]; then
+    printf '%s\n' "${COREBRUM_HEAR_INSTALL_ANSWER:-No}"
+    return 0
+  fi
+  if [[ -n "${COREBRUM_HEAR_INSTALL_ANSWER:-}" ]]; then
+    printf '%s\n' "$COREBRUM_HEAR_INSTALL_ANSWER"
+    return 0
+  fi
+  if command -v hyprland-dialog >/dev/null 2>&1; then
+    choice="$(timeout 120 hyprland-dialog \
+      --title "Install transcription" \
+      --apptitle "Corebrum" \
+      --text "Super+H needs Ubuntu pocketsphinx to transcribe the microphone. Install it?" \
+      --buttons "Yes;No" 2>/dev/null || true)"
+    printf '%s\n' "$(printf '%s\n' "$choice" | head -n 1 | tr -d '[:space:]')"
+    return 0
+  fi
+  if command -v fuzzel >/dev/null 2>&1; then
+    choice="$(printf 'Yes\nNo\n' | timeout 120 fuzzel \
+      --config /etc/corebrum/fuzzel/fuzzel.ini \
+      --dmenu \
+      --prompt 'Install transcription  ' \
+      --width 48 \
+      --lines 4 || true)"
+    printf '%s\n' "$(printf '%s' "$choice" | tr -d '[:space:]')"
+    return 0
+  fi
+  printf '%s\n' "No"
+}
+
+corebrum_hear_install_terminal() {
+  local script
+  script="$(cat <<'EOF'
+set +e
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends pocketsphinx pocketsphinx-en-us
+ec=$?
+printf '\n'
+if [ "$ec" -eq 0 ]; then
+  printf '%s\n' "Transcription is installed. Press Super+H to listen."
+else
+  printf 'Install failed (%s).\n' "$ec"
+fi
+read -r -p 'Press Enter to close. '
+EOF
+)"
+  if [[ "${COREBRUM_HEAR_STUB:-0}" == 1 ]]; then
+    printf '%s\n' "$script"
+    return 0
+  fi
+  if [[ -x /usr/local/bin/corebrum-terminal ]]; then
+    exec /usr/local/bin/corebrum-terminal bash -c "$script"
+  fi
+  corebrum_stt_install
+}
+
+corebrum_hear_toggle() {
+  local dir pidfile wav pid rec waited
+  if ! corebrum_stt_ready; then
+    corebrum_hear_notify "Transcribe" "Speech recognition is not installed. Run corebrum voice hear --install"
+    return 0
+  fi
+  rec="$(corebrum_record_bin)" || {
+    corebrum_hear_notify "Transcribe" "pw-record is not installed."
+    return 0
+  }
+  dir="$(corebrum_hear_dir)"
+  pidfile="${dir}/pid"
+  wav="${dir}/hear.wav"
+  exec 9>"${dir}/lock"
+  flock 9
+  pid=""
+  if [[ -f "$pidfile" ]]; then
+    pid="$(<"$pidfile")"
+  fi
+  if corebrum_hear_alive "$pid"; then
+    kill -INT -"$pid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
+    flock -u 9
+    exec 9>&-
+    return 0
+  fi
+  if [[ -f "$wav" ]]; then
+    flock -u 9
+    exec 9>&-
+    corebrum_hear_finish "$wav"
+    return 0
+  fi
+  rm -f "$wav" "$pidfile"
+  flock -u 9
+  exec 9>&-
+  cat >"${dir}/owner.sh" <<'EOF'
+#!/bin/bash
+set -u
+trap 'true' INT TERM
+printf '%s\n' "$$" >"$COREBRUM_HEAR_PIDFILE"
+"$COREBRUM_HEAR_REC" --rate 16000 --channels 1 --format s16 -n "$COREBRUM_HEAR_SAMPLES" "$COREBRUM_HEAR_WAV" >/dev/null 2>&1 || true
+exec "$COREBRUM_HEAR_CMD" voice hear finish
+EOF
+  chmod 755 "${dir}/owner.sh"
+  COREBRUM_HEAR_REC="$rec" \
+    COREBRUM_HEAR_WAV="$wav" \
+    COREBRUM_HEAR_PIDFILE="$pidfile" \
+    COREBRUM_HEAR_SAMPLES="$((60 * 16000))" \
+    COREBRUM_HEAR_CMD="$0" \
+    setsid "${dir}/owner.sh" >/dev/null 2>&1 &
+  disown || true
+  waited=0
+  while [[ "$waited" -lt 20 ]]; do
+    [[ -s "$pidfile" ]] && break
+    sleep 0.05
+    waited=$((waited + 1))
+  done
+  corebrum_hear_notify "Transcribe" "Listening. Press Super+H to finish."
+}
+
 corebrum_cmd_voice_hear() {
-  local install=0 seconds=5 rec wav bytes text bin
+  local install=0 toggle=0 seconds=5 rec wav bytes text bin answer
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --install)
         install=1
         ;;
+      toggle)
+        toggle=1
+        ;;
+      finish)
+        corebrum_hear_finish "$(corebrum_hear_dir)/hear.wav"
+        return 0
+        ;;
       *)
         if [[ "$1" =~ ^[0-9]+$ ]]; then
           seconds="$1"
         else
-          corebrum_die "usage: corebrum voice hear [--install] [seconds]"
+          corebrum_die "usage: corebrum voice hear [--install] [seconds|toggle]"
         fi
         ;;
     esac
     shift
   done
+  if [[ "$toggle" -eq 1 && "$seconds" -ne 5 ]]; then
+    corebrum_die "usage: corebrum voice hear [--install] [seconds|toggle]"
+  fi
   if [[ "$seconds" -lt 1 || "$seconds" -gt 30 ]]; then
     corebrum_die "record between 1 and 30 seconds"
+  fi
+  if [[ "$toggle" -eq 1 ]]; then
+    if ! corebrum_stt_ready; then
+      if [[ "$install" -eq 1 ]]; then
+        corebrum_stt_install
+      else
+        answer="$(corebrum_hear_ask_install)"
+        case "$answer" in
+          Yes | yes)
+            corebrum_hear_install_terminal
+            ;;
+          *)
+            corebrum_hear_notify "Transcribe" "Transcription was not installed."
+            ;;
+        esac
+        return 0
+      fi
+    fi
+    corebrum_hear_toggle
+    return 0
   fi
   if ! corebrum_stt_ready; then
     if [[ "$install" -eq 1 ]]; then
@@ -834,9 +1051,11 @@ Usage: corebrum voice list|test|set|enable|disable|hear
   enable            Turn local speech on
   disable           Turn local speech off
   hear [seconds]    Transcribe the default microphone
+  hear toggle       Start listening, or stop and copy the words
   hear --install    Install Ubuntu pocketsphinx, then transcribe
 
-hear records up to 30 seconds. The desktop profile does not install it.
+hear records up to 30 seconds. toggle listens for up to 60 seconds.
+Super+H runs toggle. The desktop profile does not install pocketsphinx.
 These commands do not call a cloud speech API.
 EOF
       [[ -n "$sub" ]] || return 1

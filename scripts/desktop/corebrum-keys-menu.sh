@@ -6,6 +6,7 @@ corebrum_keys_menu_lines() {
   cat <<'EOF'
 Super+Return           Open a terminal
 Super+K                Clear the terminal screen
+Super+H                Transcribe the microphone
 Super+Shift+Return     Open Firefox
 Super+Shift+F          Open Files
 Super+Shift+N          Open Text Editor
