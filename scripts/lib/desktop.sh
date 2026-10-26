@@ -138,6 +138,8 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-menu.sh" /usr/local/bin/corebrum-agenticros-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-skills-menu.sh" /usr/local/bin/corebrum-skills-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-skills-approve.sh" /usr/local/bin/corebrum-skills-approve 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-status.sh" /usr/local/bin/corebrum-agenticros-status 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-chromium-menu.sh" /usr/local/bin/corebrum-chromium-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-ollama-menu.sh" /usr/local/bin/corebrum-ollama-menu 755
@@ -245,6 +247,8 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-ros-menu
 /usr/local/bin/corebrum-realsense-menu
 /usr/local/bin/corebrum-agenticros-menu
+/usr/local/bin/corebrum-skills-menu
+/usr/local/bin/corebrum-skills-approve
 /usr/local/bin/corebrum-agenticros-status
 /usr/local/bin/corebrum-chromium-menu
 /usr/local/bin/corebrum-ollama-menu
