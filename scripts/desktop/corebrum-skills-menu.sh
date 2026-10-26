@@ -83,8 +83,22 @@ corebrum_skills_command() {
   esac
 }
 
-corebrum_skills_terminal() {
+corebrum_skills_hold() {
   local script="$1"
+  cat <<EOF
+set +e
+${script}
+ec=\$?
+set -e
+printf '\\n'
+read -r -p 'Press Enter to close. '
+exit "\$ec"
+EOF
+}
+
+corebrum_skills_terminal() {
+  local script
+  script="$(corebrum_skills_hold "$1")"
   if [[ "${COREBRUM_SKILLS_STUB:-0}" == 1 ]]; then
     printf '%s\n' "$script"
     return 0

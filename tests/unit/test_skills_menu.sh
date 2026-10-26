@@ -58,14 +58,14 @@ if [[ "$output" != *List* || "$output" != *Install* ]]; then
 fi
 
 output="$(COREBRUM_SKILLS_READY=1 COREBRUM_SKILLS_CHOICE=List bash "$menu" open)"
-if [[ "$output" != 'agenticros skills list' ]]; then
-  echo "FAIL: List did not run agenticros skills list (got ${output})" >&2
+if [[ "$output" != *'agenticros skills list'* || "$output" != *'Press Enter to close.'* ]]; then
+  echo "FAIL: List did not keep the terminal open (got ${output})" >&2
   fail=1
 fi
 
 output="$(COREBRUM_SKILLS_READY=1 COREBRUM_SKILLS_CHOICE=Install COREBRUM_SKILLS_QUERY=agenticros/navigate-to bash "$menu" open)"
-if [[ "$output" != 'agenticros skills install agenticros/navigate-to' ]]; then
-  echo "FAIL: Install did not print the skills command (got ${output})" >&2
+if [[ "$output" != *'agenticros skills install agenticros/navigate-to'* || "$output" != *'Press Enter to close.'* ]]; then
+  echo "FAIL: Install did not keep the terminal open (got ${output})" >&2
   fail=1
 fi
 
