@@ -140,4 +140,4 @@ This disables greetd, restores the previous default target when this installer c
 
 ## What is not done
 
-The operator continued to Phase 3 after this machine booted to Hyprland and showed Waybar. Confirm the key table above on the session if that has not been done. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, RealSense, and Corebrum Mesh are not part of this install. AgenticROS is not installed by the desktop profile. Super+Space offers it after `corebrum install ros`.
+The operator continued to Phase 3 after this machine booted to Hyprland and showed Waybar. Confirm the key table above on the session if that has not been done. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, and RealSense are not part of this install. AgenticROS is not installed by the desktop profile. Super+Space offers it after `corebrum install ros`.

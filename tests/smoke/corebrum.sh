@@ -45,6 +45,12 @@ if ! grep -q 'profile ros:' <<<"$status"; then
   echo "FAIL: status did not report the ros profile" >&2
   exit 1
 fi
+for line in 'realsense:' 'agenticros:' 'skills helper:'; do
+  if ! grep -q "$line" <<<"$status"; then
+    echo "FAIL: status did not report ${line}" >&2
+    exit 1
+  fi
+done
 if ! "$CMD" ros status >/dev/null; then
   echo "FAIL: ros status should succeed before ROS is required" >&2
   exit 1
@@ -91,7 +97,7 @@ if ! grep -q 'ros profile dry-run complete' <<<"$ros"; then
   echo "FAIL: ros dry-run did not finish" >&2
   exit 1
 fi
-if ! grep -q 'ros-jazzy-rmw-zenoh-cpp' <<<"$ros"; then
+if ! grep -Eq 'ros-(jazzy|lyrical)-rmw-zenoh-cpp' <<<"$ros"; then
   echo "FAIL: ros dry-run did not list the Zenoh RMW" >&2
   exit 1
 fi
@@ -99,7 +105,7 @@ if ! grep -q 'not running apt upgrade' <<<"$ros"; then
   echo "FAIL: ros dry-run did not refuse apt upgrade" >&2
   exit 1
 fi
-if grep -Eq 'ros-jazzy-desktop|ros-jazzy-rviz2' <<<"$ros"; then
+if grep -Eq 'ros-(jazzy|lyrical)-desktop|ros-(jazzy|lyrical)-rviz2' <<<"$ros"; then
   echo "FAIL: ros dry-run listed RViz or the ROS desktop metapackage" >&2
   exit 1
 fi

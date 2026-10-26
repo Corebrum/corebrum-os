@@ -1,6 +1,8 @@
 Corebrum OS — Engineering Build Plan
 The OS for Physical AI
 Version: 0.1 Date: October 21, 2026 Status: Initial Engineering Plan Author: Chris Matthieu Website: corebrum.com
+Progress — October 26, 2026
+Phases 0–4 are shipped: the base profile, the Hyprland desktop, workstation services, and the corebrum command. Phase 5 installed ROS 2 and the Zenoh router. A recorded two-machine Zenoh test is still open. RealSense, AgenticROS, Skills, AI agents, RViz, Gazebo, Nav2, MoveIt, remote desktop, and Updates are Super+Space menus. corebrum status, camera list, agents list, and update status report those pieces and do not install them. Phase 9 installed the espeak package only. Phase 13 is the Updates menu, not a signed package repository. Phases 14 and 15 are still future work. Corebrum Mesh is not part of this plan. Later phase numbers are unchanged. See docs/decisions/0048-cli-catch-up.md.
 1. Purpose
 This document provides an actionable, phased engineering plan for building Corebrum OS using AI coding agents such as OpenAI Codex and Cursor.
 Corebrum is an open-source, developer-first Linux environment for Physical AI, inspired by Omarchy's polished tiling desktop and opinionated developer experience.
@@ -8,7 +10,7 @@ The initial implementation will run on Ubuntu Server 24.04 LTS (x86-64) and inte
 * Hyprland, Waybar, terminal tools, and essential desktop utilities
 * ROS 2 Jazzy with Zenoh as the default RMW
 * RealSense SDK and ROS 2 camera integration
-* AgenticROS and Corebrum Mesh
+* AgenticROS
 * eSpeak NG and optional speech recognition
 * Optional AI agents and development tools
 * RViz, Gazebo, SSH, screen sharing, and WebRTC
@@ -66,7 +68,6 @@ ROS middleware	rmw_zenoh_cpp
 Communication fabric	Zenoh
 Perception	RealSense SDK
 Agent integration	AgenticROS
-Distributed compute	Corebrum Mesh
 Default TTS	eSpeak NG
 Optional STT	faster-whisper
 AI tool manager	mise
@@ -371,33 +372,6 @@ Acceptance Criteria
 * Cloud features are optional.
 * Local workflows function offline.
 
-Phase 8 — Corebrum Mesh Integration
-Priority: High Dependencies: Phases 5 and 7
-Objective
-Integrate the existing distributed computing project under its new Corebrum Mesh identity.
-Tasks
-* Inspect the current Corebrum source code and architecture.
-* Inventory existing Zenoh integrations.
-* Identify dependencies and version constraints.
-* Separate Mesh services from desktop dependencies.
-* Package Mesh components.
-* Add optional service startup.
-* Implement node discovery and diagnostics.
-* Define shared identity and security conventions.
-* Validate communication with ROS 2 and AgenticROS.
-* Document existing versus planned distributed compute capabilities.
-Proposed commands
-corebrum mesh status
-corebrum mesh nodes
-corebrum mesh services
-Acceptance Criteria
-* Mesh services install cleanly.
-* Mesh services can be started and stopped independently.
-* Zenoh connectivity is validated.
-* Existing functionality remains intact after packaging.
-* Corebrum Desktop continues functioning if Mesh is disabled.
-Do not implement a new distributed workload scheduler until the existing product has been assessed and a separate specification approved.
-
 Phase 9 — Speech and Voice
 Priority: Medium Dependencies: Phases 5 and 7
 Objective
@@ -518,7 +492,7 @@ Acceptance Criteria
 * Unauthorized remote control is prevented.
 
 Phase 13 — Independent Software Update System
-Priority: Critical before public beta Dependencies: Phases 4–8
+Priority: Critical before public beta Dependencies: Phases 4–7
 Objective
 Deliver independent, compatibility-aware updates.
 Tasks
@@ -563,7 +537,6 @@ Tasks
 * Test ARM64 ROS 2 and Zenoh packages.
 * Validate RealSense camera connectivity.
 * Test AgenticROS runtime.
-* Test Corebrum Mesh.
 * Benchmark resource usage.
 * Create headless profiles.
 * Build supported hardware installation documentation.
@@ -595,7 +568,6 @@ Milestone	Required phases	Deliverable
 A — Desktop Alpha	0–4	Functional Ubuntu + Hyprland Corebrum desktop
 B — Physical AI Alpha	5–6	ROS 2 + Zenoh + RealSense
 C — AI Developer Preview	7, 9–10	AgenticROS, speech, optional AI agents
-D — Distributed Preview	8	Corebrum Mesh integration
 E — Public Beta	11–13	Simulation, remote access, independent updates
 F — Hardware Expansion	14	Jetson and Raspberry Pi support
 G — Ecosystem	15	App and skills catalog
@@ -651,7 +623,7 @@ manifests/packages/base.txt
 docs/installation/ubuntu-server.md
 Definition of Done
 The repository passes CI, and the base installer succeeds twice on a clean Ubuntu Server 24.04 VM without breaking networking or changing unrelated user configuration.
-Do not begin installing Hyprland, ROS 2, Zenoh, RealSense, AgenticROS, or Corebrum Mesh during Sprint 1.
+Do not begin installing Hyprland, ROS 2, Zenoh, RealSense, or AgenticROS during Sprint 1.
 10. Initial Prompt for Codex or Cursor
 Use the following as the first engineering instruction:
 You are the lead engineer for Corebrum OS, an open-source Ubuntu-based operating environment for Physical AI.

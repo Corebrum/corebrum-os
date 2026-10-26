@@ -25,6 +25,9 @@ Usage: corebrum <command> [arguments]
   uninstall <profile>      Remove Corebrum desktop or ROS files
   ros status|topics|rmw    Inspect ROS 2 or select Zenoh or Fast DDS
   zenoh status|peers       Inspect the Zenoh router
+  camera list              List RealSense devices, or point at Super+Space
+  agents list              Show which AI agent CLIs are on PATH
+  update status            List the Updates rows without upgrading
   help                     Show this help
 
 install profiles are base, headless, desktop, and ros. headless is the base profile.
@@ -68,6 +71,15 @@ case "$command_name" in
     ;;
   zenoh)
     corebrum_cmd_zenoh "$@"
+    ;;
+  camera)
+    corebrum_cmd_camera "$@"
+    ;;
+  agents)
+    corebrum_cmd_agents "$@"
+    ;;
+  update)
+    corebrum_cmd_update "$@"
     ;;
   "" | -h | --help | help)
     usage

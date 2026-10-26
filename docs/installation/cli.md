@@ -1,6 +1,6 @@
 # Corebrum command
 
-Phase 4 is the `corebrum` command. It installs the profiles from Phases 1–3, reports what is present, and diagnoses a broken install. The decision is `docs/decisions/0008-corebrum-command.md`.
+Phase 4 is the `corebrum` command. It installs the profiles from Phases 1–3, reports what is present, and diagnoses a broken install. The decision is `docs/decisions/0008-corebrum-command.md`. `corebrum install ros`, `corebrum ros`, and `corebrum zenoh` came with Phase 5. `camera list`, `agents list`, and `update status` report the Super+Space menus and do not install or upgrade. See `docs/decisions/0048-cli-catch-up.md` and `docs/installation/ros.md`.
 
 From a checkout:
 
@@ -15,13 +15,23 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | Command | Effect |
 | --- | --- |
 | `corebrum version` | Print the version from `VERSION` |
-| `corebrum status` | Say whether base, desktop, and services are installed |
-| `corebrum doctor` | Run the validators and print the next command if one fails |
+| `corebrum status` | Say whether base, desktop, services, and ROS are installed, plus RealSense, AgenticROS, and the Skills helper |
+| `corebrum doctor` | Run the validators and print the next command if one fails. A missing RealSense install, AgenticROS install, or Skills helper does not fail it |
 | `corebrum config` | List `/etc/corebrum`, logs, and backups |
 | `corebrum install base` | Headless Ubuntu foundation |
 | `corebrum install headless` | Same as `base` |
 | `corebrum install desktop` | Base, Hyprland, workstation services, and Node.js 26.x with npm and pnpm |
 | `corebrum install desktop --enable-ssh` | Also install OpenSSH |
+| `corebrum install ros` | Base profile, ROS 2, and the Zenoh router |
+| `corebrum ros status` | Distro, selected RMW, and router state |
+| `corebrum ros topics` | `ros2 topic list` with the selected RMW |
+| `corebrum ros rmw zenoh` | New shells use Zenoh |
+| `corebrum ros rmw fastrtps` | New shells use Fast DDS |
+| `corebrum zenoh status` | Router unit and listen address |
+| `corebrum zenoh peers` | Router address and this machine's IPv4 addresses |
+| `corebrum camera list` | List RealSense devices, or point at Super+Space |
+| `corebrum agents list` | Show which catalog CLIs are on `PATH` |
+| `corebrum update status` | List the Updates rows. Does not run apt or git |
 | `corebrum uninstall desktop` | Remove Corebrum desktop files, not Ubuntu packages |
 
 `--dry-run` prints the plan and does not change the system. A real install must be root. It does not write `~/.config` and it does not edit existing Netplan files. A second install copies a file again only when the checkout copy differs, and it keeps the first recorded state value.

@@ -9,8 +9,8 @@ Ubuntu Server 24.04 or 26.04
   NetworkManager, PipeWire, portals, disks     Phase 3, Ubuntu archive, Ethernet stays on Netplan
   corebrum install, status, doctor, config     Phase 4
   ROS 2 Jazzy or Lyrical + rmw_zenoh_cpp        Phase 5, official ROS apt repository
-  RViz, Gazebo, RealSense                       later
-  AgenticROS, Corebrum Mesh                     later
+  RViz, Gazebo, RealSense                       Super+Space
+  AgenticROS                                    Super+Space, not a profile
 ```
 
 The session follows [Omarchy](https://github.com/omacom/omarchy). Hyprland tiles windows, with dwindle as the default layout. Quickshell was the preferred shell. It is not in the Ubuntu 24.04 or 26.04 archive, so Waybar, Fuzzel, and the Corebrum app grid are the session. A robotics tool is a grid tile that opens into a workspace. The decisions are `docs/decisions/0002-omarchy-shell-on-ubuntu.md` and `docs/decisions/0005-desktop-packages-on-noble.md`.

@@ -80,6 +80,21 @@ corebrum_cmd_status() {
   corebrum_profile_line desktop "$desktop"
   corebrum_profile_line services "$services"
   corebrum_profile_line ros "$ros"
+  if corebrum_realsense_installed; then
+    printf 'realsense: installed\n'
+  else
+    printf 'realsense: not installed\n'
+  fi
+  if corebrum_agenticros_installed; then
+    printf 'agenticros: installed\n'
+  else
+    printf 'agenticros: not installed\n'
+  fi
+  if [[ -x /usr/local/bin/corebrum-skills-approve ]]; then
+    printf 'skills helper: installed\n'
+  else
+    printf 'skills helper: not installed\n'
+  fi
   if [[ -L /var/log/corebrum/install-latest.log || -f /var/log/corebrum/install-latest.log ]]; then
     printf 'log: /var/log/corebrum/install-latest.log\n'
   else
@@ -163,6 +178,24 @@ corebrum_cmd_doctor() {
   else
     corebrum_log "doctor: ros is not installed"
     corebrum_log "optional: sudo corebrum install ros"
+  fi
+  if corebrum_realsense_installed; then
+    corebrum_log "doctor: realsense is installed"
+  else
+    corebrum_log "doctor: realsense is not installed"
+    corebrum_log "optional: Super+Space RealSense"
+  fi
+  if corebrum_agenticros_installed; then
+    corebrum_log "doctor: agenticros is installed"
+  else
+    corebrum_log "doctor: agenticros is not installed"
+    corebrum_log "optional: Super+Space AgenticROS"
+  fi
+  if [[ -x /usr/local/bin/corebrum-skills-approve ]]; then
+    corebrum_log "doctor: skills helper is installed"
+  else
+    corebrum_log "doctor: skills helper is not installed"
+    corebrum_log "optional: sudo corebrum install desktop"
   fi
   duplicates="$(corebrum_state_duplicates || true)"
   if [[ -n "$duplicates" ]]; then
@@ -284,4 +317,117 @@ EOF
     args+=(--dry-run)
   fi
   "${COREBRUM_ROOT}/scripts/uninstall.sh" "${args[@]}"
+}
+
+corebrum_realsense_installed() {
+  corebrum_pkg_installed librealsense2-utils && command -v rs-enumerate-devices >/dev/null 2>&1
+}
+
+corebrum_agenticros_installed() {
+  [[ -x /usr/local/bin/agenticros && -f "${HOME}/.agenticros/config.json" ]]
+}
+
+corebrum_agents_catalog() {
+  if [[ -n "${COREBRUM_AGENTS_FILE:-}" ]]; then
+    printf '%s\n' "$COREBRUM_AGENTS_FILE"
+  elif [[ -f /etc/corebrum/agents.conf ]]; then
+    printf '%s\n' /etc/corebrum/agents.conf
+  else
+    printf '%s\n' "${COREBRUM_ROOT}/manifests/packages/agents.conf"
+  fi
+}
+
+corebrum_cmd_camera() {
+  local sub="${1:-}"
+  case "$sub" in
+    list)
+      if ! corebrum_realsense_installed; then
+        printf '%s\n' "RealSense is not installed. Press Super+Space and choose RealSense."
+        return 0
+      fi
+      timeout 15 rs-enumerate-devices
+      ;;
+    "" | -h | --help | help)
+      cat <<'EOF'
+Usage: corebrum camera list
+
+  list    Show RealSense devices when the SDK is installed
+
+This command does not install RealSense.
+EOF
+      [[ -n "$sub" ]] || return 1
+      ;;
+    *)
+      corebrum_die "unknown camera command: ${sub}"
+      ;;
+  esac
+}
+
+corebrum_cmd_agents() {
+  local sub="${1:-}" file line binary
+  local -a fields=()
+  case "$sub" in
+    list)
+      file="$(corebrum_agents_catalog)"
+      [[ -f "$file" ]] || corebrum_die "missing agent list ${file}"
+      while IFS= read -r line || [[ -n "$line" ]]; do
+        line="${line%%#*}"
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+        [[ -z "$line" ]] && continue
+        IFS='^' read -r -a fields <<<"$line"
+        [[ "${#fields[@]}" -eq 6 ]] || corebrum_die "invalid agent line: ${line}"
+        binary="${fields[2]}"
+        if command -v "$binary" >/dev/null 2>&1; then
+          printf '%s: installed\n' "$binary"
+        else
+          printf '%s: not installed\n' "$binary"
+        fi
+      done <"$file"
+      ;;
+    "" | -h | --help | help)
+      cat <<'EOF'
+Usage: corebrum agents list
+
+  list    Show which AI agent CLIs from the catalog are on PATH
+
+This command does not install an agent.
+EOF
+      [[ -n "$sub" ]] || return 1
+      ;;
+    *)
+      corebrum_die "unknown agents command: ${sub}"
+      ;;
+  esac
+}
+
+corebrum_cmd_update() {
+  local sub="${1:-}"
+  case "$sub" in
+    status)
+      cat <<'EOF'
+Updates stay in Super+Space. This command does not upgrade anything.
+
+  Ubuntu
+  Corebrum
+  ROS 2
+  Zenoh
+  AgenticROS
+  AI Agents
+EOF
+      ;;
+    "" | -h | --help | help)
+      cat <<'EOF'
+Usage: corebrum update status
+
+  status    List the Super+Space Updates rows
+
+This command does not run apt or git.
+EOF
+      [[ -n "$sub" ]] || return 1
+      ;;
+    *)
+      corebrum_die "corebrum update ${sub} is not available. Super+Space Updates runs that step."
+      ;;
+  esac
 }
