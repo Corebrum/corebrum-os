@@ -8,6 +8,12 @@ AI Agents are built into the OS. [AgenticROS](https://agenticros.com) gives thos
 
 Original Corebrum code in this repository is under the MIT license in `LICENSE`. Third-party components keep their own licenses. The MIT choice is subject to license review.
 
+## Demo
+
+[![Meet Corebrum, the Physical AI Operating System](docs/images/demo.jpg)](https://www.youtube.com/watch?v=a010iQF9h7g)
+
+[Meet Corebrum](https://www.youtube.com/watch?v=a010iQF9h7g) walks through the desktop with ROS 2, Gazebo, RealSense, and the built-in AI agents.
+
 ## Current status
 
 Phase 0 and Phase 1 are in the tree. The operator reported a successful base install, validation, and reboot on Ubuntu Server 24.04.
