@@ -62,10 +62,25 @@ trap 'rm -rf "$stub" "$marker" "$bin" "$catalog"' EXIT
 printf '%s\n' 'demo^Demo^present^script^true^present' >"$catalog"
 printf '%s\n' 'other^Other^absent^script^true^absent' >>"$catalog"
 printf '#!/bin/sh\nexit 0\n' >"${bin}/present"
-chmod 755 "${bin}/present"
+printf '#!/bin/sh\nif [ "$1" = --version ]; then echo "present 1.2.3"; fi\nexit 0\n' >"${bin}/versioned"
+chmod 755 "${bin}/present" "${bin}/versioned"
+printf '%s\n' 'numbered^Numbered^versioned^script^true^versioned' >>"$catalog"
 agents="$(PATH="${bin}:${PATH}" COREBRUM_AGENTS_FILE="$catalog" "$CMD" agents list)"
 if ! grep -qx 'present: installed' <<<"$agents"; then
   echo "FAIL: agents list missed an installed CLI" >&2
+  exit 1
+fi
+if ! grep -qx 'versioned: installed (present 1.2.3)' <<<"$agents"; then
+  echo "FAIL: agents list missed a version" >&2
+  exit 1
+fi
+update="$(PATH="${bin}:${PATH}" COREBRUM_AGENTS_FILE="$catalog" "$CMD" agents update)"
+if ! grep -q 'Super+Space Updates' <<<"$update"; then
+  echo "FAIL: agents update did not point at Super+Space" >&2
+  exit 1
+fi
+if grep -q 'curl' <<<"$update"; then
+  echo "FAIL: agents update ran an installer" >&2
   exit 1
 fi
 if ! grep -qx 'absent: not installed' <<<"$agents"; then

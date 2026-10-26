@@ -377,8 +377,23 @@ EOF
   esac
 }
 
+# One line from `binary --version`, or empty. A publisher CLI that opens a
+# session instead of printing a version is cut off after two seconds.
+corebrum_agent_version() {
+  local bin="$1" line
+  command -v timeout >/dev/null 2>&1 || return 0
+  line="$(timeout 2 "$bin" --version 2>&1 | head -n 1 || true)"
+  line="${line//$'\r'/}"
+  line="${line#"${line%%[![:space:]]*}"}"
+  line="${line%"${line##*[![:space:]]}"}"
+  if [[ -z "$line" || ${#line} -gt 80 ]]; then
+    return 0
+  fi
+  printf '%s' "$line"
+}
+
 corebrum_cmd_agents() {
-  local sub="${1:-}" file line binary
+  local sub="${1:-}" file line binary version
   local -a fields=()
   case "$sub" in
     list)
@@ -393,19 +408,34 @@ corebrum_cmd_agents() {
         [[ "${#fields[@]}" -eq 6 ]] || corebrum_die "invalid agent line: ${line}"
         binary="${fields[2]}"
         if command -v "$binary" >/dev/null 2>&1; then
-          printf '%s: installed\n' "$binary"
+          version="$(corebrum_agent_version "$binary")"
+          if [[ -n "$version" ]]; then
+            printf '%s: installed (%s)\n' "$binary" "$version"
+          else
+            printf '%s: installed\n' "$binary"
+          fi
         else
           printf '%s: not installed\n' "$binary"
         fi
       done <"$file"
       ;;
+    update)
+      cat <<'EOF'
+AI agent updates stay in Super+Space Updates.
+That row runs each installed publisher's installer again.
+This command does not run those installers.
+EOF
+      ;;
     "" | -h | --help | help)
       cat <<'EOF'
 Usage: corebrum agents list
+       corebrum agents update
 
-  list    Show which AI agent CLIs from the catalog are on PATH
+  list      Show which AI agent CLIs from the catalog are on PATH
+  update    Point at Super+Space Updates. Does not run an installer
 
-This command does not install an agent.
+The first launch of an installed CLI asks that publisher to sign in.
+This command does not install an agent and does not store a token.
 EOF
       [[ -n "$sub" ]] || return 1
       ;;

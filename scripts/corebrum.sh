@@ -26,7 +26,7 @@ Usage: corebrum <command> [arguments]
   ros status|topics|rmw    Inspect ROS 2 or select Zenoh or Fast DDS
   zenoh status|peers       Inspect the Zenoh router
   camera list              List RealSense devices, or point at Super+Space
-  agents list              Show which AI agent CLIs are on PATH
+  agents list|update       Show agent CLIs, or point at Super+Space Updates
   update status            List the Updates rows without upgrading
   speak "text"             Say text with espeak-ng
   speak listen             Say ROS 2 strings on /corebrum/say

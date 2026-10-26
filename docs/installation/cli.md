@@ -30,7 +30,8 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | `corebrum zenoh status` | Router unit and listen address |
 | `corebrum zenoh peers` | Router address and this machine's IPv4 addresses |
 | `corebrum camera list` | List RealSense devices, or point at Super+Space |
-| `corebrum agents list` | Show which catalog CLIs are on `PATH` |
+| `corebrum agents list` | Show which catalog CLIs are on `PATH`, with a version when the CLI prints one |
+| `corebrum agents update` | Point at Super+Space Updates. Does not run a publisher installer |
 | `corebrum update status` | List the Updates rows. Does not run apt or git |
 | `corebrum speak "text"` | Say the text with `espeak-ng`. A missing cloud key is ignored |
 | `corebrum speak listen` | Say each `std_msgs/String` published on `/corebrum/say` |
@@ -43,6 +44,8 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | `corebrum uninstall desktop` | Remove Corebrum desktop files, not Ubuntu packages |
 
 `--dry-run` prints the plan and does not change the system. A real install must be root. It does not write `~/.config` and it does not edit existing Netplan files. A second install copies a file again only when the checkout copy differs, and it keeps the first recorded state value.
+
+Super+Space installs each AI agent on its own. The first launch asks that publisher to sign in. Corebrum does not store the token. Choosing the same agent again opens it. Super+Space Updates runs that publisher's installer again. `corebrum agents update` only names that row.
 
 Super+Space opens Fuzzel with a blank search field. The app grid opens with Super+Alt+Space, and that grid's prompt is Corebrum. The grid's desktop entry is `/usr/local/share/applications/corebrum-grid.desktop`, and `NoDisplay=true` keeps that entry out of the Super+Space list.
 
