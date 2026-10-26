@@ -29,9 +29,16 @@ expect "$(chord kitty cut)" "CTRL SHIFT X" "kitty cut"
 expect "$(chord kitty paste)" "CTRL SHIFT V" "kitty paste"
 expect "$(chord org.wezfurlong.wezterm paste)" "CTRL SHIFT V" "wezterm paste"
 expect "$(chord org.gnome.Console copy)" "CTRL SHIFT C" "gnome console copy"
+expect "$(chord kitty clear)" "CTRL SHIFT K" "kitty clear"
+expect "$(chord org.gnome.Terminal clear)" "CTRL SHIFT K" "gnome terminal clear"
+expect "$(chord firefox clear)" "" "firefox clear"
 
 if ! grep -q 'map ctrl+shift+x combine : copy_to_clipboard : clear_selection' "$conf"; then
   echo "FAIL: kitty does not cut the selection on Ctrl+Shift+X" >&2
+  fail=1
+fi
+if ! grep -q 'map ctrl+shift+k clear_terminal to_cursor active' "$conf"; then
+  echo "FAIL: kitty does not clear to the prompt on Ctrl+Shift+K" >&2
   fail=1
 fi
 

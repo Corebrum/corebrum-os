@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Super+C, Super+X, and Super+V copy, cut, and paste in the focused window.
 # A terminal receives Ctrl+Shift, because Ctrl+C interrupts the program.
+# Super+K clears the focused terminal. Kitty maps Ctrl+Shift+K to clear to the prompt.
 set -euo pipefail
 
 corebrum_edit_is_terminal() {
@@ -29,6 +30,7 @@ corebrum_edit_key() {
     copy) printf 'C\n' ;;
     cut) printf 'X\n' ;;
     paste) printf 'V\n' ;;
+    clear) printf 'K\n' ;;
     *) return 1 ;;
   esac
 }
@@ -48,7 +50,7 @@ print(window.get("class") or "")'
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-edit-keys copy|cut|paste
+Usage: corebrum-edit-keys copy|cut|paste|clear
 EOF
 }
 
@@ -59,6 +61,9 @@ if ! key="$(corebrum_edit_key "$cmd")"; then
 fi
 
 class="$(corebrum_edit_class)"
+if [[ "$cmd" == "clear" ]] && ! corebrum_edit_is_terminal "$class"; then
+  exit 0
+fi
 mods="$(corebrum_edit_mods "$class")"
 
 if [[ "${COREBRUM_EDIT_STUB:-0}" == 1 ]]; then

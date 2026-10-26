@@ -5,6 +5,7 @@ set -euo pipefail
 corebrum_keys_menu_lines() {
   cat <<'EOF'
 Super+Return           Open a terminal
+Super+K                Clear the terminal screen
 Super+Shift+Return     Open Firefox
 Super+Shift+F          Open Files
 Super+Shift+N          Open Text Editor
@@ -28,9 +29,7 @@ Super+Shift+P          Copy the whole screen
 Super+Alt+P            Record the area, camera, or audio
 Super+Alt+Shift+P      Stop recording
 Super+Arrows           Move focus
-Super+H J K L          Move focus: H left, J down, K up, L right
 Super+Shift+Arrows     Swap the focused tile
-Super+Shift+H J K L    Swap the focused tile: H left, J down, K up, L right
 Super+1 … Super+5      Switch to that workspace
 Super+Shift+1 … 5      Move the focused window to that workspace
 EOF

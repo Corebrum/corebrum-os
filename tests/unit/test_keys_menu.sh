@@ -29,6 +29,7 @@ if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh' "${ROOT}/scripts/deskto
 fi
 
 require_line "Super+Return           Open a terminal"
+require_line "Super+K                Clear the terminal screen"
 require_line "Super+Shift+Return     Open Firefox"
 require_line "Super+Shift+F          Open Files"
 require_line "Super+Shift+N          Open Text Editor"
@@ -52,9 +53,7 @@ require_line "Super+Shift+P          Copy the whole screen"
 require_line "Super+Alt+P            Record the area, camera, or audio"
 require_line "Super+Alt+Shift+P      Stop recording"
 require_line "Super+Arrows           Move focus"
-require_line "Super+H J K L          Move focus: H left, J down, K up, L right"
 require_line "Super+Shift+Arrows     Swap the focused tile"
-require_line "Super+Shift+H J K L    Swap the focused tile: H left, J down, K up, L right"
 require_line "Super+1 … Super+5      Switch to that workspace"
 require_line "Super+Shift+1 … 5      Move the focused window to that workspace"
 
@@ -82,14 +81,16 @@ require_bind 'bind = $mainMod SHIFT, P, exec,'
 require_bind 'bind = $mainMod ALT, P, exec, /usr/local/bin/corebrum-record start'
 require_bind 'bind = $mainMod ALT SHIFT, P, exec, /usr/local/bin/corebrum-record stop'
 require_bind 'bind = $mainMod, left, movefocus, l'
-require_bind 'bind = $mainMod, H, movefocus, l'
-require_bind 'bind = $mainMod, J, movefocus, d'
-require_bind 'bind = $mainMod, K, movefocus, u'
-require_bind 'bind = $mainMod, L, movefocus, r'
+require_bind 'bind = $mainMod, K, exec, /usr/local/bin/corebrum-edit-keys clear'
+if grep -qE 'bind = \$mainMod, [HJL], movefocus' "$conf"; then
+  echo "FAIL: Super+H, Super+J, or Super+L still moves focus" >&2
+  fail=1
+fi
 require_bind 'bind = $mainMod SHIFT, left, swapwindow, l'
-require_bind 'bind = $mainMod SHIFT, J, swapwindow, d'
-require_bind 'bind = $mainMod SHIFT, K, swapwindow, u'
-require_bind 'bind = $mainMod SHIFT, L, swapwindow, r'
+if grep -qE 'bind = \$mainMod SHIFT, [HJKL], swapwindow' "$conf"; then
+  echo "FAIL: Super+Shift+H, J, K, or L still swaps the focused tile" >&2
+  fail=1
+fi
 require_bind 'bind = $mainMod, 1, workspace, 1'
 require_bind 'bind = $mainMod, 5, workspace, 5'
 require_bind 'bind = $mainMod SHIFT, 1, movetoworkspace, 1'
