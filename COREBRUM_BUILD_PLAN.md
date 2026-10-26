@@ -1,6 +1,6 @@
 Corebrum OS — Engineering Build Plan
 The OS for Physical AI
-Version: 0.1 Date: October 21, 2026 Status: Initial Engineering Plan Company: Corebrum, Inc. Website: corebrum.com
+Version: 0.1 Date: October 21, 2026 Status: Initial Engineering Plan Author: Chris Matthieu Website: corebrum.com
 1. Purpose
 This document provides an actionable, phased engineering plan for building Corebrum OS using AI coding agents such as OpenAI Codex and Cursor.
 Corebrum is an open-source, developer-first Linux environment for Physical AI, inspired by Omarchy's polished tiling desktop and opinionated developer experience.
@@ -666,4 +666,4 @@ Stop after completing Phase 1 and wait for approval before proceeding.
 
 Corebrum OS — The OS for Physical AI
 Perceive. Reason. Act.
-Corebrum, Inc. — 2026
+Chris Matthieu — 2026
