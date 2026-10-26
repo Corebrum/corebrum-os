@@ -28,6 +28,9 @@ Usage: corebrum <command> [arguments]
   camera list              List RealSense devices, or point at Super+Space
   agents list              Show which AI agent CLIs are on PATH
   update status            List the Updates rows without upgrading
+  speak "text"             Say text with espeak-ng
+  speak listen             Say ROS 2 strings on /corebrum/say
+  voice list|test|set      List voices, speak a sample, or select espeak
   help                     Show this help
 
 install profiles are base, headless, desktop, and ros. headless is the base profile.
@@ -80,6 +83,12 @@ case "$command_name" in
     ;;
   update)
     corebrum_cmd_update "$@"
+    ;;
+  speak)
+    corebrum_cmd_speak "$@"
+    ;;
+  voice)
+    corebrum_cmd_voice "$@"
     ;;
   "" | -h | --help | help)
     usage

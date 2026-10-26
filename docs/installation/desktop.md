@@ -10,7 +10,7 @@ Ubuntu 24.04 does not publish `hyprland`. The desktop profile then adds `ppa:cpp
 
 Quickshell is still not in Ubuntu 24.04, so the bar is Waybar. Super+Space is a GTK window: the idle list keeps parent menus such as AI Agents and ROS, and typing `grok` or `gazebo` adds that submenu item. Fuzzel still opens the submenus. The desktop packages are `python3-gi`, `gir1.2-gtk-3.0`, and `libgtk-layer-shell0`. See `docs/decisions/0030-menu-search-submenus.md`.
 
-The same profile installs Ubuntu `espeak-ng-espeak`. That package depends on `espeak-ng` and provides the `espeak` command. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. Speech recognition and `corebrum speak` are not part of this install. See `docs/decisions/0031-espeak-ng.md`.
+The same profile installs Ubuntu `espeak-ng-espeak`. That package depends on `espeak-ng` and provides the `espeak` command. Noble publishes 1.51+dfsg-12build1 and resolute publishes 1.52.0+dfsg-5build1. `corebrum speak` uses that command. Speech recognition is not part of this install. See `docs/decisions/0031-espeak-ng.md` and `docs/decisions/0052-local-speech.md`.
 
 The same profile installs Ubuntu `gnome-text-editor`. Noble publishes 46.3-0ubuntu2 and resolute publishes 50.1-0ubuntu0.1. Super+Space lists that application as Text Editor. Typing `notepad` finds the same row. See `docs/decisions/0039-text-editor.md`.
 

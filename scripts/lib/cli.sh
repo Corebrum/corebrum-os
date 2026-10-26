@@ -95,6 +95,7 @@ corebrum_cmd_status() {
   else
     printf 'skills helper: not installed\n'
   fi
+  corebrum_speech_status_line
   if [[ -L /var/log/corebrum/install-latest.log || -f /var/log/corebrum/install-latest.log ]]; then
     printf 'log: /var/log/corebrum/install-latest.log\n'
   else
@@ -195,6 +196,12 @@ corebrum_cmd_doctor() {
     corebrum_log "doctor: skills helper is installed"
   else
     corebrum_log "doctor: skills helper is not installed"
+    corebrum_log "optional: sudo corebrum install desktop"
+  fi
+  if corebrum_speech_bin >/dev/null; then
+    corebrum_log "doctor: speech uses espeak"
+  else
+    corebrum_log "doctor: espeak is not installed"
     corebrum_log "optional: sudo corebrum install desktop"
   fi
   duplicates="$(corebrum_state_duplicates || true)"
@@ -428,6 +435,254 @@ EOF
       ;;
     *)
       corebrum_die "corebrum update ${sub} is not available. Super+Space Updates runs that step."
+      ;;
+  esac
+}
+
+corebrum_speech_conf() {
+  printf '%s/corebrum/speech.conf\n' "${XDG_STATE_HOME:-${HOME}/.local/state}"
+}
+
+corebrum_speech_get() {
+  local key="$1" fallback="$2" file line
+  file="$(corebrum_speech_conf)"
+  if [[ -f "$file" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      case "$line" in
+        "${key}="*)
+          printf '%s\n' "${line#*=}"
+          return 0
+          ;;
+      esac
+    done <"$file"
+  fi
+  printf '%s\n' "$fallback"
+}
+
+corebrum_speech_set() {
+  local key="$1" value="$2" file dir tmp
+  file="$(corebrum_speech_conf)"
+  dir="$(dirname "$file")"
+  mkdir -p "$dir"
+  tmp="$(mktemp "${dir}/speech.conf.XXXXXX")"
+  if [[ -f "$file" ]]; then
+    grep -v -e "^${key}=" "$file" >"$tmp" || true
+  fi
+  printf '%s=%s\n' "$key" "$value" >>"$tmp"
+  mv "$tmp" "$file"
+}
+
+corebrum_speech_bin() {
+  if [[ -n "${COREBRUM_SPEECH_BIN:-}" ]]; then
+    if [[ -x "$COREBRUM_SPEECH_BIN" ]]; then
+      printf '%s\n' "$COREBRUM_SPEECH_BIN"
+      return 0
+    fi
+    return 1
+  fi
+  if command -v espeak-ng >/dev/null 2>&1; then
+    command -v espeak-ng
+    return 0
+  fi
+  if command -v espeak >/dev/null 2>&1; then
+    command -v espeak
+    return 0
+  fi
+  return 1
+}
+
+corebrum_speech_pidfile() {
+  printf '%s/corebrum-speech-%s.pid\n' "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}" "$(id -u)"
+}
+
+corebrum_speech_stop() {
+  local pidfile pid
+  pidfile="$(corebrum_speech_pidfile)"
+  [[ -f "$pidfile" ]] || return 0
+  pid="$(<"$pidfile")"
+  rm -f "$pidfile"
+  if [[ "$pid" =~ ^[0-9]+$ ]]; then
+    kill "$pid" 2>/dev/null || true
+  fi
+}
+
+corebrum_speech_status_line() {
+  local enabled
+  if ! corebrum_speech_bin >/dev/null; then
+    printf 'speech: not installed\n'
+    return 0
+  fi
+  enabled="$(corebrum_speech_get enabled 1)"
+  if [[ "$enabled" == "0" ]]; then
+    printf 'speech: disabled\n'
+    return 0
+  fi
+  printf 'speech: espeak\n'
+}
+
+corebrum_speak_now() {
+  local text="$1" enabled bin voice pidfile pid
+  local -a args=()
+  enabled="$(corebrum_speech_get enabled 1)"
+  if [[ "$enabled" == "0" ]]; then
+    printf '%s\n' "speech is disabled"
+    return 0
+  fi
+  bin="$(corebrum_speech_bin)" || corebrum_die "espeak-ng is not installed. sudo corebrum install desktop"
+  voice="$(corebrum_speech_get voice "")"
+  if [[ -n "$voice" ]]; then
+    args+=(-v "$voice")
+  fi
+  corebrum_speech_stop
+  pidfile="$(corebrum_speech_pidfile)"
+  "$bin" "${args[@]}" -- "$text" &
+  pid=$!
+  printf '%s\n' "$pid" >"$pidfile"
+  if ! wait "$pid"; then
+    if [[ ! -f "$pidfile" ]] || [[ "$(<"$pidfile")" != "$pid" ]]; then
+      return 0
+    fi
+    rm -f "$pidfile"
+    corebrum_die "speech failed"
+  fi
+  if [[ -f "$pidfile" ]] && [[ "$(<"$pidfile")" == "$pid" ]]; then
+    rm -f "$pidfile"
+  fi
+}
+
+corebrum_cmd_speak() {
+  local once=0 setup text
+  if [[ "${1:-}" == "--" ]]; then
+    shift
+    [[ $# -gt 0 ]] || corebrum_die "usage: corebrum speak \"text\""
+    corebrum_speak_now "$*"
+    return 0
+  fi
+  case "${1:-}" in
+    "" | -h | --help | help)
+      cat <<'EOF'
+Usage: corebrum speak "text"
+       corebrum speak listen [--once]
+
+  speak "text"     Say the text with espeak-ng
+  speak listen     Say each std_msgs/String on /corebrum/say
+
+listen reads ROS 2. It does not call a cloud speech API.
+corebrum voice disable stops speech on a headless machine.
+EOF
+      [[ -n "${1:-}" ]] || return 1
+      ;;
+    listen)
+      shift
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          --once)
+            once=1
+            ;;
+          *)
+            corebrum_die "unknown speak listen option: ${1}"
+            ;;
+        esac
+        shift
+      done
+      if [[ -n "${COREBRUM_ROS_SETUP:-}" ]]; then
+        setup="$COREBRUM_ROS_SETUP"
+      else
+        setup="$(corebrum_ros_setup_file || true)"
+      fi
+      if [[ -z "$setup" || ! -f "$setup" ]]; then
+        corebrum_die "ROS 2 is not installed"
+      fi
+      set +u
+      # shellcheck disable=SC1090
+      source "$setup"
+      set -u
+      if [[ -n "${COREBRUM_RMW_IMPLEMENTATION:-}" ]]; then
+        export RMW_IMPLEMENTATION="$COREBRUM_RMW_IMPLEMENTATION"
+      elif [[ -f /etc/corebrum/ros/rmw ]]; then
+        RMW_IMPLEMENTATION="$(tr -d '[:space:]' < /etc/corebrum/ros/rmw)"
+        export RMW_IMPLEMENTATION
+      else
+        export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+      fi
+      export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
+      command -v ros2 >/dev/null 2>&1 || corebrum_die "ROS 2 is not installed"
+      while true; do
+        text="$(ros2 topic echo /corebrum/say std_msgs/msg/String --once --field data --no-daemon)" \
+          || corebrum_die "could not read /corebrum/say"
+        text="$(printf '%s\n' "$text" | grep -v -e '^---$' || true)"
+        text="${text%"${text##*[![:space:]]}"}"
+        if [[ "$text" == \'*\' || "$text" == \"*\" ]]; then
+          text="${text:1:${#text}-2}"
+        fi
+        if [[ -n "$text" ]]; then
+          corebrum_speak_now "$text"
+        fi
+        [[ "$once" -eq 1 ]] && break
+      done
+      ;;
+    *)
+      corebrum_speak_now "$*"
+      ;;
+  esac
+}
+
+corebrum_cmd_voice() {
+  local sub="${1:-}" bin
+  case "$sub" in
+    list)
+      bin="$(corebrum_speech_bin)" || corebrum_die "espeak-ng is not installed. sudo corebrum install desktop"
+      "$bin" --voices
+      ;;
+    test)
+      corebrum_speak_now "Hello from Corebrum."
+      ;;
+    enable)
+      corebrum_speech_set enabled 1
+      printf 'speech: enabled\n'
+      ;;
+    disable)
+      corebrum_speech_stop
+      corebrum_speech_set enabled 0
+      printf 'speech: disabled\n'
+      ;;
+    set)
+      shift
+      case "${1:-}" in
+        espeak)
+          corebrum_speech_set engine espeak
+          if [[ -n "${2:-}" ]]; then
+            corebrum_speech_set voice "$2"
+            printf 'speech engine: espeak\nvoice: %s\n' "$2"
+          else
+            printf 'speech engine: espeak\n'
+          fi
+          ;;
+        "")
+          corebrum_die "usage: corebrum voice set espeak [voice]"
+          ;;
+        *)
+          corebrum_die "corebrum voice set ${1} is not available. Local speech uses espeak."
+          ;;
+      esac
+      ;;
+    "" | -h | --help | help)
+      cat <<'EOF'
+Usage: corebrum voice list|test|set|enable|disable
+
+  list              List espeak-ng voices
+  test              Say "Hello from Corebrum."
+  set espeak        Use espeak-ng
+  set espeak <name> Use one voice from voice list
+  enable            Turn local speech on
+  disable           Turn local speech off
+
+These commands do not call a cloud speech API.
+EOF
+      [[ -n "$sub" ]] || return 1
+      ;;
+    *)
+      corebrum_die "unknown voice command: ${sub}"
       ;;
   esac
 }

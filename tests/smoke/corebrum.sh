@@ -45,7 +45,7 @@ if ! grep -q 'profile ros:' <<<"$status"; then
   echo "FAIL: status did not report the ros profile" >&2
   exit 1
 fi
-for line in 'realsense:' 'agenticros:' 'skills helper:'; do
+for line in 'realsense:' 'agenticros:' 'skills helper:' 'speech:'; do
   if ! grep -q "$line" <<<"$status"; then
     echo "FAIL: status did not report ${line}" >&2
     exit 1
