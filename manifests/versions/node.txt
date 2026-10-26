@@ -8,3 +8,13 @@ pnpm: 12.15.0 from https://registry.npmjs.org/pnpm
 pnpm_engines: node >= 18
 install: /usr/local/nvm
 notes: Ubuntu 26.04 publishes nodejs 22.22.1, not 26.x. The desktop profile does not add an apt repository for Node. npm is the copy inside the official Node tarball. pnpm is installed with npm install -g --allow-scripts=pnpm because npm 11 does not run that package's install scripts otherwise. A second install leaves an existing Node 26.x and an existing pnpm in place.
+---
+component: node
+ubuntu: 26.04
+arch: aarch64
+source: https://github.com/nvm-sh/nvm tag v0.40.8 commit a885b885fef16fac4bc544188fb25e9e37ae83e8
+node: 26.x linux-arm64 from https://nodejs.org/dist
+node_verified: v26.12.1 tarball node-v26.12.1-linux-arm64.tar.xz published at nodejs.org on 2026-10-26
+pnpm: 12.15.0 from https://registry.npmjs.org/pnpm
+install: /usr/local/nvm
+notes: Same nvm tag and Node major as x86_64. nvm selects the linux-arm64 tarball. The x86_64 record is unchanged.

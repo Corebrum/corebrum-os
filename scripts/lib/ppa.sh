@@ -29,6 +29,11 @@ corebrum_ubuntu_archive_version() {
   corebrum_policy_ubuntu_version <<<"$policy"
 }
 
+# uname -m. Tests override this so an aarch64 host can still check the x86_64 path.
+corebrum_machine_arch() {
+  uname -m
+}
+
 corebrum_write_hyprland_pin() {
   local dest="$1"
   local -a packages=()
@@ -57,6 +62,12 @@ corebrum_install_hyprland_ppa() {
   codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
   if [[ "$codename" != "noble" ]]; then
     corebrum_die "hyprland is not in the Ubuntu archive on ${codename:-unknown}; ppa:cppiber/hyprland is only used on noble"
+  fi
+  # The noble pin list is the same on every architecture. Launchpad publishes
+  # hyprland 0.56.2-1ppa2 for amd64. resolute aarch64 never reaches this
+  # branch, because that archive already has hyprland.
+  if [[ "$(corebrum_machine_arch)" == "aarch64" ]]; then
+    corebrum_die "hyprland is not in the Ubuntu archive on noble for aarch64; ppa:cppiber/hyprland publishes hyprland for amd64. ARM desktop install uses Ubuntu 26.04"
   fi
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: install signing key ${COREBRUM_HYPRLAND_PPA_FINGERPRINT} for ppa:cppiber/hyprland"

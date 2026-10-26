@@ -5,3 +5,11 @@ source: archive.ubuntu.com noble
 packages: manifests/packages/desktop.txt
 pin: Ubuntu 24.04 archive versions at install time
 notes: Ubuntu 24.04 archive packages are pinned at install time except Hyprland. AgenticROS desktop capture uses the Ubuntu GStreamer packages gstreamer1.0-tools, gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, and gstreamer1.0-pipewire. On 2026-10-23 Launchpad published noble 1.24.2-1ubuntu0.1, 1.24.2-1ubuntu0.5, 1.24.2-1ubuntu1.8, 1.24.1-1build1, and 1.0.5-1ubuntu3.3, and resolute apt selected 1.28.2-1, 1.28.2-1ubuntu0.1, 1.28.2-2ubuntu0.4, 1.28.2-1, and 1.6.2-1ubuntu1.2. espeak-ng-espeak is the Ubuntu archive package: 1.51+dfsg-12build1 on noble and 1.52.0+dfsg-5build1 on resolute, checked 2026-10-23. It depends on espeak-ng. On 2026-10-22 noble had no hyprland or quickshell candidate. Hyprland comes from ppa:cppiber/hyprland, package hyprland 0.56.2-1ppa2, signing key A54D23B62FF3FCC76EFF71E8FDBAAA1CF0CCF48E, origin LP-PPA-cppiber-hyprland. The allowlist is manifests/packages/hyprland-ppa.txt. Waybar 0.9.24, Kitty 0.32.2, Fuzzel 1.9.2, wofi 1.4.1, greetd 0.9.0, and mako-notifier 1.8.0 stay on the Ubuntu archive. The greeter is agreety from the greetd package because tuigreet is not in noble. Firefox is the Ubuntu transitional snap package 1:1snap1-0ubuntu5. gnome-text-editor is the Ubuntu archive text editor: 46.3-0ubuntu2 on noble and 50.1-0ubuntu0.1 on resolute, checked 2026-10-24. Super+Space lists its desktop file as Text Editor.
+---
+component: desktop
+ubuntu: 26.04
+arch: aarch64
+source: archive.ubuntu.com resolute
+packages: manifests/packages/desktop.txt
+pin: Ubuntu 26.04 archive versions at install time
+notes: Same package names as the x86_64 desktop list. hyprland 0.53.3+ds-4 comes from the Ubuntu archive. This record does not add ppa:cppiber/hyprland. See docs/decisions/0060-arm64-desktop.md.

@@ -37,7 +37,10 @@ for path in \
   /etc/xdg/hypr/hypridle.conf \
   /etc/corebrum/greetd/gtkgreet.css \
   /usr/share/corebrum/logo.png \
+  /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
+  /usr/local/lib/corebrum/vc4.sh \
+  /usr/local/lib/corebrum/drm.sh \
   /usr/local/bin/corebrum-lock \
   /etc/corebrum/waybar/config.json \
   /etc/corebrum/waybar/style.css \
@@ -140,7 +143,7 @@ for pkg in hyprlock gtkgreet cage hypridle hyprpaper; do
 done
 
 if command -v gtkgreet >/dev/null 2>&1 && command -v cage >/dev/null 2>&1; then
-  if grep -q 'corebrum-greeter' /etc/greetd/config.toml; then
+  if grep -q 'corebrum-greetd' /etc/greetd/config.toml; then
     corebrum_log "ok: gtkgreet login"
   else
     corebrum_log "missing: gtkgreet login"

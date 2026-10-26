@@ -22,8 +22,8 @@ assert_eq "$quoted" "24.04" "quoted VERSION_ID"
 unquoted="$(corebrum_read_os_release_field "${ROOT}/tests/unit/fixtures/os-release-unquoted" VERSION_ID)"
 assert_eq "$unquoted" "24.04" "unquoted VERSION_ID"
 
-if ! corebrum_supported_ubuntu "noble"; then
-  echo "FAIL: noble should be supported" >&2
+if corebrum_supported_ubuntu "noble"; then
+  echo "FAIL: noble should be rejected" >&2
   exit 1
 fi
 if ! corebrum_supported_ubuntu "resolute"; then
@@ -48,8 +48,12 @@ if ! corebrum_supported_arch "x86_64"; then
   echo "FAIL: x86_64 should be supported" >&2
   exit 1
 fi
-if corebrum_supported_arch "aarch64"; then
-  echo "FAIL: aarch64 should be rejected in this phase" >&2
+if ! corebrum_supported_arch "aarch64"; then
+  echo "FAIL: aarch64 should be supported" >&2
+  exit 1
+fi
+if corebrum_supported_arch "armv7l"; then
+  echo "FAIL: armv7l should be rejected" >&2
   exit 1
 fi
 

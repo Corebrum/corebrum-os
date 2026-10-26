@@ -60,9 +60,9 @@ If an install stops, read that log and run `corebrum doctor`.
 
 ## Fresh virtual machine
 
-`make check` does not install Corebrum onto the machine that runs it. To accept Phase 4 on a clean Ubuntu Server 24.04 VM:
+`make check` does not install Corebrum onto the machine that runs it. To accept Phase 4 on a clean Ubuntu Server 26.04 VM:
 
-1. Install Ubuntu Server 24.04 x86-64 and clone this checkout.
+1. Install Ubuntu Server 26.04, x86-64 or ARM64, and clone this checkout.
 2. Run `./scripts/corebrum.sh install desktop --dry-run` and confirm it exits 0.
 3. Run `sudo ./scripts/corebrum.sh install desktop`.
 4. Reboot, log in on VT 7, and run `corebrum doctor`.

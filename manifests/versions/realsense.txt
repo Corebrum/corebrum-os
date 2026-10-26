@@ -12,3 +12,11 @@ pyrealsense2: 2.59.1.11053 from https://pypi.org/project/pyrealsense2/
 python: system python3 when it is 3.10, 3.11, 3.12, 3.13, or 3.14
 python_verified: Ubuntu 26.04 python3 3.14.4 and the cp314 manylinux1_x86_64 wheel, 2026-10-22
 notes: The ROS librealsense deb does not ship realsense-viewer. noble also installs librealsense2-dkms 1.3.33-noble. resolute does not publish that dkms package. These packages are not part of corebrum install ros.
+---
+component: realsense
+ubuntu: 26.04 resolute
+arch: aarch64
+librealsense: 2.59.1-0~realsense.9166 from the noble suite of https://librealsense.realsenseai.com/Debian/apt-repo
+librealsense_note: The resolute suite of that archive publishes amd64 and i386 only. The arm64 2.59.1 packages are in the noble suite. x86_64 resolute stays on 2.59.1-0~realsense.20271.
+pyrealsense2: 2.59.1.11053 wheels for aarch64 exist for Python 3.10 and 3.12. Python 3.14 builds librealsense tag v2.59.1 commit 625279aa1fe903528a818f48746ee47c1b5fefd3.
+notes: See docs/decisions/0062-realsense-arm64.md. The x86_64 record above is unchanged.

@@ -111,10 +111,19 @@ resolute_status=$?
 noble_err="$(
   corebrum_ubuntu_archive_version() { printf ''; }
   corebrum_read_os_release_field() { printf 'noble'; }
+  corebrum_machine_arch() { printf 'x86_64'; }
   DRY_RUN=1
   corebrum_install_hyprland_ppa 2>&1
 )"
 noble_status=$?
+noble_arm_err="$(
+  corebrum_ubuntu_archive_version() { printf ''; }
+  corebrum_read_os_release_field() { printf 'noble'; }
+  corebrum_machine_arch() { printf 'aarch64'; }
+  DRY_RUN=1
+  corebrum_install_hyprland_ppa 2>&1
+)"
+noble_arm_status=$?
 archive_err="$(
   corebrum_ubuntu_archive_version() { printf '0.53.3+ds-4\n'; }
   DRY_RUN=1
@@ -128,6 +137,10 @@ if [[ "$resolute_status" -eq 0 ]] || ! grep -q 'ppa:cppiber/hyprland is only use
 fi
 if [[ "$noble_status" -ne 0 ]] || ! grep -q 'ppa:cppiber/hyprland' <<<"$noble_err"; then
   echo "FAIL: Ubuntu 24.04 should still plan the Hyprland PPA when the archive has no hyprland" >&2
+  exit 1
+fi
+if [[ "$noble_arm_status" -eq 0 ]] || ! grep -q 'ARM desktop install uses Ubuntu 26.04' <<<"$noble_arm_err"; then
+  echo "FAIL: noble aarch64 should refuse the amd64 Hyprland PPA" >&2
   exit 1
 fi
 if [[ "$archive_status" -ne 0 ]] || ! grep -q 'not adding ppa:cppiber/hyprland' <<<"$archive_err"; then

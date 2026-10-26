@@ -2,16 +2,16 @@
 
 Phase 0 and Phase 1 checks need:
 
-- Bash 4.3 or newer (`local -n` namerefs). Ubuntu 24.04 ships Bash 5.2.
+- Bash 4.3 or newer (`local -n` namerefs). Ubuntu 26.04 ships Bash 5.3.
 - GNU Make
 - ShellCheck, from the Ubuntu `shellcheck` package
 - `timeout` from coreutils
 - Outbound TCP to `archive.ubuntu.com` port 80 for `scripts/install.sh`, including `--dry-run`
 
-`make check` runs ShellCheck, the unit tests, and dry-runs of the base, desktop, and ros profiles. `make doctor` checks an installed machine and is not part of `make check`. The dry-run still executes host preflight, so the machine running it must be Ubuntu 24.04 or 26.04 x86-64 with at least 8 GiB free on `/` (12 GiB for the desktop dry-run's own disk check). GitHub Actions uses `ubuntu-24.04` for that reason. The desktop dry-run exits 0 when `hyprland` is missing and prints that a real install would stop.
+`make check` runs ShellCheck, the unit tests, and dry-runs of the base, desktop, and ros profiles. `make doctor` checks an installed machine and is not part of `make check`. The dry-run still executes host preflight, so the machine running it must be Ubuntu 26.04, x86-64 or aarch64, with at least 8 GiB free on `/` (12 GiB for the desktop dry-run's own disk check). GitHub Actions uses `ubuntu-26.04` for that reason. The desktop dry-run exits 0 when `hyprland` is missing and prints that a real install would stop.
 
 A real install additionally needs root and systemd (`timedatectl`). Do not point the real installer at a machine whose networking or disk layout you cannot restore. The acceptance target is a fresh virtual machine, documented in `docs/installation/ubuntu-server.md`.
 
-Python is not used in this phase, so there is no pytest job. `shfmt` is not in the Ubuntu 24.04 archive; ShellCheck is the script check until an official formatting package is verified.
+Python is not used in this phase, so there is no pytest job. ShellCheck is the script check.
 
 No third-party package repositories are configured by the base installer.

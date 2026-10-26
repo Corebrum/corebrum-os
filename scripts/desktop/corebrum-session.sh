@@ -22,6 +22,20 @@ if [[ ! -f "$config" ]]; then
   exit 1
 fi
 
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${here}/corebrum-drm.sh" ]]; then
+  # shellcheck source=corebrum-drm.sh
+  source "${here}/corebrum-drm.sh"
+elif [[ -f /usr/local/lib/corebrum/drm.sh ]]; then
+  # shellcheck source=corebrum-drm.sh
+  source /usr/local/lib/corebrum/drm.sh
+else
+  echo "corebrum-session: missing drm helper" >&2
+  exit 1
+fi
+corebrum_export_vc4_devices
+config="$(corebrum_hyprland_config "$config")"
+
 # start-hyprland is the watchdog shipped with Hyprland. Starting the
 # compositor directly leaves a warning on the desktop. Arguments after --
 # are passed through, so the Corebrum config stays in use.

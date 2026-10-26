@@ -21,3 +21,5 @@ The default wallpaper file on 26.04 is `/usr/share/hypr/wall2.png` from `hyprlan
 ## Consequences
 
 Ubuntu 24.04 still logs in through `agreety`. A 26.04 desktop install replaces the text greeter with gtkgreet. If that greeter fails, VT 1 is still a text console. Uninstall restores the previous greetd config from the recorded backup and removes the Corebrum lock and greeter files. It does not remove the `hyprlock`, `gtkgreet`, or `cage` packages.
+
+`cage -s -d` is started by `/usr/local/bin/corebrum-greetd`. On x86-64 that wrapper only sets the cursor theme. On a Raspberry Pi it also selects the vc4 HDMI device. See `docs/decisions/0060-arm64-desktop.md`.

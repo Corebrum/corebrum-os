@@ -7,6 +7,6 @@ Each installable component has two files:
 
 `versions` files are `key: value` records. Required keys are `component`, `ubuntu`, `arch`, `source`, `packages`, and `pin`.
 
-The base profile is pinned by the Ubuntu 24.04 archive, not by individual package versions. Later robotics components must name the upstream repository, the distro (for example ROS 2 Jazzy), and any version floor that keeps Zenoh, RViz, and Gazebo compatible. Do not float those constraints across unrelated updates.
+New installs target Ubuntu Server 26.04 on x86-64 and ARM64. The base profile is pinned by that archive, not by individual package versions. Older records in this directory still name Ubuntu 24.04 pins from earlier work. Later robotics components must name the upstream repository, the distro (ROS 2 Lyrical), and any version floor that keeps Zenoh, RViz, and Gazebo compatible. Do not float those constraints across unrelated updates.
 
 Package lists accept blank lines and `#` comments. A package token must match `^[a-z0-9][a-z0-9+.-]*$`. The installer rejects anything else.

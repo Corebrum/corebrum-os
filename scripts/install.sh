@@ -37,13 +37,11 @@ Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh]
 
 A real install must be run as root. --dry-run may be run as a normal user.
 The product command is: corebrum install base|desktop|ros
-The installer reads VERSION_CODENAME. On noble, when hyprland is not in the
-Ubuntu archive, the desktop profile adds ppa:cppiber/hyprland and pins it so
-only Hyprland and the libraries it requires are installed from there. resolute
-uses the hyprland package from the Ubuntu archive and does not add that PPA.
-Workstation services come from the Ubuntu archive. The ros profile adds the
-official ROS 2 apt repository and does not install the desktop. noble installs
-ROS 2 Jazzy. resolute installs ROS 2 Lyrical Luth.
+The installer accepts Ubuntu 26.04 (VERSION_CODENAME=resolute) on x86_64 and
+aarch64. Ubuntu 24.04 is rejected. Hyprland comes from the Ubuntu archive.
+The installer does not add a Hyprland PPA. Workstation services come from the
+Ubuntu archive. The ros profile adds the official ROS 2 apt repository and
+does not install the desktop. It installs ROS 2 Lyrical Luth.
 The installer does not edit existing Netplan files or run netplan apply.
 The desktop profile installs Node.js 26.x, npm, and pnpm with nvm under
 /usr/local/nvm. It does not write ~/.nvm or ~/.bashrc.

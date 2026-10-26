@@ -173,8 +173,20 @@ if ! grep -q "agreety --cmd /usr/local/bin/corebrum-session" "${ROOT}/config/gre
   echo "FAIL: the text greeter does not start the Corebrum session" >&2
   exit 1
 fi
-if ! grep -q "corebrum-greeter" "${ROOT}/config/greetd/gtkgreet.toml"; then
+if ! grep -q "corebrum-greetd" "${ROOT}/config/greetd/gtkgreet.toml"; then
   echo "FAIL: gtkgreet does not start the Corebrum greeter" >&2
+  exit 1
+fi
+if ! grep -q 'exec cage -s -d -- /usr/local/bin/corebrum-greeter' "${ROOT}/scripts/desktop/corebrum-greetd.sh"; then
+  echo "FAIL: the greeter wrapper does not keep cage -s -d" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum_vc4_card' "${ROOT}/scripts/lib/vc4.sh"; then
+  echo "FAIL: the vc4 helper is missing" >&2
+  exit 1
+fi
+if ! grep -q 'no_hardware_cursors = true' "${ROOT}/scripts/desktop/corebrum-drm.sh"; then
+  echo "FAIL: the Pi session does not disable hardware cursors" >&2
   exit 1
 fi
 if ! grep -q -- "--command /usr/local/bin/corebrum-session" "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then

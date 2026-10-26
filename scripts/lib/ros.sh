@@ -26,6 +26,7 @@ COREBRUM_ROS_DISTRO=""
 COREBRUM_ROS_CODENAME=""
 COREBRUM_ROS_KEYRING="/usr/share/keyrings/ros2-archive-keyring.gpg"
 COREBRUM_ROS_SOURCES="/etc/apt/sources.list.d/ros2.sources"
+COREBRUM_UBUNTU_UPDATES_NAME="corebrum-ubuntu-updates.sources"
 COREBRUM_ROS_RMW="/etc/corebrum/ros/rmw"
 COREBRUM_ROS_PROFILE="/etc/profile.d/corebrum-ros.sh"
 COREBRUM_ROS_UNIT="corebrum-zenoh-router.service"
@@ -86,13 +87,105 @@ corebrum_ros_require_fingerprint() {
   fi
 }
 
-corebrum_ros_require_suites() {
-  local sources="/etc/apt/sources.list.d/ubuntu.sources" updates
-  [[ -n "$COREBRUM_ROS_CODENAME" ]] || corebrum_ros_select_release
-  updates="${COREBRUM_ROS_CODENAME}-updates"
-  if [[ ! -f "$sources" ]] || ! grep -q "$updates" "$sources" || ! grep -q 'universe' "$sources"; then
-    corebrum_die "Ubuntu sources must include ${updates} and universe before ROS 2. Not editing ${sources}"
+corebrum_ros_apt_root() {
+  printf '%s\n' "${COREBRUM_APT_ROOT:-/etc/apt}"
+}
+
+corebrum_ros_text_has_token() {
+  local file="$1" token="$2"
+  [[ -f "$file" ]] || return 1
+  grep -q -F -- "$token" "$file"
+}
+
+corebrum_ros_suite_present() {
+  local token="$1" root file
+  root="$(corebrum_ros_apt_root)"
+  if corebrum_ros_text_has_token "${root}/sources.list" "$token"; then
+    return 0
   fi
+  for file in "${root}/sources.list.d"/*; do
+    if corebrum_ros_text_has_token "$file" "$token"; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Print the URI, component list, and Signed-By path from the deb822 stanza
+# whose Suites field contains the exact Ubuntu codename.
+corebrum_ros_release_source_fields() {
+  local file="$1" codename="$2"
+  awk -v codename="$codename" '
+    function emit() {
+      if (exact && uri != "" && components != "" && signed != "") {
+        print uri
+        print components
+        print signed
+        found = 1
+      }
+      exact = 0
+      uri = ""
+      components = ""
+      signed = ""
+    }
+    /^[[:space:]]*$/ { emit(); next }
+    /^[[:space:]]*#/ { next }
+    $1 == "Suites:" {
+      exact = 0
+      for (i = 2; i <= NF; i++) if ($i == codename) exact = 1
+      next
+    }
+    $1 == "URIs:" { uri = $2; next }
+    $1 == "Components:" {
+      components = $2
+      for (i = 3; i <= NF; i++) components = components " " $i
+      next
+    }
+    $1 == "Signed-By:" { signed = $2; next }
+    END { emit(); if (!found) exit 1 }
+  ' "$file"
+}
+
+corebrum_ros_require_suites() {
+  local root sources updates dest uri components signed work
+  local -a fields=()
+  [[ -n "$COREBRUM_ROS_CODENAME" ]] || corebrum_ros_select_release
+  root="$(corebrum_ros_apt_root)"
+  sources="${root}/sources.list.d/ubuntu.sources"
+  updates="${COREBRUM_ROS_CODENAME}-updates"
+  if ! corebrum_ros_suite_present "universe"; then
+    corebrum_die "Ubuntu sources must include universe before ROS 2. Not editing ${sources}"
+  fi
+  if corebrum_ros_suite_present "$updates"; then
+    corebrum_log "Ubuntu sources include ${updates} and universe"
+    return 0
+  fi
+  [[ -f "$sources" ]] || corebrum_die "Ubuntu sources must include ${updates} before ROS 2. Not editing ${sources}"
+  if ! mapfile -t fields < <(corebrum_ros_release_source_fields "$sources" "$COREBRUM_ROS_CODENAME"); then
+    corebrum_die "could not read the ${COREBRUM_ROS_CODENAME} source from ${sources}. Not editing ${sources}"
+  fi
+  uri="${fields[0]:-}"
+  components="${fields[1]:-}"
+  signed="${fields[2]:-}"
+  [[ -n "$uri" && -n "$components" && -n "$signed" ]] || corebrum_die "could not read the ${COREBRUM_ROS_CODENAME} source from ${sources}. Not editing ${sources}"
+  dest="${root}/sources.list.d/${COREBRUM_UBUNTU_UPDATES_NAME}"
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: write ${dest} for ${updates} (${components}); not editing ${sources}"
+    corebrum_log "Ubuntu sources include ${updates} and universe"
+    return 0
+  fi
+  work="$(mktemp)"
+  cat >"$work" <<EOF
+# Managed by Corebrum OS. The Ubuntu image shipped without ${updates}.
+# ubuntu.sources is left unchanged.
+Types: deb
+URIs: ${uri}
+Suites: ${updates}
+Components: ${components}
+Signed-By: ${signed}
+EOF
+  corebrum_install_file "$work" "$dest" 644
+  rm -f "$work"
   corebrum_log "Ubuntu sources include ${updates} and universe"
 }
 
@@ -353,6 +446,7 @@ corebrum_uninstall_ros() {
     corebrum_log "dry-run: systemctl disable --now ${COREBRUM_ROS_UNIT}"
     corebrum_log "dry-run: remove the Corebrum Zenoh unit, profile script, and /etc/corebrum/ros"
     corebrum_log "dry-run: leave ros2-apt-source and the ROS packages installed"
+    corebrum_log "dry-run: remove $(corebrum_ros_apt_root)/sources.list.d/${COREBRUM_UBUNTU_UPDATES_NAME} when Corebrum added it"
     corebrum_log "dry-run: remove ${COREBRUM_ZENOH_CLI_BIN} and ${COREBRUM_ZENOH_CLI_ROOT}"
     corebrum_ros_remove_tile
     corebrum_log "ros uninstall dry-run complete"
@@ -381,6 +475,12 @@ corebrum_uninstall_ros() {
     corebrum_log "removed ${COREBRUM_ZENOH_CLI_ROOT}"
   fi
   rmdir /etc/corebrum/ros 2>/dev/null || true
+  path="$(corebrum_ros_apt_root)/sources.list.d/${COREBRUM_UBUNTU_UPDATES_NAME}"
+  if [[ -f "$path" ]]; then
+    corebrum_backup_file "$path"
+    rm -f "$path"
+    corebrum_log "removed ${path}"
+  fi
   systemctl daemon-reload || true
   corebrum_ros_remove_tile
   corebrum_log "ros uninstall complete; ROS packages and ros2-apt-source were left installed"

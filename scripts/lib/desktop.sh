@@ -127,8 +127,11 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/apps/dashboard/tiles.conf" /etc/corebrum/dashboard/tiles.conf 644
   corebrum_install_file "${root}/scripts/lib/grid.sh" /usr/local/lib/corebrum/grid.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-node-path.sh" /usr/local/lib/corebrum/node-path.sh 644
+  corebrum_install_file "${root}/scripts/lib/vc4.sh" /usr/local/lib/corebrum/vc4.sh 644
+  corebrum_install_file "${root}/scripts/desktop/corebrum-drm.sh" /usr/local/lib/corebrum/drm.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-setup.sh" /usr/local/bin/corebrum-setup 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-greetd.sh" /usr/local/bin/corebrum-greetd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greeter.sh" /usr/local/bin/corebrum-greeter 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
@@ -236,8 +239,11 @@ corebrum_desktop_managed_paths() {
 /etc/corebrum/dashboard/tiles.conf
 /usr/local/lib/corebrum/grid.sh
 /usr/local/lib/corebrum/node-path.sh
+/usr/local/lib/corebrum/vc4.sh
+/usr/local/lib/corebrum/drm.sh
 /usr/local/bin/corebrum-session
 /usr/local/bin/corebrum-setup
+/usr/local/bin/corebrum-greetd
 /usr/local/bin/corebrum-greeter
 /usr/local/bin/corebrum-lock
 /usr/local/bin/corebrum-terminal

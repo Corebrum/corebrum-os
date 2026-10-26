@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Host checks for Ubuntu noble or resolute on x86-64. Source this file; do not execute it.
+# Host checks for Ubuntu resolute on x86-64 or aarch64. Source this file; do not execute it.
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   echo "source scripts/lib/preflight.sh from another script" >&2
   exit 1
@@ -22,11 +22,11 @@ corebrum_read_os_release_field() {
 }
 
 corebrum_supported_ubuntu() {
-  [[ "$1" == "noble" || "$1" == "resolute" ]]
+  [[ "$1" == "resolute" ]]
 }
 
 corebrum_supported_arch() {
-  [[ "$1" == "x86_64" ]]
+  [[ "$1" == "x86_64" || "$1" == "aarch64" ]]
 }
 
 corebrum_disk_is_sufficient() {
@@ -46,16 +46,16 @@ corebrum_can_reach_archive() {
 corebrum_preflight() {
   local os_release="/etc/os-release"
   local codename version_id arch free_kib
-  [[ -f "$os_release" ]] || corebrum_die "missing ${os_release}; Corebrum OS requires Ubuntu noble or resolute"
+  [[ -f "$os_release" ]] || corebrum_die "missing ${os_release}; Corebrum OS requires Ubuntu resolute"
   codename="$(corebrum_read_os_release_field "$os_release" VERSION_CODENAME || true)"
   [[ -n "$codename" ]] || corebrum_die "VERSION_CODENAME is missing from ${os_release}"
   if ! corebrum_supported_ubuntu "$codename"; then
-    corebrum_die "Corebrum OS requires Ubuntu noble or resolute (found VERSION_CODENAME=${codename})"
+    corebrum_die "Corebrum OS requires Ubuntu resolute (found VERSION_CODENAME=${codename})"
   fi
   version_id="$(corebrum_read_os_release_field "$os_release" VERSION_ID || true)"
   arch="$(uname -m)"
   if ! corebrum_supported_arch "$arch"; then
-    corebrum_die "Corebrum OS currently supports x86_64 only (found ${arch})"
+    corebrum_die "Corebrum OS supports x86_64 and aarch64 (found ${arch})"
   fi
   free_kib="$(corebrum_root_free_kib)"
   if ! corebrum_disk_is_sufficient "$free_kib" "$COREBRUM_MIN_FREE_KIB"; then

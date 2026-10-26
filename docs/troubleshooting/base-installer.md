@@ -2,9 +2,9 @@
 
 ## Preflight failures
 
-Ubuntu `noble` or `resolute` is required. `/etc/os-release` must contain `VERSION_CODENAME=noble` or `VERSION_CODENAME=resolute`. Other Ubuntu releases, including jammy, stop before any package is installed.
+Ubuntu 26.04 is required. `/etc/os-release` must contain `VERSION_CODENAME=resolute`. Ubuntu 24.04 (`noble`), jammy, and every other release stop before any package is installed.
 
-`x86_64` is the only architecture in this phase. ARM64 is a later phase.
+`x86_64` and `aarch64` are accepted, including Raspberry Pi. Other architectures stop before any package is installed.
 
 The root filesystem needs 8 GiB free. `df -Pk /` reports the value the installer checks.
 
