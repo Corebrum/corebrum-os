@@ -11,6 +11,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-skills-menu refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-arc-menu refresh &
+pids+=("$!")
 /usr/local/bin/corebrum-realsense-menu refresh &
 pids+=("$!")
 /usr/local/bin/corebrum-chromium-menu refresh &

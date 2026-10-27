@@ -87,7 +87,7 @@ if ! grep -q '/usr/local/bin/corebrum-updates-menu refresh &' "${ROOT}/scripts/d
   echo "FAIL: Super+Space does not refresh the Updates entry" >&2
   exit 1
 fi
-if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 14 ]]; then
+if [[ "$(grep -c 'refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh")" -lt 15 ]]; then
   echo "FAIL: Super+Space still refreshes some menu entries in series" >&2
   exit 1
 fi
@@ -101,6 +101,10 @@ if ! grep -q '/usr/local/bin/corebrum-agenticros-menu refresh' "${ROOT}/scripts/
 fi
 if ! grep -q '/usr/local/bin/corebrum-skills-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the Skills entry" >&2
+  exit 1
+fi
+if ! grep -q '/usr/local/bin/corebrum-arc-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the AgenticROS Cloud entry" >&2
   exit 1
 fi
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then

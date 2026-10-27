@@ -64,6 +64,7 @@ for path in \
   /usr/local/bin/corebrum-ros-menu \
   /usr/local/bin/corebrum-realsense-menu \
   /usr/local/bin/corebrum-chromium-menu \
+  /usr/local/bin/corebrum-arc-menu \
   /usr/local/bin/corebrum-ollama-menu \
   /usr/local/bin/corebrum-zenoh-fleet-menu \
   /usr/local/bin/corebrum-agents-menu \
