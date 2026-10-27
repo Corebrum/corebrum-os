@@ -161,6 +161,40 @@ if ! grep -q 'no pnpm-workspace.yaml' "${clone_tmp}/blank.err"; then
   echo "FAIL: a clone without pnpm-workspace.yaml did not stop the install" >&2
   exit 1
 fi
+
+home_clone="${clone_tmp}/desktop-home"
+mkdir -p "$home_clone"
+ln -s "${clone_tmp}/no-such/corebrum-os/scripts/corebrum.sh" "${clone_tmp}/bin/corebrum"
+: >"$clone_log"
+got="$(
+  export GIT_LOG="$clone_log"
+  export PATH="${clone_bin}:/usr/bin:/bin"
+  export COREBRUM_BIN="${clone_tmp}/bin/corebrum"
+  export HOME="$home_clone"
+  unset COREBRUM_ROOT COREBRUM_AGENTICROS_ROOT COREBRUM_AGENTICROS_URL
+  agenticros_prepare 2>/dev/null
+)"
+assert_eq "$got" "${home_clone}/agenticros" "an unreachable Corebrum checkout clones AgenticROS into the home directory"
+if ! grep -qF "clone --depth 1 https://github.com/agenticros/agenticros.git ${home_clone}/agenticros" "$clone_log"; then
+  echo "FAIL: home fallback did not clone https://github.com/agenticros/agenticros.git" >&2
+  printf '%s\n' "$(cat "$clone_log")" >&2
+  exit 1
+fi
+
+dev_checkout="${clone_tmp}/dev/corebrum-os"
+mkdir -p "${dev_checkout}/scripts" "${clone_tmp}/dev-home"
+touch "${dev_checkout}/scripts/corebrum.sh"
+ln -s "${dev_checkout}/scripts/corebrum.sh" "${clone_tmp}/bin/corebrum-dev"
+: >"$clone_log"
+got="$(
+  export GIT_LOG="$clone_log"
+  export PATH="${clone_bin}:/usr/bin:/bin"
+  export COREBRUM_BIN="${clone_tmp}/bin/corebrum-dev"
+  export HOME="${clone_tmp}/dev-home"
+  unset COREBRUM_ROOT COREBRUM_AGENTICROS_ROOT COREBRUM_AGENTICROS_URL
+  agenticros_prepare 2>/dev/null
+)"
+assert_eq "$got" "${clone_tmp}/dev/agenticros" "a writable sibling stays the AgenticROS clone path"
 rm -rf "$clone_tmp"
 
 export COREBRUM_AGENTICROS_READY=1

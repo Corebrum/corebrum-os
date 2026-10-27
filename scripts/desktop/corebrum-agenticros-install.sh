@@ -18,22 +18,43 @@ corebrum_agenticros_checkout() {
     return 0
   fi
   bin="${COREBRUM_BIN:-/usr/local/bin/corebrum}"
-  if [[ -e "$bin" ]]; then
-    resolved="$(readlink -f "$bin")"
-    dirname "$(dirname "$resolved")"
-    return 0
+  # -e follows the link. A desktop user cannot follow a link into /root, so a
+  # symlink still counts when the target is not traversable.
+  if [[ -e "$bin" || -L "$bin" ]]; then
+    resolved="$(readlink -f "$bin" 2>/dev/null || true)"
+    if [[ -z "$resolved" ]]; then
+      resolved="$(readlink "$bin" 2>/dev/null || true)"
+      if [[ -n "$resolved" && "$resolved" != /* ]]; then
+        resolved="$(cd "$(dirname "$bin")" && pwd)/${resolved}"
+      fi
+    fi
+    if [[ -n "$resolved" ]]; then
+      dirname "$(dirname "$resolved")"
+      return 0
+    fi
   fi
   cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd
 }
 
 corebrum_agenticros_clone() {
-  local checkout
+  local checkout parent
   if [[ -n "${COREBRUM_AGENTICROS_ROOT:-}" ]]; then
     printf '%s\n' "$COREBRUM_AGENTICROS_ROOT"
     return 0
   fi
   checkout="$(corebrum_agenticros_checkout)"
-  printf '%s\n' "$(cd "$(dirname "$checkout")" && pwd)/agenticros"
+  parent="$(dirname "$checkout")"
+  if [[ -d "$parent" && -w "$parent" ]]; then
+    printf '%s\n' "$(cd "$parent" && pwd)/agenticros"
+    return 0
+  fi
+  # The installed corebrum command can point at a checkout the desktop user
+  # cannot write beside, which otherwise becomes /usr/agenticros.
+  if [[ -n "${HOME:-}" && -d "$HOME" && -w "$HOME" ]]; then
+    printf '%s\n' "$(cd "$HOME" && pwd)/agenticros"
+    return 0
+  fi
+  printf '%s\n' "${parent}/agenticros"
 }
 
 corebrum_agenticros_ensure_git() {
