@@ -13,11 +13,13 @@ COREBRUM_HYPRLAND_KEYRING="/usr/share/keyrings/corebrum-cppiber-hyprland.gpg"
 COREBRUM_HYPRLAND_SOURCE="/etc/apt/sources.list.d/corebrum-cppiber-hyprland.sources"
 COREBRUM_HYPRLAND_PIN="/etc/apt/preferences.d/corebrum-cppiber-hyprland"
 
-# Print the version published by archive.ubuntu.com or security.ubuntu.com.
+# Print the version published by the Ubuntu archive. amd64 indexes use
+# archive.ubuntu.com and security.ubuntu.com. arm64 indexes use ports.ubuntu.com
+# for the release pocket and for resolute-security. A personal archive is ignored.
 # corebrum_policy_ubuntu_version reads apt-cache policy text on stdin.
 corebrum_policy_ubuntu_version() {
   awk '
-    ver != "" && $0 ~ /archive\.ubuntu\.com|security\.ubuntu\.com/ { print ver; exit }
+    ver != "" && $0 ~ /archive\.ubuntu\.com|security\.ubuntu\.com|ports\.ubuntu\.com/ { print ver; exit }
     $1 == "***" { ver = $2; next }
     $1 ~ /^[0-9]/ { ver = $1; next }
   '

@@ -76,6 +76,30 @@ EOF
 )"
 assert_eq "$(corebrum_policy_ubuntu_version <<<"$policy")" "" "ppa version is not an ubuntu archive version"
 
+policy="$(cat <<'EOF'
+hyprland:
+  Installed: (none)
+  Candidate: 0.53.3+ds-4
+  Version table:
+     0.53.3+ds-4 500
+        500 http://ports.ubuntu.com resolute/universe arm64 Packages
+EOF
+)"
+assert_eq "$(corebrum_policy_ubuntu_version <<<"$policy")" "0.53.3+ds-4" "ports.ubuntu.com is the arm64 ubuntu archive"
+
+policy="$(cat <<'EOF'
+hyprland:
+  Installed: (none)
+  Candidate: 0.56.2-1ppa2
+  Version table:
+     0.56.2-1ppa2 500
+        500 https://ppa.launchpadcontent.net/cppiber/hyprland/ubuntu noble/main amd64 Packages
+     0.53.3+ds-4 500
+        500 http://ports.ubuntu.com resolute/universe arm64 Packages
+EOF
+)"
+assert_eq "$(corebrum_policy_ubuntu_version <<<"$policy")" "0.53.3+ds-4" "ports version wins over a ppa listed first"
+
 pinned=()
 corebrum_load_manifest "${ROOT}/manifests/packages/hyprland-ppa.txt" pinned
 found_hyprland=0
