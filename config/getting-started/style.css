@@ -1,0 +1,223 @@
+:root {
+  --bg: #1c1c1c;
+  --text: #e8e6e3;
+  --muted: rgba(232, 230, 227, 0.72);
+  --accent: #3d9a8b;
+  --line: rgba(232, 230, 227, 0.14);
+  --code: #141414;
+  --nav: #161616;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans", sans-serif;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+nav {
+  width: 260px;
+  flex: 0 0 260px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  overflow: auto;
+  padding: 24px 16px 32px;
+  border-right: 1px solid var(--line);
+  background: var(--nav);
+}
+
+nav .brand {
+  display: block;
+}
+
+nav .logo {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+nav .tagline {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 12px 4px 20px;
+}
+
+nav a {
+  display: block;
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+nav a.brand {
+  padding: 0;
+  margin-bottom: 0;
+}
+
+nav a.brand:hover {
+  background: transparent;
+}
+
+nav a[aria-current="page"] {
+  background: var(--accent);
+  color: #1c1c1c;
+}
+
+nav a:hover {
+  background: rgba(61, 154, 139, 0.28);
+}
+
+nav a.brand:hover {
+  background: transparent;
+}
+
+main {
+  flex: 1;
+  padding: 40px 48px 72px;
+  max-width: 860px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 650;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+h1 img,
+h2 img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+h2 img {
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 650;
+  margin: 28px 0 8px;
+}
+
+p,
+li {
+  line-height: 1.55;
+}
+
+main a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+main a.out {
+  display: inline-block;
+  margin: 0 8px 8px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+main a.out:hover {
+  background: var(--accent);
+  color: #1c1c1c;
+}
+
+code,
+pre,
+td code {
+  font-family: "Noto Sans Mono", ui-monospace, monospace;
+  font-size: 0.92em;
+}
+
+pre {
+  background: var(--code);
+  padding: 14px 16px;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 24px 0 8px;
+}
+
+.marks a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  width: 88px;
+  text-align: center;
+}
+
+.marks img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  nav {
+    width: auto;
+    height: auto;
+    position: static;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  main {
+    padding: 28px 20px 48px;
+  }
+}

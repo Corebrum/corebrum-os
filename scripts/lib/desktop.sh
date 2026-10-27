@@ -104,6 +104,57 @@ corebrum_disable_packaged_hyprpaper() {
   systemctl --global disable hyprpaper.service || corebrum_log "could not disable hyprpaper.service"
 }
 
+corebrum_install_getting_started() {
+  local src name
+  local dir="${COREBRUM_ROOT}/config/getting-started"
+  for src in "${dir}"/*; do
+    [[ -f "$src" ]] || continue
+    name="$(basename "$src")"
+    corebrum_install_file "$src" "/usr/share/corebrum/getting-started/${name}" 644
+  done
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/scripts/desktop/corebrum-getting-started-server.js" \
+    /usr/local/lib/corebrum/getting-started-server.js \
+    644
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/scripts/desktop/corebrum-getting-started.sh" \
+    /usr/local/bin/corebrum-getting-started \
+    755
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/systemd/corebrum-getting-started.service" \
+    /etc/systemd/system/corebrum-getting-started.service \
+    644
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/firefox/policies.json" \
+    /etc/firefox/policies/policies.json \
+    644
+}
+
+# Node 26 is installed later in the desktop phase. Start the page after that.
+corebrum_enable_getting_started() {
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: systemctl daemon-reload"
+    corebrum_log "dry-run: systemctl enable corebrum-getting-started.service when Node.js 26 is installed"
+    corebrum_log "dry-run: systemctl restart corebrum-getting-started.service"
+    return 0
+  fi
+  corebrum_log "run: systemctl daemon-reload"
+  systemctl daemon-reload
+  corebrum_log "run: systemctl enable corebrum-getting-started.service"
+  systemctl enable corebrum-getting-started.service
+  corebrum_log "run: systemctl restart corebrum-getting-started.service"
+  systemctl restart corebrum-getting-started.service
+}
+
+corebrum_disable_getting_started() {
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: systemctl disable --now corebrum-getting-started.service"
+    return 0
+  fi
+  systemctl disable --now corebrum-getting-started.service >/dev/null 2>&1 \
+    || corebrum_log "could not disable corebrum-getting-started.service"
+}
+
 corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
   corebrum_install_file "${root}/config/hypr/hyprland.conf" /etc/corebrum/hypr/hyprland.conf 644
@@ -180,6 +231,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/brand/zenoh.png" /usr/share/corebrum/zenoh.png 644
   corebrum_install_file "${root}/config/brand/realsense.png" /usr/share/corebrum/realsense.png 644
   corebrum_install_file "${root}/config/brand/agents.png" /usr/share/corebrum/agents.png 644
+  corebrum_install_getting_started
   corebrum_install_wallpapers
 }
 
@@ -296,6 +348,24 @@ corebrum_desktop_managed_paths() {
 /usr/share/corebrum/zenoh.png
 /usr/share/corebrum/realsense.png
 /usr/share/corebrum/agents.png
+/usr/share/corebrum/getting-started/index.html
+/usr/share/corebrum/getting-started/physical-ai.html
+/usr/share/corebrum/getting-started/desktop.html
+/usr/share/corebrum/getting-started/ros.html
+/usr/share/corebrum/getting-started/zenoh.html
+/usr/share/corebrum/getting-started/realsense.html
+/usr/share/corebrum/getting-started/agenticros.html
+/usr/share/corebrum/getting-started/agents.html
+/usr/share/corebrum/getting-started/mission.html
+/usr/share/corebrum/getting-started/keybindings.html
+/usr/share/corebrum/getting-started/corebrum-cli.html
+/usr/share/corebrum/getting-started/agenticros-cli.html
+/usr/share/corebrum/getting-started/nav.html
+/usr/share/corebrum/getting-started/style.css
+/usr/local/lib/corebrum/getting-started-server.js
+/usr/local/bin/corebrum-getting-started
+/etc/systemd/system/corebrum-getting-started.service
+/etc/firefox/policies/policies.json
 /etc/profile.d/corebrum-node.sh
 /etc/corebrum/node/versions
 EOF
@@ -309,6 +379,7 @@ corebrum_uninstall_desktop() {
   # shellcheck source=services.sh
   source "${COREBRUM_ROOT}/scripts/lib/services.sh"
   corebrum_uninstall_services
+  corebrum_disable_getting_started
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_uninstall_node
     realsense_remove_repo
@@ -323,6 +394,10 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: remove /usr/share/corebrum/zenoh.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/realsense.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/agents.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/getting-started"
+    corebrum_log "dry-run: remove /etc/firefox/policies/policies.json"
+    corebrum_log "dry-run: remove /usr/local/bin/corebrum-getting-started"
+    corebrum_log "dry-run: remove /etc/systemd/system/corebrum-getting-started.service"
     corebrum_remove_wallpapers
     corebrum_remove_hyprland_ppa
     corebrum_log "desktop uninstall dry-run complete"
@@ -349,6 +424,7 @@ corebrum_uninstall_desktop() {
       corebrum_log "removed ${path}"
     fi
   done < <(corebrum_desktop_managed_paths)
+  systemctl daemon-reload || corebrum_log "could not reload systemd"
 
   if previous="$(corebrum_state_get previous_default_target)"; then
     corebrum_log "run: systemctl set-default ${previous}"
@@ -376,7 +452,10 @@ corebrum_uninstall_desktop() {
     /etc/corebrum \
     /usr/local/lib/corebrum \
     /usr/local/share/applications \
+    /usr/share/corebrum/getting-started \
     /usr/share/corebrum \
+    /etc/firefox/policies \
+    /etc/firefox \
     2>/dev/null || true
   corebrum_log "desktop uninstall complete; Ubuntu packages were left installed; reboot to leave the graphical login"
 }

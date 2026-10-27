@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ROS 2 — Corebrum</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- corebrum-nav -->
+    <main>
+      <h1><img src="/ros.png" alt="">ROS 2</h1>
+      <p><a class="out" href="https://docs.ros.org/en/lyrical/">ROS 2 docs · docs.ros.org/en/lyrical</a></p>
+      <p>Super+Space lists ROS 2 with an install mark until <code>sudo corebrum install ros</code> has been run. After that, the ROS menu launches RViz, Gazebo, Nav2, and MoveIt. Typing gazebo, rviz, nav2, or moveit at the Super+Space prompt finds that tool.</p>
+      <p>A Corebrum terminal already uses Zenoh (<code>rmw_zenoh_cpp</code>). Close a terminal that was open before the install and open another with Super+Return. Topics travel through the Zenoh router. See <a href="zenoh.html">Zenoh</a>.</p>
+      <h2>Everyday commands</h2>
+      <p><code>ros2 topic echo</code> subscribes and prints each message. <code>ros2 topic pub</code> publishes. Add <code>--once</code> to read or send a single message. <code>corebrum ros topics</code> is <code>ros2 topic list</code> through the selected RMW.</p>
+      <pre><code>ros2 topic list
+ros2 node list
+ros2 topic echo /topic_name
+ros2 topic pub /topic_name std_msgs/msg/String "{data: hello}"
+corebrum ros topics</code></pre>
+    </main>
+  </div>
+</body>
+</html>

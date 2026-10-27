@@ -1,0 +1,16 @@
+# Managed by Corebrum OS.
+[Unit]
+Description=Corebrum Getting Started pages
+After=network.target
+
+[Service]
+Type=simple
+User=nobody
+Group=nogroup
+ExecStart=/usr/local/bin/corebrum-getting-started
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

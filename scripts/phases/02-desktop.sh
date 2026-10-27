@@ -77,6 +77,7 @@ corebrum_phase_desktop() {
   corebrum_apt_install --no-install-recommends "${packages[@]}"
   corebrum_install_desktop_files
   corebrum_install_node
+  corebrum_enable_getting_started
   corebrum_install_greetd_config
   corebrum_enable_desktop_login
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then

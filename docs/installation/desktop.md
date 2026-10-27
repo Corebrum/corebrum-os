@@ -100,6 +100,8 @@ That script checks packages, config files, that greetd is enabled, and that `Hyp
 
 Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap. Super+Space shows that Firefox row with the Firefox logo.
 
+Firefox opens the Getting Started pages at `http://127.0.0.1:8765/getting-started/`. A Node.js server on `127.0.0.1` port 8765 serves those pages from `/usr/share/corebrum/getting-started/`. It uses the desktop Node.js 26 binary and does not install another package. The homepage is unlocked, so Firefox settings can point somewhere else. Super+Shift+Return still runs `firefox` with no address, and that saved homepage is what opens. See `docs/decisions/0077-getting-started-homepage.md`. The pages cover the desktop, ROS 2, Zenoh, RealSense, AgenticROS, the AI agents, keybindings, and the `corebrum` and `agenticros` commands. When one of those changes, update the matching file under `config/getting-started/` and, for a new section, `config/getting-started/nav.html`.
+
 Super+Space lists Text Editor from the `gnome-text-editor` package installed with this profile. Choosing it opens a window for a new document. Typing `notepad` finds that row. Super+Shift+N opens it directly. See `docs/decisions/0039-text-editor.md`.
 
 Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium` and shows the Chromium logo. The snap's own `Chromium Web Browser` desktop files stay out of this menu.

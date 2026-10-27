@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corebrum commands — Corebrum</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- corebrum-nav -->
+    <main>
+      <h1>Corebrum commands</h1>
+      <p><code>corebrum help</code> prints this list. A real install needs root. <code>--dry-run</code> prints the plan and does not change the system.</p>
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>corebrum version</code></td><td>Print the version from <code>VERSION</code></td></tr>
+          <tr><td><code>corebrum status</code></td><td>Say whether base, desktop, services, and ROS are installed, plus RealSense, AgenticROS, and the Skills helper</td></tr>
+          <tr><td><code>corebrum doctor</code></td><td>Run the validators and print the next command if one fails</td></tr>
+          <tr><td><code>corebrum config</code></td><td>List <code>/etc/corebrum</code>, logs, and backups</td></tr>
+          <tr><td><code>corebrum install base</code></td><td>Headless Ubuntu foundation. <code>corebrum install headless</code> is the same profile</td></tr>
+          <tr><td><code>corebrum install desktop</code></td><td>Base, Hyprland, workstation services, and Node.js 26.x. Add <code>--enable-ssh</code> to also install OpenSSH</td></tr>
+          <tr><td><code>corebrum install ros</code></td><td>Base profile, ROS 2, and the Zenoh router</td></tr>
+          <tr><td><code>corebrum uninstall desktop</code></td><td>Remove Corebrum desktop files. Ubuntu packages stay installed</td></tr>
+          <tr><td><code>corebrum uninstall ros</code></td><td>Remove Corebrum ROS files. The ROS apt packages stay installed</td></tr>
+          <tr><td><code>corebrum ros status</code></td><td>Distro, selected RMW, and router state</td></tr>
+          <tr><td><code>corebrum ros topics</code></td><td><code>ros2 topic list</code> with the selected RMW</td></tr>
+          <tr><td><code>corebrum ros rmw zenoh</code></td><td>New shells use Zenoh</td></tr>
+          <tr><td><code>corebrum ros rmw fastrtps</code></td><td>New shells use Fast DDS</td></tr>
+          <tr><td><code>corebrum zenoh status</code></td><td>Router unit and listen address</td></tr>
+          <tr><td><code>corebrum zenoh peers</code></td><td>Router address and this machine’s IPv4 addresses</td></tr>
+          <tr><td><code>corebrum camera list</code></td><td>List RealSense devices, or point at Super+Space</td></tr>
+          <tr><td><code>corebrum agents list</code></td><td>Show which catalog CLIs are on <code>PATH</code>, with a version when the CLI prints one</td></tr>
+          <tr><td><code>corebrum agents update</code></td><td>Point at Super+Space Updates. It does not run a publisher installer</td></tr>
+          <tr><td><code>corebrum update status</code></td><td>List the Updates rows. It does not run apt or git</td></tr>
+          <tr><td><code>corebrum speak "text"</code></td><td>Say the text with <code>espeak-ng</code></td></tr>
+          <tr><td><code>corebrum speak listen</code></td><td>Say each <code>std_msgs/String</code> published on <code>/corebrum/say</code></td></tr>
+          <tr><td><code>corebrum voice list</code></td><td>List <code>espeak-ng</code> voices</td></tr>
+          <tr><td><code>corebrum voice test</code></td><td>Say “Hello from Corebrum.”</td></tr>
+          <tr><td><code>corebrum voice set espeak</code></td><td>Keep local speech on <code>espeak-ng</code></td></tr>
+          <tr><td><code>corebrum voice enable</code></td><td>Turn speech on</td></tr>
+          <tr><td><code>corebrum voice disable</code></td><td>Stop speech until <code>corebrum voice enable</code></td></tr>
+          <tr><td><code>corebrum voice hear</code></td><td>Transcribe the default microphone. <code>corebrum voice hear --install</code> installs the recognizer first</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</body>
+</html>

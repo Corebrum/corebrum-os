@@ -81,7 +81,15 @@ for path in \
   /usr/local/lib/corebrum/corebrum-camera-preview.py \
   /etc/systemd/user/hypridle.service.d/corebrum.conf \
   /etc/corebrum/agents.conf \
-  /etc/corebrum/ros-tools.conf
+  /etc/corebrum/ros-tools.conf \
+  /usr/share/corebrum/getting-started/index.html \
+  /usr/share/corebrum/getting-started/nav.html \
+  /usr/share/corebrum/getting-started/ros.html \
+  /usr/share/corebrum/getting-started/zenoh.html \
+  /usr/local/lib/corebrum/getting-started-server.js \
+  /usr/local/bin/corebrum-getting-started \
+  /etc/systemd/system/corebrum-getting-started.service \
+  /etc/firefox/policies/policies.json
 do
   if [[ -f "$path" ]]; then
     corebrum_log "ok: ${path}"
@@ -93,7 +101,8 @@ done
 
 for path in \
   /usr/local/bin/corebrum-record \
-  /usr/local/lib/corebrum/corebrum-camera-preview.py
+  /usr/local/lib/corebrum/corebrum-camera-preview.py \
+  /usr/local/bin/corebrum-getting-started
 do
   if [[ -x "$path" ]]; then
     corebrum_log "ok: ${path} is executable"
@@ -113,6 +122,13 @@ if [[ -n "$bg_candidate" && "$bg_candidate" != "(none)" ]]; then
     corebrum_log "missing: hyprland-backgrounds"
     failed=1
   fi
+fi
+
+if systemctl is-enabled --quiet corebrum-getting-started.service; then
+  corebrum_log "ok: corebrum-getting-started.service enabled"
+else
+  corebrum_log "missing: corebrum-getting-started.service enabled"
+  failed=1
 fi
 
 for cmd in waybar kitty fuzzel wofi agreety; do

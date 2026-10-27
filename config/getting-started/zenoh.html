@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zenoh — Corebrum</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- corebrum-nav -->
+    <main>
+      <h1><img src="/zenoh.png" alt="">Zenoh</h1>
+      <p><a class="out" href="https://zenoh.io/">Zenoh · zenoh.io</a></p>
+      <p>ROS 2 on Corebrum talks through one Zenoh router. That router listens on port 7447. Shells on this machine are clients of it and connect to <code>tcp/localhost:7447</code>. Corebrum runs that router as <code>corebrum-zenoh-router.service</code>. Leave it as the only router. <code>ros2 run rmw_zenoh_cpp rmw_zenohd</code> would take the same port.</p>
+      <p>After ROS 2 is installed, Super+Space lists Zenoh network. Choosing it runs <code>zenoh network</code> and draws the nodes connected to the router.</p>
+      <h2>Commands</h2>
+      <pre><code>corebrum zenoh status
+corebrum zenoh peers
+zenoh info
+zenoh subscribe -k 'rt/**'</code></pre>
+      <p><code>corebrum zenoh status</code> shows the router unit and the listen address. <code>corebrum zenoh peers</code> shows that address and this machine’s IPv4 addresses. <code>zenoh info</code> opens a client session to the existing router. <code>zenoh subscribe</code> prints samples on a key expression.</p>
+      <h2>A second machine</h2>
+      <p>Install the same ROS profile on the other machine. On the machine whose router will carry the messages, run <code>corebrum zenoh peers</code> and choose an address. Point both shells at that router as Zenoh clients, on <code>tcp/&lt;router-address&gt;:7447</code>, and keep both on the same <code>ROS_DOMAIN_ID</code>. A publisher left on the default peer session listens on <code>127.0.0.1</code>, which the other machine can see and cannot open.</p>
+      <h2>Zenoh fleet</h2>
+      <p>Zenoh fleet is a separate Super+Space row. It says install until <code>zenoh-fleet</code> is present. Choosing it installs <code>@agenticros/zenoh-fleet</code> 0.1.4 and runs the wizard. The wizard writes files in the home directory, under <code>~/local-fleet/</code> by default, and does not change the running router.</p>
+    </main>
+  </div>
+</body>
+</html>
