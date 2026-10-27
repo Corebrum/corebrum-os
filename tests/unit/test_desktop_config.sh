@@ -237,9 +237,18 @@ if ! grep -q 'config/brand/logo.png' "${ROOT}/scripts/lib/desktop.sh"; then
   echo "FAIL: the desktop install does not copy the Corebrum logo" >&2
   exit 1
 fi
+if ! grep -q 'config/brand/agenticros.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the AgenticROS mark" >&2
+  exit 1
+fi
 magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/logo.png" | tr -d ' \n')"
 if [[ "$magic" != "89504e470d0a1a0a" ]]; then
   echo "FAIL: config/brand/logo.png is not a PNG" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/agenticros.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/agenticros.png is not a PNG" >&2
   exit 1
 fi
 if ! grep -q 'hyprlock gtkgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then

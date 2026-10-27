@@ -170,6 +170,10 @@ if ! grep -q '^Name=AgenticROS$' "${runtime}/corebrum/applications/corebrum-agen
   echo "FAIL: refreshed desktop entry did not name AgenticROS" >&2
   exit 1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/agenticros.png$' "${runtime}/corebrum/applications/corebrum-agenticros.desktop"; then
+  echo "FAIL: the AgenticROS menu row does not use the AgenticROS mark" >&2
+  exit 1
+fi
 motors_entry="${runtime}/corebrum/applications/corebrum-agenticros-action-motors-start.desktop"
 if ! grep -q '^Name=Motors: Start$' "$motors_entry"; then
   echo "FAIL: Super+Space does not list Motors: Start for search" >&2

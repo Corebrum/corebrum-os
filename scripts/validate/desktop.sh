@@ -37,6 +37,7 @@ for path in \
   /etc/xdg/hypr/hypridle.conf \
   /etc/corebrum/greetd/gtkgreet.css \
   /usr/share/corebrum/logo.png \
+  /usr/share/corebrum/agenticros.png \
   /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
   /usr/local/lib/corebrum/vc4.sh \
