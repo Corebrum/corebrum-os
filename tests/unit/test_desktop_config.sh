@@ -277,6 +277,10 @@ if ! grep -q 'config/brand/agents.png' "${ROOT}/scripts/lib/desktop.sh"; then
   echo "FAIL: the desktop install does not copy the AI Agents mark" >&2
   exit 1
 fi
+if ! grep -q 'config/brand/agents/${name}' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the agent marks" >&2
+  exit 1
+fi
 magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/logo.png" | tr -d ' \n')"
 if [[ "$magic" != "89504e470d0a1a0a" ]]; then
   echo "FAIL: config/brand/logo.png is not a PNG" >&2
@@ -310,6 +314,18 @@ fi
 magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/agents.png" | tr -d ' \n')"
 if [[ "$magic" != "89504e470d0a1a0a" ]]; then
   echo "FAIL: config/brand/agents.png is not a PNG" >&2
+  exit 1
+fi
+for mark in antigravity claude codex cursor hermes openclaw; do
+  magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/agents/${mark}.png" | tr -d ' \n')"
+  if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+    echo "FAIL: config/brand/agents/${mark}.png is not a PNG" >&2
+    exit 1
+  fi
+done
+magic="$(od -An -t x1 -N 4 "${ROOT}/config/brand/agents/grok.webp" | tr -d ' \n')"
+if [[ "$magic" != "52494646" ]]; then
+  echo "FAIL: config/brand/agents/grok.webp is not a WebP" >&2
   exit 1
 fi
 if ! grep -q 'hyprlock gtkgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then

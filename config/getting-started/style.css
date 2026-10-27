@@ -180,8 +180,9 @@ th {
 }
 
 .marks {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 88px));
+  justify-content: start;
   gap: 16px;
   margin: 24px 0 8px;
 }
@@ -194,7 +195,7 @@ th {
   color: var(--text);
   text-decoration: none;
   font-size: 13px;
-  width: 88px;
+  width: auto;
   text-align: center;
 }
 
@@ -202,6 +203,10 @@ th {
   width: 56px;
   height: 56px;
   object-fit: contain;
+}
+
+.marks.agents {
+  margin-top: 8px;
 }
 
 @media (max-width: 800px) {
@@ -219,5 +224,9 @@ th {
 
   main {
     padding: 28px 20px 48px;
+  }
+
+  .marks {
+    grid-template-columns: repeat(3, minmax(0, 88px));
   }
 }

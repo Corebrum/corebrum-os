@@ -43,6 +43,13 @@ for path in \
   /usr/share/corebrum/zenoh.png \
   /usr/share/corebrum/realsense.png \
   /usr/share/corebrum/agents.png \
+  /usr/share/corebrum/agents/antigravity.png \
+  /usr/share/corebrum/agents/claude.png \
+  /usr/share/corebrum/agents/codex.png \
+  /usr/share/corebrum/agents/cursor.png \
+  /usr/share/corebrum/agents/grok.webp \
+  /usr/share/corebrum/agents/hermes.png \
+  /usr/share/corebrum/agents/openclaw.png \
   /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
   /usr/local/lib/corebrum/vc4.sh \

@@ -232,8 +232,18 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/brand/zenoh.png" /usr/share/corebrum/zenoh.png 644
   corebrum_install_file "${root}/config/brand/realsense.png" /usr/share/corebrum/realsense.png 644
   corebrum_install_file "${root}/config/brand/agents.png" /usr/share/corebrum/agents.png 644
+  corebrum_install_agent_marks "$root"
   corebrum_install_getting_started
   corebrum_install_wallpapers
+}
+
+# Marks from https://corebrum.com/#agents. The welcome page lists them under the tool marks.
+corebrum_install_agent_marks() {
+  local root="$1"
+  local name
+  for name in antigravity.png claude.png codex.png cursor.png grok.webp hermes.png openclaw.png; do
+    corebrum_install_file "${root}/config/brand/agents/${name}" "/usr/share/corebrum/agents/${name}" 644
+  done
 }
 
 # gtkgreet needs cage. Ubuntu 24.04 has neither gtkgreet nor hyprlock.
@@ -350,6 +360,13 @@ corebrum_desktop_managed_paths() {
 /usr/share/corebrum/zenoh.png
 /usr/share/corebrum/realsense.png
 /usr/share/corebrum/agents.png
+/usr/share/corebrum/agents/antigravity.png
+/usr/share/corebrum/agents/claude.png
+/usr/share/corebrum/agents/codex.png
+/usr/share/corebrum/agents/cursor.png
+/usr/share/corebrum/agents/grok.webp
+/usr/share/corebrum/agents/hermes.png
+/usr/share/corebrum/agents/openclaw.png
 /usr/share/corebrum/getting-started/index.html
 /usr/share/corebrum/getting-started/physical-ai.html
 /usr/share/corebrum/getting-started/desktop.html
@@ -396,6 +413,7 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: remove /usr/share/corebrum/zenoh.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/realsense.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/agents.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/agents"
     corebrum_log "dry-run: remove /usr/share/corebrum/getting-started"
     corebrum_log "dry-run: remove /etc/firefox/policies/policies.json"
     corebrum_log "dry-run: remove /usr/local/bin/corebrum-getting-started"
@@ -455,6 +473,7 @@ corebrum_uninstall_desktop() {
     /usr/local/lib/corebrum \
     /usr/local/share/applications \
     /usr/share/corebrum/getting-started \
+    /usr/share/corebrum/agents \
     /usr/share/corebrum \
     /etc/firefox/policies \
     /etc/firefox \

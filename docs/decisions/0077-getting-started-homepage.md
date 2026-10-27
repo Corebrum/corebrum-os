@@ -11,7 +11,7 @@ The Firefox snap cannot open `/usr/share/corebrum` as a `file://` page. It can r
 
 ## Decision
 
-- Getting Started is one HTML file per section under `config/getting-started/`, copied to `/usr/share/corebrum/getting-started/`. The sidebar lives in `nav.html`. The Node server inserts it and marks the current page. The sidebar shows `/usr/share/corebrum/logo.png`. ROS, Zenoh, RealSense, AgenticROS, AI Agents, and Ollama use the marks already installed beside that logo.
+- Getting Started is one HTML file per section under `config/getting-started/`, copied to `/usr/share/corebrum/getting-started/`. The sidebar lives in `nav.html`. The Node server inserts it and marks the current page. The sidebar shows `/usr/share/corebrum/logo.png`. ROS, Zenoh, RealSense, AgenticROS, AI Agents, and Ollama use the marks already installed beside that logo. The welcome page lists the agent marks from corebrum.com under those tool marks. Ollama stays in the tool row. Those files live in `config/brand/agents/` and are copied to `/usr/share/corebrum/agents/`.
 - `corebrum-getting-started.service` listens on `127.0.0.1:8765` and serves `/usr/share/corebrum`. The server is Node's `http` module. It does not install an npm package. The unit runs as `nobody` and finds Node 26 through `corebrum-node-path.sh`. The desktop phase starts it after Node is installed.
 - `/etc/firefox/policies/policies.json` sets the homepage to `http://127.0.0.1:8765/getting-started/` with `Locked` false and `StartPage` `homepage`. Firefox settings can replace it. Super+Shift+Return stays `firefox` with no URL.
 - This change does not install Chromium and does not write a Chromium policy.

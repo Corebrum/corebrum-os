@@ -60,6 +60,34 @@ for icon in /ros.png /zenoh.png /realsense.png /agenticros.png /agents.png /olla
     fail "welcome page does not reference ${icon}"
   fi
 done
+agent_icons=(
+  /agents/antigravity.png
+  /agents/claude.png
+  /agents/codex.png
+  /agents/cursor.png
+  /agents/grok.webp
+  /agents/hermes.png
+  /agents/openclaw.png
+)
+for icon in "${agent_icons[@]}"; do
+  if ! grep -q "src=\"${icon}\"" "${docs}/index.html"; then
+    fail "welcome page does not reference ${icon}"
+  fi
+  if [[ ! -f "${ROOT}/config/brand${icon}" ]]; then
+    fail "missing config/brand${icon}"
+  fi
+done
+tool_line="$(grep -n 'src="/ollama.png"' "${docs}/index.html" | head -n 1 | cut -d: -f1)"
+agent_line="$(grep -n 'src="/agents/antigravity.png"' "${docs}/index.html" | head -n 1 | cut -d: -f1)"
+if [[ -z "$tool_line" || -z "$agent_line" || "$agent_line" -le "$tool_line" ]]; then
+  fail "agent marks are not under the tool marks"
+fi
+if grep -q 'src="/agents/ollama.png"' "${docs}/index.html"; then
+  fail "the welcome page lists Ollama twice"
+fi
+if ! grep -q 'grid-template-columns: repeat(6, minmax(0, 88px));' "${docs}/style.css"; then
+  fail "the welcome marks are not six across"
+fi
 if compgen -G "${docs}/*.png" >/dev/null; then
   fail "getting-started added another logo file"
 fi
@@ -281,6 +309,8 @@ if command -v node >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
   mkdir -p "${tmp}/getting-started"
   cp "${docs}/"* "${tmp}/getting-started/"
   cp "${ROOT}/config/brand/"*.png "$tmp/"
+  mkdir -p "${tmp}/agents"
+  cp "${ROOT}/config/brand/agents/"* "${tmp}/agents/"
   # Run a copy outside this checkout. A parent package.json with
   # "type": "module" would otherwise treat the repo .js file as ESM.
   cp "$server" "${tmp}/getting-started-server.js"
@@ -316,6 +346,13 @@ if command -v node >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
   fi
   logo_code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}/logo.png")"
   [[ "$logo_code" == "200" ]] || fail "logo.png was not served"
+  if ! grep -q 'src="/agents/antigravity.png"' <<<"$body"; then
+    fail "the welcome page did not list the agent marks"
+  fi
+  agent_code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}/agents/antigravity.png")"
+  [[ "$agent_code" == "200" ]] || fail "antigravity.png was not served"
+  grok_type="$(curl -s -D - -o /dev/null "http://127.0.0.1:${port}/agents/grok.webp" | tr -d '\r' | awk 'tolower($1)=="content-type:" {print $2}')"
+  [[ "$grok_type" == "image/webp" ]] || fail "grok.webp was not served as image/webp"
   root_code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}/")"
   [[ "$root_code" == "404" ]] || fail "the server listed the share root"
   nav_code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}/getting-started/nav.html")"
