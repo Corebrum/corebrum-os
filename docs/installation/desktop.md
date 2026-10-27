@@ -65,7 +65,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Escape | Lock the screen with hyprlock |
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Log out and return to the greeter |
-| Super+H | Transcribe the microphone. Press again to copy the words |
+| Control+Space | Transcribe the microphone. Press again to copy the words |
 | Print | Copy a selected area |
 | Super+P | Copy a selected area |
 | Super+Shift+P | Copy the whole screen |
@@ -80,7 +80,7 @@ Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A termin
 
 Super+K clears the focused Kitty window to the prompt and erases its scrollback. That is Kitty's Command+K action. Another window ignores the key. A Kitty window that is already open picks up the shortcut the next time it starts. Super+Arrows move focus. Super+Shift+Arrows swap the focused tile. See `docs/decisions/0053-terminal-clear.md`.
 
-Super+H transcribes the default microphone. The first press listens for up to 60 seconds. The next press stops, copies the words, and shows them. If transcription is not installed, Super+H asks Yes or No. Yes installs Ubuntu `pocketsphinx` in a terminal. `corebrum voice hear 8` still records for a fixed time in a terminal. See `docs/decisions/0055-transcribe-key.md`.
+Control+Space transcribes the default microphone. The first press listens for up to 60 seconds. The next press stops, copies the words, and shows them. If transcription is not installed, Control+Space asks Yes or No. Yes installs Ubuntu `pocketsphinx` in a terminal. `corebrum voice hear 8` still records for a fixed time in a terminal. See `docs/decisions/0055-transcribe-key.md` and `docs/decisions/0071-transcribe-control-space.md`.
 
 `corebrum install desktop` installs the recorder and the camera preview as executable files. Running that install again marks an older copy executable when its contents are already current. Super+Print and Super+Alt+P record the selected area to `~/Videos`. The list offers Screen, Screen and audio when a microphone is present, Screen and webcam when a camera other than RealSense is present, and Screen and RealSense when `pyrealsense2` is installed. Audio and camera can be chosen together. Audio uses the default microphone. Webcam and RealSense video sit in the bottom-right of the selection. Choosing RealSense uses that camera, so a demo that needs it should choose Screen, audio, or the webcam. With none of those devices, the shortcut records the screen immediately. See `docs/decisions/0040-record-camera.md`.
 

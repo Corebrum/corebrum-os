@@ -19,4 +19,4 @@ A shortcut has no terminal to print into. The words need to reach the clipboard,
 
 ## Consequences
 
-Super+H listens and then copies the transcript. The desktop profile still does not install `pocketsphinx`. A running session uses the new binding after Hyprland loads the updated config. The Keybindings list shows the row after its installed script is updated.
+Super+H listens and then copies the transcript. The desktop profile still does not install `pocketsphinx`. A running session uses the new binding after Hyprland loads the updated config. The Keybindings list shows the row after its installed script is updated. The shortcut later moved to Control+Space. See `docs/decisions/0071-transcribe-control-space.md`.

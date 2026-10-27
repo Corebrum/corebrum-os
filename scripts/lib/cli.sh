@@ -738,7 +738,7 @@ corebrum_hear_ask_install() {
     choice="$(timeout 120 hyprland-dialog \
       --title "Install transcription" \
       --apptitle "Corebrum" \
-      --text "Super+H needs Ubuntu pocketsphinx to transcribe the microphone. Install it?" \
+      --text "Control+Space needs Ubuntu pocketsphinx to transcribe the microphone. Install it?" \
       --buttons "Yes;No" 2>/dev/null || true)"
     printf '%s\n' "$(printf '%s\n' "$choice" | head -n 1 | tr -d '[:space:]')"
     return 0
@@ -764,7 +764,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends p
 ec=$?
 printf '\n'
 if [ "$ec" -eq 0 ]; then
-  printf '%s\n' "Transcription is installed. Press Super+H to listen."
+  printf '%s\n' "Transcription is installed. Press Control+Space to listen."
 else
   printf 'Install failed (%s).\n' "$ec"
 fi
@@ -837,7 +837,7 @@ EOF
     sleep 0.05
     waited=$((waited + 1))
   done
-  corebrum_hear_notify "Transcribe" "Listening. Press Super+H to finish."
+  corebrum_hear_notify "Transcribe" "Listening. Press Control+Space to finish."
 }
 
 corebrum_cmd_voice_hear() {
@@ -1085,7 +1085,7 @@ Usage: corebrum voice list|test|set|enable|disable|hear
   hear --install    Install Ubuntu pocketsphinx, then transcribe
 
 hear records up to 30 seconds. toggle listens for up to 60 seconds.
-Super+H runs toggle. The desktop profile does not install pocketsphinx.
+Control+Space runs toggle. The desktop profile does not install pocketsphinx.
 These commands do not call a cloud speech API.
 EOF
       [[ -n "$sub" ]] || return 1

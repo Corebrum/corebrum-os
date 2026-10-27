@@ -208,7 +208,7 @@ if ! grep -q 'pocketsphinx pocketsphinx-en-us' <<<"$yes_toggle"; then
   echo "FAIL: Yes did not install Ubuntu pocketsphinx: ${yes_toggle}" >&2
   exit 1
 fi
-if ! grep -q 'Press Super+H to listen.' <<<"$yes_toggle"; then
+if ! grep -q 'Press Control+Space to listen.' <<<"$yes_toggle"; then
   echo "FAIL: Yes did not say how to listen after install" >&2
   exit 1
 fi
@@ -232,7 +232,7 @@ export COREBRUM_RECORD_BIN="${recog}/listen"
 export COREBRUM_HEAR_LOG="${state}/hear.log"
 : >"${state}/hear.log"
 started="$("$CMD" voice hear toggle)"
-if ! grep -q 'Listening. Press Super+H to finish.' <<<"$started"; then
+if ! grep -q 'Listening. Press Control+Space to finish.' <<<"$started"; then
   echo "FAIL: toggle did not start listening: ${started}" >&2
   exit 1
 fi

@@ -30,7 +30,7 @@ fi
 
 require_line "Super+Return           Open a terminal"
 require_line "Super+K                Clear the terminal screen"
-require_line "Super+H                Transcribe the microphone"
+require_line "Control+Space          Transcribe the microphone"
 require_line "Super+Shift+Return     Open Firefox"
 require_line "Super+Shift+F          Open Files"
 require_line "Super+Shift+N          Open Text Editor"
@@ -83,7 +83,11 @@ require_bind 'bind = $mainMod ALT, P, exec, /usr/local/bin/corebrum-record start
 require_bind 'bind = $mainMod ALT SHIFT, P, exec, /usr/local/bin/corebrum-record stop'
 require_bind 'bind = $mainMod, left, movefocus, l'
 require_bind 'bind = $mainMod, K, exec, /usr/local/bin/corebrum-edit-keys clear'
-require_bind 'bind = $mainMod, H, exec, /usr/local/bin/corebrum voice hear toggle'
+require_bind 'bind = CTRL, Space, exec, /usr/local/bin/corebrum voice hear toggle'
+if grep -q 'bind = $mainMod, H, exec, /usr/local/bin/corebrum voice hear toggle' "$conf"; then
+  echo "FAIL: Super+H still transcribes the microphone" >&2
+  fail=1
+fi
 if grep -qE 'bind = \$mainMod, [HJL], movefocus' "$conf"; then
   echo "FAIL: Super+H, Super+J, or Super+L still moves focus" >&2
   fail=1
