@@ -72,6 +72,7 @@ for path in \
   /usr/local/bin/corebrum-wallpaper-menu \
   /etc/systemd/user/hyprpaper.service.d/corebrum.conf \
   /usr/local/bin/corebrum-keys-menu \
+  /usr/local/bin/corebrum-docs-menu \
   /usr/local/bin/corebrum-osd \
   /usr/local/bin/corebrum-autolock \
   /usr/local/bin/corebrum-power-menu \

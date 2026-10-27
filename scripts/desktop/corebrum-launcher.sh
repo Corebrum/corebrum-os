@@ -33,6 +33,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-keys-menu refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-docs-menu refresh &
+pids+=("$!")
 /usr/local/bin/corebrum-updates-menu refresh &
 pids+=("$!")
 refresh_status=0

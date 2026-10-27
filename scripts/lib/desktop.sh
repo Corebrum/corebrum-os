@@ -203,6 +203,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-updates-menu.sh" /usr/local/bin/corebrum-updates-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-keys-menu.sh" /usr/local/bin/corebrum-keys-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-docs-menu.sh" /usr/local/bin/corebrum-docs-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-edit-keys.sh" /usr/local/bin/corebrum-edit-keys 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-osd.sh" /usr/local/bin/corebrum-osd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
@@ -324,6 +325,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-wallpaper-menu
 /usr/local/bin/corebrum-waypaper-menu
 /usr/local/bin/corebrum-keys-menu
+/usr/local/bin/corebrum-docs-menu
 /usr/local/bin/corebrum-edit-keys
 /usr/local/bin/corebrum-osd
 /usr/local/bin/corebrum-autolock

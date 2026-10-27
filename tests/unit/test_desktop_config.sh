@@ -83,6 +83,10 @@ if ! grep -q '/usr/local/bin/corebrum-keys-menu refresh &' "${ROOT}/scripts/desk
   echo "FAIL: Super+Space does not refresh the Keybindings entry" >&2
   exit 1
 fi
+if ! grep -q '/usr/local/bin/corebrum-docs-menu refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Getting Started entry" >&2
+  exit 1
+fi
 if ! grep -q '/usr/local/bin/corebrum-updates-menu refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh the Updates entry" >&2
   exit 1
