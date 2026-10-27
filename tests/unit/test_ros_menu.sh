@@ -64,6 +64,10 @@ if ! grep -q '^Name=ROS$' "${runtime}/corebrum/applications/corebrum-ros.desktop
   echo "FAIL: refreshed desktop entry did not name installed ROS" >&2
   exit 1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/ros.png$' "${runtime}/corebrum/applications/corebrum-ros.desktop"; then
+  echo "FAIL: the ROS menu row does not use the ROS mark" >&2
+  exit 1
+fi
 gazebo_entry="${runtime}/corebrum/applications/corebrum-ros-tool-gazebo.desktop"
 if ! grep -q '^Name=Gazebo   install$' "$gazebo_entry"; then
   echo "FAIL: Super+Space does not list Gazebo for search" >&2
@@ -103,6 +107,10 @@ if ! grep -q '^Name=Zenoh network$' "${runtime}/corebrum/applications/corebrum-z
 fi
 if ! grep -q '^Exec=/usr/local/bin/zenoh network$' "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop"; then
   echo "FAIL: Zenoh network does not run zenoh network" >&2
+  exit 1
+fi
+if ! grep -q '^Icon=/usr/share/corebrum/zenoh.png$' "${runtime}/corebrum/applications/corebrum-zenoh-network.desktop"; then
+  echo "FAIL: Zenoh network does not use the Zenoh mark" >&2
   exit 1
 fi
 export COREBRUM_ROS_MENU_INSTALLED=""

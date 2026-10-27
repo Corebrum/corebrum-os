@@ -46,6 +46,10 @@ if ! grep -q '^Name=Skills$' "$desktop"; then
   echo "FAIL: Skills row is missing" >&2
   fail=1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/agenticros.png$' "$desktop"; then
+  echo "FAIL: the Skills menu row does not use the AgenticROS mark" >&2
+  fail=1
+fi
 if grep -q 'skills install' "$desktop"; then
   echo "FAIL: Skills desktop entry installs a skill" >&2
   fail=1

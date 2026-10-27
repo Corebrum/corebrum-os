@@ -38,6 +38,10 @@ for path in \
   /etc/corebrum/greetd/gtkgreet.css \
   /usr/share/corebrum/logo.png \
   /usr/share/corebrum/agenticros.png \
+  /usr/share/corebrum/ollama.png \
+  /usr/share/corebrum/ros.png \
+  /usr/share/corebrum/zenoh.png \
+  /usr/share/corebrum/realsense.png \
   /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
   /usr/local/lib/corebrum/vc4.sh \

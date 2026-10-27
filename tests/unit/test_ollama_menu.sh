@@ -50,6 +50,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-ollama-menu open$' "$desktop"; then
   echo "FAIL: desktop entry does not open the Ollama menu" >&2
   fail=1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/ollama.png$' "$desktop"; then
+  echo "FAIL: the Ollama menu row does not use the Ollama mark" >&2
+  fail=1
+fi
 if grep -q '^NoDisplay=true$' "$desktop"; then
   echo "FAIL: Ollama is hidden from the idle menu" >&2
   fail=1

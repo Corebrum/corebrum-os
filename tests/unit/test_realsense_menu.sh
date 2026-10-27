@@ -67,6 +67,10 @@ if ! grep -q '^Name=RealSense$' "${runtime}/corebrum/applications/corebrum-reals
   echo "FAIL: refreshed desktop entry did not name installed RealSense" >&2
   exit 1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/realsense.png$' "${runtime}/corebrum/applications/corebrum-realsense.desktop"; then
+  echo "FAIL: the RealSense menu row does not use the RealSense mark" >&2
+  exit 1
+fi
 if ! grep -q '^Exec=/usr/local/bin/corebrum-realsense-menu open$' "${runtime}/corebrum/applications/corebrum-realsense.desktop"; then
   echo "FAIL: RealSense desktop entry does not open the RealSense menu command" >&2
   exit 1

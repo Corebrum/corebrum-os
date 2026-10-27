@@ -53,6 +53,10 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-zenoh-fleet-menu open$' "$desktop"; 
   echo "FAIL: desktop entry does not open the Zenoh fleet menu" >&2
   fail=1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/zenoh.png$' "$desktop"; then
+  echo "FAIL: the Zenoh fleet menu row does not use the Zenoh mark" >&2
+  fail=1
+fi
 if grep -q '^NoDisplay=true$' "$desktop"; then
   echo "FAIL: Zenoh fleet is hidden from the idle menu" >&2
   fail=1

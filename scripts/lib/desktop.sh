@@ -174,6 +174,10 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
   corebrum_install_file "${root}/config/brand/logo.png" /usr/share/corebrum/logo.png 644
   corebrum_install_file "${root}/config/brand/agenticros.png" /usr/share/corebrum/agenticros.png 644
+  corebrum_install_file "${root}/config/brand/ollama.png" /usr/share/corebrum/ollama.png 644
+  corebrum_install_file "${root}/config/brand/ros.png" /usr/share/corebrum/ros.png 644
+  corebrum_install_file "${root}/config/brand/zenoh.png" /usr/share/corebrum/zenoh.png 644
+  corebrum_install_file "${root}/config/brand/realsense.png" /usr/share/corebrum/realsense.png 644
   corebrum_install_wallpapers
 }
 
@@ -284,6 +288,10 @@ corebrum_desktop_managed_paths() {
 /usr/local/share/applications/corebrum-grid.desktop
 /usr/share/corebrum/logo.png
 /usr/share/corebrum/agenticros.png
+/usr/share/corebrum/ollama.png
+/usr/share/corebrum/ros.png
+/usr/share/corebrum/zenoh.png
+/usr/share/corebrum/realsense.png
 /etc/profile.d/corebrum-node.sh
 /etc/corebrum/node/versions
 EOF
@@ -306,6 +314,10 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
     corebrum_log "dry-run: remove /usr/share/corebrum/logo.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/agenticros.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/ollama.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/ros.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/zenoh.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/realsense.png"
     corebrum_remove_wallpapers
     corebrum_remove_hyprland_ppa
     corebrum_log "desktop uninstall dry-run complete"

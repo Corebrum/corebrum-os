@@ -241,6 +241,22 @@ if ! grep -q 'config/brand/agenticros.png' "${ROOT}/scripts/lib/desktop.sh"; the
   echo "FAIL: the desktop install does not copy the AgenticROS mark" >&2
   exit 1
 fi
+if ! grep -q 'config/brand/ollama.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the Ollama mark" >&2
+  exit 1
+fi
+if ! grep -q 'config/brand/ros.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the ROS mark" >&2
+  exit 1
+fi
+if ! grep -q 'config/brand/zenoh.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the Zenoh mark" >&2
+  exit 1
+fi
+if ! grep -q 'config/brand/realsense.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the RealSense mark" >&2
+  exit 1
+fi
 magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/logo.png" | tr -d ' \n')"
 if [[ "$magic" != "89504e470d0a1a0a" ]]; then
   echo "FAIL: config/brand/logo.png is not a PNG" >&2
@@ -249,6 +265,26 @@ fi
 magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/agenticros.png" | tr -d ' \n')"
 if [[ "$magic" != "89504e470d0a1a0a" ]]; then
   echo "FAIL: config/brand/agenticros.png is not a PNG" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/ollama.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/ollama.png is not a PNG" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/ros.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/ros.png is not a PNG" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/zenoh.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/zenoh.png is not a PNG" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/realsense.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/realsense.png is not a PNG" >&2
   exit 1
 fi
 if ! grep -q 'hyprlock gtkgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then
