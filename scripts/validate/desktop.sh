@@ -42,6 +42,7 @@ for path in \
   /usr/share/corebrum/ros.png \
   /usr/share/corebrum/zenoh.png \
   /usr/share/corebrum/realsense.png \
+  /usr/share/corebrum/agents.png \
   /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
   /usr/local/lib/corebrum/vc4.sh \

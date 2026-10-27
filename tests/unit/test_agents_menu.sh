@@ -102,6 +102,10 @@ if ! grep -q '^Name=AI Agents$' "${runtime}/corebrum/applications/corebrum-agent
   echo "FAIL: refreshed desktop entry did not name AI Agents" >&2
   exit 1
 fi
+if ! grep -q '^Icon=/usr/share/corebrum/agents.png$' "${runtime}/corebrum/applications/corebrum-agents.desktop"; then
+  echo "FAIL: the AI Agents menu row does not use the AI Agents mark" >&2
+  exit 1
+fi
 if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu open$' "${runtime}/corebrum/applications/corebrum-agents.desktop"; then
   echo "FAIL: AI Agents desktop entry does not open the agent menu" >&2
   exit 1

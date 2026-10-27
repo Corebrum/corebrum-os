@@ -178,6 +178,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/brand/ros.png" /usr/share/corebrum/ros.png 644
   corebrum_install_file "${root}/config/brand/zenoh.png" /usr/share/corebrum/zenoh.png 644
   corebrum_install_file "${root}/config/brand/realsense.png" /usr/share/corebrum/realsense.png 644
+  corebrum_install_file "${root}/config/brand/agents.png" /usr/share/corebrum/agents.png 644
   corebrum_install_wallpapers
 }
 
@@ -292,6 +293,7 @@ corebrum_desktop_managed_paths() {
 /usr/share/corebrum/ros.png
 /usr/share/corebrum/zenoh.png
 /usr/share/corebrum/realsense.png
+/usr/share/corebrum/agents.png
 /etc/profile.d/corebrum-node.sh
 /etc/corebrum/node/versions
 EOF
@@ -318,6 +320,7 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: remove /usr/share/corebrum/ros.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/zenoh.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/realsense.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/agents.png"
     corebrum_remove_wallpapers
     corebrum_remove_hyprland_ppa
     corebrum_log "desktop uninstall dry-run complete"
