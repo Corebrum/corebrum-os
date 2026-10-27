@@ -42,8 +42,8 @@ if [[ -f "$desktop" ]]; then
 fi
 
 COREBRUM_SKILLS_READY=1 bash "$menu" refresh
-if ! grep -q '^Name=Skills$' "$desktop"; then
-  echo "FAIL: Skills row is missing" >&2
+if ! grep -q '^Name=AgenticROS Skills$' "$desktop"; then
+  echo "FAIL: AgenticROS Skills row is missing" >&2
   fail=1
 fi
 if ! grep -q '^Icon=/usr/share/corebrum/agenticros.png$' "$desktop"; then

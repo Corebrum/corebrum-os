@@ -14,4 +14,4 @@ Super+Space lists Skills with the generic `applications-science` icon. The Agent
 
 ## Consequences
 
-The next Super+Space after the Skills menu script is copied shows the same mark as AgenticROS.
+The next Super+Space after the Skills menu script is copied shows the same mark as AgenticROS. The row is later named AgenticROS Skills. See `docs/decisions/0074-agenticros-skills-name.md`.

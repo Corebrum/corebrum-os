@@ -28,8 +28,8 @@ corebrum_skills_refresh() {
   cat >"$dest" <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=Skills
-GenericName=Skills
+Name=AgenticROS Skills
+GenericName=AgenticROS Skills
 Comment=AgenticROS skills on this machine
 Keywords=skills;agenticros
 Exec=/usr/local/bin/corebrum-skills-menu open
@@ -124,7 +124,7 @@ corebrum_skills_open() {
   choice="$(corebrum_skills_labels | fuzzel \
     --config /etc/corebrum/fuzzel/fuzzel.ini \
     --dmenu \
-    --prompt 'Skills  ' \
+    --prompt 'AgenticROS Skills  ' \
     --width 48 \
     --lines 8)" || return 0
   [[ -n "$choice" ]] || return 0
