@@ -60,6 +60,20 @@ Terminal=false
 Categories=System;FileManager;
 StartupNotify=true
 EOF
+# nm-connection-editor names its desktop entry "Advanced Network Configuration".
+# The same desktop ID here is listed as Network Configuration and sorts with N.
+cat >"${data_dir}/applications/nm-connection-editor.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Network Configuration
+GenericName=Network Configuration
+Comment=Manage and change your network connection settings
+Exec=nm-connection-editor
+Icon=preferences-system-network
+Terminal=false
+StartupNotify=true
+Categories=Settings;Network;
+EOF
 if [[ -n "${XDG_DATA_DIRS:-}" ]]; then
   export XDG_DATA_DIRS="${data_dir}:${XDG_DATA_DIRS}"
 else

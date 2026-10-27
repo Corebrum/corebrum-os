@@ -55,6 +55,14 @@ if ! grep -q 'applications/thunar.desktop' "${ROOT}/scripts/desktop/corebrum-lau
   echo "FAIL: Super+Space does not override the Thunar desktop entry" >&2
   exit 1
 fi
+if ! grep -q 'Name=Network Configuration' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not rename Advanced Network Configuration" >&2
+  exit 1
+fi
+if ! grep -q 'applications/nm-connection-editor.desktop' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not override the NetworkManager desktop entry" >&2
+  exit 1
+fi
 if ! grep -q '/usr/local/bin/corebrum-agents-menu refresh &' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space refreshes AI Agents in series" >&2
   exit 1

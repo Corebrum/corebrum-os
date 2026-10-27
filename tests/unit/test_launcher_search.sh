@@ -100,6 +100,18 @@ Name=Chromium
 Exec=/usr/local/bin/corebrum-chromium-menu open
 Icon=chromium
 EOF
+cat >"${share}/applications/nm-connection-editor.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Advanced Network Configuration
+Exec=nm-connection-editor
+EOF
+cat >"${home}/applications/nm-connection-editor.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Network Configuration
+Exec=nm-connection-editor
+EOF
 
 export XDG_DATA_HOME="$home"
 export XDG_DATA_DIRS="$share"
@@ -114,6 +126,21 @@ if ! grep -qx 'AI Agents' <<<"$idle" || ! grep -qx 'Firefox' <<<"$idle" || ! gre
 fi
 if grep -q 'Grok' <<<"$idle" || grep -q 'Gazebo' <<<"$idle" || grep -q 'Hidden Tool' <<<"$idle" || grep -q 'Chromium Web Browser' <<<"$idle"; then
   echo "FAIL: the idle menu lists a submenu item" >&2
+  printf '%s\n' "$idle" >&2
+  exit 1
+fi
+if grep -qx 'Advanced Network Configuration' <<<"$idle"; then
+  echo "FAIL: the idle menu still uses Advanced Network Configuration" >&2
+  exit 1
+fi
+if ! grep -qx 'Network Configuration' <<<"$idle"; then
+  echo "FAIL: the idle menu dropped Network Configuration" >&2
+  printf '%s\n' "$idle" >&2
+  exit 1
+fi
+sorted="$(printf '%s\n' "$idle" | LC_ALL=C sort -f)"
+if [[ "$idle" != "$sorted" ]]; then
+  echo "FAIL: the idle menu is not alphabetical" >&2
   printf '%s\n' "$idle" >&2
   exit 1
 fi
