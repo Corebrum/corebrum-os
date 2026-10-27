@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AgenticROS Cloud is a Super+Space row that opens the site in the default browser.
+# AgenticROS Cloud is a Super+Space row that opens the site in Firefox.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -20,8 +20,8 @@ assert_grep 'corebrum-arc-menu refresh' "$launcher" "launcher does not refresh A
 assert_grep 'corebrum-arc-menu.sh' "$desktop_lib" "desktop install does not ship the AgenticROS Cloud menu"
 assert_grep 'https://cloud.agenticros.com' "$menu" "menu does not open the AgenticROS Cloud URL"
 
-if grep -qE 'snap install chromium|--app=|chromium-browser' "$menu"; then
-  echo "FAIL: AgenticROS Cloud installs Chromium or hides the browser tools" >&2
+if grep -qE 'snap install chromium|--app=|chromium-browser|xdg-open' "$menu"; then
+  echo "FAIL: AgenticROS Cloud installs Chromium or opens another browser" >&2
   fail=1
 fi
 
@@ -43,26 +43,13 @@ if grep -q 'install' "$desktop"; then
   fail=1
 fi
 
-bash_bin="$(command -v bash)"
-with_xdg="$(mktemp -d)"
-ln -s "$bash_bin" "${with_xdg}/bash"
-printf '#!/bin/sh\nexit 0\n' >"${with_xdg}/xdg-open"
-chmod 755 "${with_xdg}/xdg-open"
-output="$(PATH="${with_xdg}" COREBRUM_ARC_STUB=1 bash "$menu" open)"
-if [[ "$output" != "xdg-open https://cloud.agenticros.com" ]]; then
-  echo "FAIL: AgenticROS Cloud did not use xdg-open (got ${output})" >&2
-  fail=1
-fi
-
-without_xdg="$(mktemp -d)"
-ln -s "$bash_bin" "${without_xdg}/bash"
-output="$(PATH="${without_xdg}" COREBRUM_ARC_STUB=1 bash "$menu" open)"
+output="$(COREBRUM_ARC_STUB=1 bash "$menu" open)"
 if [[ "$output" != "firefox https://cloud.agenticros.com" ]]; then
-  echo "FAIL: AgenticROS Cloud did not fall back to firefox (got ${output})" >&2
+  echo "FAIL: AgenticROS Cloud did not open Firefox (got ${output})" >&2
   fail=1
 fi
 
-rm -rf "$runtime" "$with_xdg" "$without_xdg"
+rm -rf "$runtime"
 if [[ "$fail" -ne 0 ]]; then
   exit 1
 fi

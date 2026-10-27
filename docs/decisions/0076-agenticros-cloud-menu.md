@@ -16,4 +16,4 @@ Super+Space lists AgenticROS and AgenticROS Skills. Both rows use `/usr/share/co
 
 ## Consequences
 
-The next Super+Space after the menu script is copied shows the row. Typing arc or cloud finds it. A machine whose https handler is Firefox opens Firefox. A machine whose handler is another installed browser opens that browser.
+The next Super+Space after the menu script is copied shows the row. Typing arc or cloud finds it. The row later opens Firefox directly. See `docs/decisions/0079-agenticros-cloud-firefox.md`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Super+Space AgenticROS Cloud entry. Opens the site in the default browser.
+# Super+Space AgenticROS Cloud entry. Opens the site in Firefox.
 # Refresh only writes the desktop row. It does not install a browser.
 set -euo pipefail
 
@@ -30,22 +30,12 @@ StartupNotify=false
 EOF
 }
 
-corebrum_arc_browser() {
-  if command -v xdg-open >/dev/null 2>&1; then
-    printf '%s\n' "xdg-open"
-    return 0
-  fi
-  printf '%s\n' "firefox"
-}
-
 corebrum_arc_open() {
-  local browser
-  browser="$(corebrum_arc_browser)"
   if [[ "${COREBRUM_ARC_STUB:-0}" == 1 ]]; then
-    printf '%s %s\n' "$browser" "$COREBRUM_ARC_URL"
+    printf '%s %s\n' "firefox" "$COREBRUM_ARC_URL"
     return 0
   fi
-  exec "$browser" "$COREBRUM_ARC_URL"
+  exec firefox "$COREBRUM_ARC_URL"
 }
 
 usage() {
