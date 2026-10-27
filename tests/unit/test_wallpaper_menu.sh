@@ -103,7 +103,7 @@ if [[ "$output" == *'waypaper'* ]]; then
 fi
 
 output="$(bash "$menu" open)"
-if [[ "$output" != $'Corebrum wall2.png\nDesk.png\nMy Vacation.jpg\nextra.webp' ]]; then
+if [[ "$output" != $'Add image\nCorebrum wall2.png\nDesk.png\nMy Vacation.jpg\nextra.webp' ]]; then
   echo "FAIL: wallpaper list was ${output}" >&2
   fail=1
 fi
@@ -127,7 +127,41 @@ if ! grep -F "path = ${pictures}/My Vacation.jpg" "$cfg" >/dev/null; then
   fail=1
 fi
 
-rm -rf "$runtime" "$pictures" "$walls" "$state"
+added="$(mktemp -d)"
+printf 'png\n' >"${added}/room.png"
+output="$(COREBRUM_WALLPAPER_CHOICE='Add image' COREBRUM_WALLPAPER_ADD="${added}/room.png" bash "$menu" open)"
+if [[ "$output" != "${pictures}/Wallpapers/room.png" ]]; then
+  echo "FAIL: add image did not copy into Wallpapers (got ${output})" >&2
+  fail=1
+fi
+if ! grep -F "path = ${pictures}/Wallpapers/room.png" "$cfg" >/dev/null; then
+  echo "FAIL: add image did not set the copied wallpaper" >&2
+  fail=1
+fi
+
+printf 'png\n' >"${added}/extra.webp"
+output="$(COREBRUM_WALLPAPER_CHOICE='Add image' COREBRUM_WALLPAPER_ADD="${added}/extra.webp" bash "$menu" open)"
+if [[ "$output" != "${pictures}/Wallpapers/extra-2.webp" ]]; then
+  echo "FAIL: add image replaced an existing file (got ${output})" >&2
+  fail=1
+fi
+if [[ "$(cat "${pictures}/Wallpapers/extra.webp")" != "png" ]]; then
+  echo "FAIL: add image overwrote the existing wallpaper file" >&2
+  fail=1
+fi
+
+if COREBRUM_WALLPAPER_CHOICE='Add image' COREBRUM_WALLPAPER_ADD="${pictures}/notes.txt" bash "$menu" open >/dev/null 2>&1; then
+  echo "FAIL: add image accepted a file that is not an image" >&2
+  fail=1
+fi
+
+output="$(COREBRUM_WALLPAPER_CHOICE='Add image' bash "$menu" open)"
+if [[ -n "$output" ]]; then
+  echo "FAIL: cancelling add image still changed the wallpaper (got ${output})" >&2
+  fail=1
+fi
+
+rm -rf "$runtime" "$pictures" "$walls" "$state" "$added"
 if [[ "$fail" -ne 0 ]]; then
   exit 1
 fi

@@ -100,6 +100,71 @@ corebrum_wallpaper_menu_labels() {
   done
 }
 
+corebrum_wallpaper_menu_add_label() {
+  printf 'Add image\n'
+}
+
+# Copy a chosen PNG, JPEG, or WebP into ~/Pictures/Wallpapers.
+corebrum_wallpaper_menu_pick() {
+  if [[ "${COREBRUM_WALLPAPER_STUB:-0}" == 1 ]]; then
+    printf '%s\n' "${COREBRUM_WALLPAPER_ADD:-}"
+    return 0
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    corebrum_wallpaper_menu_die "python3 is required to choose a wallpaper"
+  fi
+  python3 - <<'PY'
+import sys
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+dialog = Gtk.FileChooserDialog(
+    title="Add wallpaper",
+    action=Gtk.FileChooserAction.OPEN,
+)
+dialog.add_buttons("_Cancel", Gtk.ResponseType.CANCEL, "_Open", Gtk.ResponseType.ACCEPT)
+images = Gtk.FileFilter()
+images.set_name("Images")
+for pattern in ("*.png", "*.jpg", "*.jpeg", "*.webp", "*.PNG", "*.JPG", "*.JPEG", "*.WEBP"):
+    images.add_pattern(pattern)
+dialog.add_filter(images)
+if dialog.run() == Gtk.ResponseType.ACCEPT:
+    name = dialog.get_filename()
+    if name:
+        sys.stdout.write(name + "\n")
+dialog.destroy()
+PY
+}
+
+corebrum_wallpaper_menu_import() {
+  local src dest dir base stem ext n
+  src="$(corebrum_wallpaper_menu_pick)"
+  [[ -n "$src" ]] || return 0
+  [[ -f "$src" ]] || corebrum_wallpaper_menu_die "wallpaper image is missing"
+  corebrum_wallpaper_menu_is_image "$(basename "$src")" \
+    || corebrum_wallpaper_menu_die "wallpaper must be a png, jpg, or webp"
+  dir="${COREBRUM_WALLPAPER_PICTURES}/Wallpapers"
+  mkdir -p "$dir"
+  base="$(basename "$src")"
+  dest="${dir}/${base}"
+  if [[ -e "$dest" && "$(readlink -f "$src")" != "$(readlink -f "$dest")" ]]; then
+    stem="${base%.*}"
+    ext="${base##*.}"
+    n=2
+    while [[ -e "${dir}/${stem}-${n}.${ext}" ]]; do
+      n=$((n + 1))
+    done
+    dest="${dir}/${stem}-${n}.${ext}"
+  fi
+  if [[ "$(readlink -f "$src")" != "$(readlink -f "$dest")" ]]; then
+    cp -- "$src" "$dest"
+  fi
+  corebrum_wallpaper_menu_apply "$dest"
+}
+
 corebrum_wallpaper_menu_config() {
   local path="$1"
   # hyprpaper 0.8.3 drops a wallpaper block with an empty monitor name, and it
@@ -156,25 +221,11 @@ corebrum_wallpaper_menu_apply() {
 
 corebrum_wallpaper_menu_open() {
   local choice line label path
-  local -a rows=()
+  local -a rows=("$(corebrum_wallpaper_menu_add_label)"$'\t')
   while IFS= read -r line; do
     [[ -n "$line" ]] || continue
     rows+=("$line")
   done < <(corebrum_wallpaper_menu_images)
-
-  if [[ "${#rows[@]}" -eq 0 ]]; then
-    if [[ "${COREBRUM_WALLPAPER_STUB:-0}" == 1 ]]; then
-      printf '%s\n' "No wallpaper images found"
-      return 0
-    fi
-    printf '%s\n' "No wallpaper images found" | fuzzel \
-      --config /etc/corebrum/fuzzel/fuzzel.ini \
-      --dmenu \
-      --prompt 'Wallpaper  ' \
-      --width 40 \
-      --lines 1 >/dev/null || return 0
-    return 0
-  fi
 
   if [[ "${COREBRUM_WALLPAPER_STUB:-0}" == 1 && -z "${COREBRUM_WALLPAPER_CHOICE:-}" ]]; then
     printf '%s\n' "${rows[@]}" | corebrum_wallpaper_menu_labels
@@ -197,6 +248,10 @@ corebrum_wallpaper_menu_open() {
   fi
 
   [[ -n "$choice" ]] || return 0
+  if [[ "$choice" == "$(corebrum_wallpaper_menu_add_label)" ]]; then
+    corebrum_wallpaper_menu_import
+    return 0
+  fi
   for line in "${rows[@]}"; do
     label="${line%%$'\t'*}"
     path="${line#*$'\t'}"
