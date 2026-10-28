@@ -23,7 +23,7 @@ assert_grep 'swaybg -i' "$menu" "wallpaper menu does not start swaybg"
 assert_grep 'corebrum_wallpaper_menu_restore' "$menu" "wallpaper menu does not restore a saved image"
 assert_grep 'output \* bg /usr/share/hypr/wall2.png fill' "${ROOT}/config/sway/config" "the desktop does not show the Corebrum wallpaper"
 assert_grep 'm fill' "$menu" "wallpaper menu does not cover the screen"
-assert_grep 'for pkg in swaybg swayidle wlgreet gtklock' "${ROOT}/scripts/phases/02-desktop.sh" "desktop profile does not install Ubuntu swaybg"
+assert_grep 'for pkg in swaybg swayidle wlgreet' "${ROOT}/scripts/phases/02-desktop.sh" "desktop profile does not install Ubuntu swaybg"
 assert_grep 'systemctl --global disable hyprpaper.service' "${ROOT}/scripts/lib/desktop.sh" "desktop install leaves the packaged hyprpaper service enabled"
 if grep -q 'apt-get install -y hyprpaper' "$menu"; then
   echo "FAIL: wallpaper menu still installs hyprpaper" >&2

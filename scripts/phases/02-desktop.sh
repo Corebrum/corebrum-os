@@ -7,7 +7,7 @@ fi
 
 corebrum_phase_desktop() {
   local manifest="${COREBRUM_ROOT}/manifests/packages/desktop.txt"
-  local candidate
+  local candidate codename locker
   local -a packages=()
   candidate="$(corebrum_archive_candidate sway)"
   if corebrum_candidate_installable "$candidate"; then
@@ -19,9 +19,11 @@ corebrum_phase_desktop() {
   fi
   corebrum_load_manifest "$manifest" packages
   # swaybg, swayidle, and wlgreet are in the Ubuntu 24.04 and 26.04 archives.
-  # gtklock is the lock screen. wlgreet runs inside the greeter Sway.
-  # A missing greeter keeps agreety.
-  for pkg in swaybg swayidle wlgreet gtklock; do
+  # noble locks with swaylock. resolute locks with gtklock.
+  # wlgreet runs inside the greeter Sway. A missing greeter keeps agreety.
+  codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
+  locker="$(corebrum_lock_package "$codename")" || corebrum_die "no lock program is selected for ${codename:-unknown}"
+  for pkg in swaybg swayidle wlgreet "$locker"; do
     candidate="$(corebrum_archive_candidate "$pkg")"
     if corebrum_candidate_installable "$candidate"; then
       corebrum_log "${pkg} candidate ${candidate}"

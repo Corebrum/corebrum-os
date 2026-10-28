@@ -94,7 +94,11 @@ if [[ "$output" != *'apt-get install -y swayidle'* ]]; then
   echo "FAIL: selecting Autolock did not install swayidle" >&2
   fail=1
 fi
-if [[ "$output" != *'swayidle and gtklock are not both in this Ubuntu archive'* ]]; then
+if [[ "$output" != *'noble) locker_name=swaylock'* || "$output" != *'locker_name=gtklock'* ]]; then
+  echo "FAIL: Autolock does not choose swaylock on noble and gtklock on resolute" >&2
+  fail=1
+fi
+if [[ "$output" != *'swayidle and ${locker_name} are not both in this Ubuntu archive'* ]]; then
   echo "FAIL: the installer does not explain a missing archive package" >&2
   fail=1
 fi

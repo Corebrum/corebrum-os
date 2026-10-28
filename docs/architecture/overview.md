@@ -1,14 +1,14 @@
 # Architecture
 
-Corebrum OS is a set of packages, configuration, and services installed onto Ubuntu Server 26.04. x86-64 and ARM64 (aarch64) are both supported, including Raspberry Pi. Ubuntu 24.04 is not a target. Ubuntu remains the operating system. APT remains the package manager. Corebrum does not build a kernel, an installer ISO, or a pacman-based distribution.
+Corebrum OS is a set of packages, configuration, and services installed onto Ubuntu Server 24.04 or 26.04. x86-64 and ARM64 (aarch64) are both supported, including Raspberry Pi. Other Ubuntu releases are not a target. Ubuntu remains the operating system. APT remains the package manager. Corebrum does not build a kernel, an installer ISO, or a pacman-based distribution.
 
 ```text
-Ubuntu Server 26.04 (x86-64 or ARM64)
+Ubuntu Server 24.04 or 26.04 (x86-64 or ARM64)
   Corebrum base profile                         Phase 1
-  Hyprland + Waybar + Fuzzel + app grid         Phase 2, Ubuntu archive
+  Sway + Waybar + Fuzzel + app grid             Phase 2, Ubuntu archive
   NetworkManager, PipeWire, portals, disks     Phase 3, Ubuntu archive, Ethernet stays on Netplan
   corebrum install, status, doctor, config     Phase 4
-  ROS 2 Lyrical + rmw_zenoh_cpp                 Phase 5, official ROS apt repository
+  ROS 2 Jazzy or Lyrical + rmw_zenoh_cpp        Phase 5, official ROS apt repository
   RViz, Gazebo, RealSense                       Super+Space
   AgenticROS                                    Super+Space, not a profile
 ```

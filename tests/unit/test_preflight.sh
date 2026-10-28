@@ -22,12 +22,50 @@ assert_eq "$quoted" "24.04" "quoted VERSION_ID"
 unquoted="$(corebrum_read_os_release_field "${ROOT}/tests/unit/fixtures/os-release-unquoted" VERSION_ID)"
 assert_eq "$unquoted" "24.04" "unquoted VERSION_ID"
 
-if corebrum_supported_ubuntu "noble"; then
-  echo "FAIL: noble should be rejected" >&2
+if ! corebrum_supported_ubuntu "noble"; then
+  echo "FAIL: noble should be supported" >&2
   exit 1
 fi
 if ! corebrum_supported_ubuntu "resolute"; then
   echo "FAIL: resolute should be supported" >&2
+  exit 1
+fi
+if ! corebrum_supported_release ubuntu noble 24.04; then
+  echo "FAIL: Ubuntu 24.04 noble should be supported" >&2
+  exit 1
+fi
+if ! corebrum_supported_release ubuntu resolute 26.04; then
+  echo "FAIL: Ubuntu 26.04 resolute should be supported" >&2
+  exit 1
+fi
+if corebrum_supported_release ubuntu noble 26.04; then
+  echo "FAIL: noble must stay on VERSION_ID 24.04" >&2
+  exit 1
+fi
+if corebrum_supported_release ubuntu resolute 24.04; then
+  echo "FAIL: resolute must stay on VERSION_ID 26.04" >&2
+  exit 1
+fi
+if corebrum_supported_release debian noble 24.04; then
+  echo "FAIL: a non-Ubuntu noble release should be rejected" >&2
+  exit 1
+fi
+if [[ "$(corebrum_lock_package noble)" != "swaylock" ]]; then
+  echo "FAIL: noble should lock with swaylock" >&2
+  exit 1
+fi
+if [[ "$(corebrum_lock_package resolute)" != "gtklock" ]]; then
+  echo "FAIL: resolute should lock with gtklock" >&2
+  exit 1
+fi
+if corebrum_lock_package jammy; then
+  echo "FAIL: jammy should not select a lock program" >&2
+  exit 1
+fi
+# shellcheck source=../../scripts/desktop/corebrum-lock.sh
+source "${ROOT}/scripts/desktop/corebrum-lock.sh"
+if [[ "$(corebrum_lock_package noble)" != "swaylock" || "$(corebrum_lock_package resolute)" != "gtklock" ]]; then
+  echo "FAIL: the lock command does not follow the noble and resolute split" >&2
   exit 1
 fi
 if corebrum_supported_ubuntu "jammy"; then

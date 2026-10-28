@@ -259,15 +259,21 @@ corebrum_autolock_toggle() {
 corebrum_autolock_install_script() {
   cat <<'EOF'
 set +e
+# noble locks with swaylock. resolute locks with gtklock.
+codename=$(. /etc/os-release && printf '%s' "${VERSION_CODENAME:-}")
+case "$codename" in
+  noble) locker_name=swaylock ;;
+  *) locker_name=gtklock ;;
+esac
 candidate=$(apt-cache policy swayidle | awk '/Candidate:/ { print $2; exit }')
-locker=$(apt-cache policy gtklock | awk '/Candidate:/ { print $2; exit }')
+locker=$(apt-cache policy "$locker_name" | awk '/Candidate:/ { print $2; exit }')
 if [ -z "$candidate" ] || [ "$candidate" = "(none)" ] || [ -z "$locker" ] || [ "$locker" = "(none)" ]; then
-  printf '%s\n' "swayidle and gtklock are not both in this Ubuntu archive."
+  printf '%s\n' "swayidle and ${locker_name} are not both in this Ubuntu archive."
   printf '\n'
   read -r -p 'Press Enter to close. '
   exit 0
 fi
-sudo apt-get update && sudo apt-get install -y swayidle gtklock
+sudo apt-get update && sudo apt-get install -y swayidle "$locker_name"
 ec=$?
 if [ "$ec" -eq 0 ]; then
   /usr/local/bin/corebrum-autolock start

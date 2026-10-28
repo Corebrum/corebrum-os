@@ -1,6 +1,6 @@
 # ROS 2 and Zenoh
 
-Phase 5 installs one ROS 2 release and one Zenoh router. Ubuntu 26.04 gets Lyrical Luth. The decisions are `docs/decisions/0009-ros-jazzy-zenoh.md`, `docs/decisions/0010-ubuntu-2604-packages.md`, and `docs/decisions/0063-ubuntu-2604-arm.md`. This profile does not install the desktop session, RViz, Gazebo, Nav2, MoveIt, or RealSense.
+Phase 5 installs one ROS 2 release and one Zenoh router. Ubuntu 24.04 gets Jazzy. Ubuntu 26.04 gets Lyrical Luth. The decisions are `docs/decisions/0009-ros-jazzy-zenoh.md`, `docs/decisions/0010-ubuntu-2604-packages.md`, and `docs/decisions/0088-ubuntu-2404.md`. This profile does not install the desktop session, RViz, Gazebo, Nav2, MoveIt, or RealSense.
 
 On a desktop install, Super+Space lists `ROS 2   install` before this profile is installed. The row icon is the ROS mark at `/usr/share/corebrum/ros.png`. See `docs/decisions/0066-ros-menu-icon.md`. Choosing it runs the command below in a terminal. After it finishes, Super+Space lists `ROS` and `Zenoh network`. `ROS` opens RViz, Gazebo, Nav2, and MoveIt. Typing `gazebo`, `rviz`, `nav2`, or `moveit` at the Super+Space prompt finds that tool. The idle menu still shows `ROS`, and that submenu still lists the tools. `Zenoh network` runs `zenoh network` and draws the nodes connected to the router. Zenoh network and Zenoh fleet use the Zenoh mark at `/usr/share/corebrum/zenoh.png`. See `docs/decisions/0068-zenoh-menu-icon.md`. That row is absent until ROS and the Zenoh CLI are installed. `Zenoh fleet` is a separate Super+Space entry. It installs `@agenticros/zenoh-fleet` 0.1.4 and runs the configuration wizard. The wizard writes files in the home directory and does not replace this router. See `docs/decisions/0033-zenoh-fleet-menu.md`. A tool that is not installed yet is marked `install` and choosing it installs that package. A tool that is installed launches. RealSense is a separate Super+Space entry. The row icon is the RealSense mark at `/usr/share/corebrum/realsense.png`. See `docs/decisions/0069-realsense-menu-icon.md`. It installs librealsense with `realsense-viewer`, the ROS camera packages, and `pyrealsense2` for the system Python. After that install, the entry opens a submenu: RealSense Viewer launches the viewer, and RealSense ROS opens a terminal running `ros2 launch realsense2_camera rs_launch.py`. Typing either name at the Super+Space prompt launches it. The idle menu still shows RealSense. See `docs/decisions/0011-ros-launcher-menu.md` and `docs/decisions/0013-realsense-menu.md`.
 
@@ -41,7 +41,7 @@ source /etc/profile.d/corebrum-ros.sh
 
 ## Conventions
 
-- `ROS_DISTRO` is `lyrical`.
+- `ROS_DISTRO` is `jazzy` on Ubuntu 24.04 and `lyrical` on Ubuntu 26.04.
 - `ROS_DOMAIN_ID` defaults to 0. Nodes on another domain do not discover each other, even through the same router.
 - A robot prefix is a ROS namespace, for example `__ns:=/robot1`.
 - Local sessions connect to `tcp/localhost:7447`. The router listens on `tcp/[::]:7447` with multicast scouting disabled. That is the upstream `rmw_zenoh` default. Port 7447 is open on the machine's interfaces and the router does not authenticate clients.
@@ -76,7 +76,7 @@ sudo ./scripts/validate/ros-graph.sh
 `make check` does not cover a second computer. Install this same profile on the other machine. Each machine may keep its own router. The shells that exchange messages connect to one router as Zenoh clients.
 
 1. On the machine whose router will carry the messages, run `corebrum zenoh peers` and choose an address.
-2. On both machines, copy `/opt/ros/lyrical/share/rmw_zenoh_cpp/config/DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5`.
+2. On both machines, copy `/opt/ros/jazzy/share/rmw_zenoh_cpp/config/DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5` or the same file under `/opt/ros/lyrical`, matching the installed release.
 3. In that copy, set `mode` to `client` and set the connect endpoint to `tcp/<router-address>:7447`. Leave the listen endpoint on `tcp/localhost:0`.
 4. Export `ZENOH_SESSION_CONFIG_URI` to that file, and `RMW_IMPLEMENTATION=rmw_zenoh_cpp`, in the talker shell and the listener shell.
 5. Leave both machines on `ROS_DOMAIN_ID` 0, or set both to the same other value.
@@ -109,8 +109,8 @@ sudo corebrum uninstall ros
 This disables the router and removes Corebrum's unit, profile script, `/etc/corebrum/ros`, the Zenoh client in `/opt/corebrum/zenoh-cli`, and `corebrum-ubuntu-updates.sources` when that file was added. The ROS packages and the ROS apt source stay installed. `ubuntu.sources` stays as it was. To remove the packages as well:
 
 ```bash
-sudo apt remove '~nros-lyrical-*' ros-dev-tools ros2-apt-source
+sudo apt remove '~nros-jazzy-*' '~nros-lyrical-*' ros-dev-tools ros2-apt-source
 sudo apt autoremove
 ```
 
-That removes the Lyrical packages this profile installed.
+That removes the Jazzy or Lyrical packages this profile installed. The other pattern matches nothing on a machine that has only one release.

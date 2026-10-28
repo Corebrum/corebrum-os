@@ -2,7 +2,7 @@
 
 This note compares the desktop dependencies on `sway-session` with `master`. The session change is commit `0825832`. It is here so a later choice to keep Sway, in order to support Ubuntu 24.04 while NVIDIA drivers are still aimed at that release, starts from the package list rather than from the look of the desktop.
 
-Both branches still refuse Ubuntu 24.04 in preflight. `scripts/lib/preflight.sh` accepts `VERSION_CODENAME=resolute` only, on `x86_64` and `aarch64`. See `docs/decisions/0063-ubuntu-2604-arm.md`. The Sway desktop removes the Hyprland personal archive. It does not, by itself, make a 24.04 install succeed.
+Preflight accepts Ubuntu Server 24.04 (`noble`) and 26.04 (`resolute`) on `x86_64` and `aarch64`. See `docs/decisions/0088-ubuntu-2404.md`. The Sway desktop does not add the Hyprland personal archive.
 
 ## What the desktop profile installs
 
@@ -55,6 +55,8 @@ Two of those version gaps matter before calling the lock screen and the greeter 
 
 `wtype` 0.4 is in noble for amd64 and arm64. Super+C, Super+X, and Super+V on Sway go through it. See `docs/decisions/0086-sway-edit-keys.md`.
 
-## What this branch leaves alone
+The 24.04 desktop installs archive `swaylock` instead of `gtklock`. Super+Escape runs `swaylock --config /etc/corebrum/sway/swaylock.conf`, with `/usr/share/hypr/wall2.png` and a teal ring. Ubuntu 26.04 keeps gtklock 4. Login stays `corebrum-login` on both releases. `wlgreet` stays the fallback.
 
-ROS 2 stays Lyrical, from the official ROS repository, on resolute. Jazzy is the 24.04 ROS distribution, and this commit does not put it back. RealSense, AgenticROS, the AI agent CLIs, Node.js under `/usr/local/nvm`, NetworkManager, and PipeWire are unchanged. Accepting noble means changing preflight and the ROS selection as well as rechecking gtklock 2.1.0 and wlgreet 0.4.1. The compositor package itself is already in the Ubuntu 24.04 archive for amd64 and arm64.
+## ROS 2
+
+`corebrum install ros` installs Jazzy on noble and Lyrical on resolute, from the official ROS repository. RealSense, AgenticROS, the AI agent CLIs, Node.js under `/usr/local/nvm`, NetworkManager, and PipeWire use the same installers on both releases. The compositor package itself is already in the Ubuntu 24.04 archive for amd64 and arm64.

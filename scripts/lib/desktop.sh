@@ -157,6 +157,9 @@ corebrum_disable_getting_started() {
 
 corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
+  local codename locker
+  codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
+  locker="$(corebrum_lock_package "$codename" || true)"
   corebrum_install_file "${root}/config/sway/config" /etc/corebrum/sway/config 644
   corebrum_install_file "${root}/config/gtklock/config.ini" /etc/corebrum/gtklock/config.ini 644
   corebrum_install_file "${root}/config/gtklock/style.css" /etc/corebrum/gtklock/style.css 644
@@ -216,9 +219,13 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/systemd/user/hyprpaper.service.d/corebrum.conf" /etc/systemd/user/hyprpaper.service.d/corebrum.conf 644
   corebrum_disable_packaged_hyprpaper
   corebrum_install_file "${root}/config/systemd/user/hypridle.service.d/corebrum.conf" /etc/systemd/user/hypridle.service.d/corebrum.conf 644
+  if [[ "$locker" == "swaylock" ]]; then
+    corebrum_install_file "${root}/config/sway/swaylock.conf" /etc/corebrum/sway/swaylock.conf 644
+  elif [[ "${DRY_RUN:-0}" -eq 0 ]]; then
+    rm -f /etc/corebrum/sway/swaylock.conf
+  fi
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
     rm -f /usr/local/bin/corebrum-waypaper-menu
-    rm -f /etc/corebrum/sway/swaylock.conf
   fi
   corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
@@ -297,6 +304,7 @@ corebrum_enable_desktop_login() {
 corebrum_desktop_managed_paths() {
   cat <<'EOF'
 /etc/corebrum/sway/config
+/etc/corebrum/sway/swaylock.conf
 /etc/corebrum/gtklock/config.ini
 /etc/corebrum/gtklock/style.css
 /etc/corebrum/gtklock/layout.ui

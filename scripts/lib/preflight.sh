@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Host checks for Ubuntu resolute on x86-64 or aarch64. Source this file; do not execute it.
+# Host checks for Ubuntu 24.04 or 26.04 on x86-64 or aarch64. Source this file; do not execute it.
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   echo "source scripts/lib/preflight.sh from another script" >&2
   exit 1
@@ -22,7 +22,27 @@ corebrum_read_os_release_field() {
 }
 
 corebrum_supported_ubuntu() {
-  [[ "$1" == "resolute" ]]
+  [[ "$1" == "noble" || "$1" == "resolute" ]]
+}
+
+# ID, codename, and VERSION_ID have to name the same Ubuntu Server release.
+corebrum_supported_release() {
+  local id="$1" codename="$2" version_id="$3"
+  [[ "$id" == "ubuntu" ]] || return 1
+  case "$codename" in
+    noble) [[ "$version_id" == "24.04" ]] ;;
+    resolute) [[ "$version_id" == "26.04" ]] ;;
+    *) return 1 ;;
+  esac
+}
+
+# Noble's gtklock 2.1 cannot lock Sway. Resolute's gtklock 4 can.
+corebrum_lock_package() {
+  case "$1" in
+    noble) printf 'swaylock\n' ;;
+    resolute) printf 'gtklock\n' ;;
+    *) return 1 ;;
+  esac
 }
 
 corebrum_supported_arch() {
@@ -45,14 +65,15 @@ corebrum_can_reach_archive() {
 
 corebrum_preflight() {
   local os_release="/etc/os-release"
-  local codename version_id arch free_kib
-  [[ -f "$os_release" ]] || corebrum_die "missing ${os_release}; Corebrum OS requires Ubuntu resolute"
+  local id codename version_id arch free_kib
+  [[ -f "$os_release" ]] || corebrum_die "missing ${os_release}; Corebrum OS requires Ubuntu 24.04 or 26.04"
+  id="$(corebrum_read_os_release_field "$os_release" ID || true)"
   codename="$(corebrum_read_os_release_field "$os_release" VERSION_CODENAME || true)"
-  [[ -n "$codename" ]] || corebrum_die "VERSION_CODENAME is missing from ${os_release}"
-  if ! corebrum_supported_ubuntu "$codename"; then
-    corebrum_die "Corebrum OS requires Ubuntu resolute (found VERSION_CODENAME=${codename})"
-  fi
   version_id="$(corebrum_read_os_release_field "$os_release" VERSION_ID || true)"
+  [[ -n "$codename" ]] || corebrum_die "VERSION_CODENAME is missing from ${os_release}"
+  if ! corebrum_supported_release "$id" "$codename" "$version_id"; then
+    corebrum_die "Corebrum OS requires Ubuntu 24.04 (noble) or 26.04 (resolute) (found ID=${id:-missing} VERSION_ID=${version_id:-missing} VERSION_CODENAME=${codename})"
+  fi
   arch="$(uname -m)"
   if ! corebrum_supported_arch "$arch"; then
     corebrum_die "Corebrum OS supports x86_64 and aarch64 (found ${arch})"

@@ -12,6 +12,8 @@ source "${COREBRUM_ROOT}/scripts/lib/manifest.sh"
 source "${COREBRUM_ROOT}/scripts/lib/archive.sh"
 # shellcheck source=../lib/ppa.sh
 source "${COREBRUM_ROOT}/scripts/lib/ppa.sh"
+# shellcheck source=../lib/preflight.sh
+source "${COREBRUM_ROOT}/scripts/lib/preflight.sh"
 
 DRY_RUN=0
 failed=0
@@ -141,7 +143,18 @@ for cmd in waybar kitty fuzzel wofi agreety; do
   fi
 done
 
-for pkg in swaybg swayidle wlgreet gtklock; do
+codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
+locker="$(corebrum_lock_package "$codename" || true)"
+[[ -n "$locker" ]] || locker=gtklock
+if [[ "$locker" == "swaylock" ]]; then
+  if [[ -f /etc/corebrum/sway/swaylock.conf ]]; then
+    corebrum_log "ok: /etc/corebrum/sway/swaylock.conf"
+  else
+    corebrum_log "missing: /etc/corebrum/sway/swaylock.conf"
+    failed=1
+  fi
+fi
+for pkg in swaybg swayidle wlgreet "$locker"; do
   policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"
   candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$policy")"
   if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then

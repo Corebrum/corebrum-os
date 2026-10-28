@@ -29,7 +29,7 @@ usage() {
 Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh]
 
   --profile base      Install the Ubuntu Server foundation
-  --profile desktop   Install the base profile, the Hyprland desktop, and workstation services
+  --profile desktop   Install the base profile, the Sway desktop, and workstation services
   --profile ros       Install the base profile, ROS 2, and the Zenoh router
   --dry-run           Print intended actions without changing the system
   --enable-ssh        Also install and enable OpenSSH server
@@ -37,11 +37,12 @@ Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh]
 
 A real install must be run as root. --dry-run may be run as a normal user.
 The product command is: corebrum install base|desktop|ros
-The installer accepts Ubuntu 26.04 (VERSION_CODENAME=resolute) on x86_64 and
-aarch64. Ubuntu 24.04 is rejected. Hyprland comes from the Ubuntu archive.
-The installer does not add a Hyprland PPA. Workstation services come from the
-Ubuntu archive. The ros profile adds the official ROS 2 apt repository and
-does not install the desktop. It installs ROS 2 Lyrical Luth.
+The installer accepts Ubuntu Server 24.04 (VERSION_CODENAME=noble) and 26.04
+(VERSION_CODENAME=resolute) on x86_64 and aarch64. Other releases are rejected.
+Sway comes from the Ubuntu archive. The installer does not add a Hyprland PPA.
+Workstation services come from the Ubuntu archive. The ros profile adds the
+official ROS 2 apt repository and does not install the desktop. It installs
+ROS 2 Jazzy on Ubuntu 24.04 and ROS 2 Lyrical Luth on Ubuntu 26.04.
 The installer does not edit existing Netplan files or run netplan apply.
 The desktop profile installs Node.js 26.x, npm, and pnpm with nvm under
 /usr/local/nvm. It does not write ~/.nvm or ~/.bashrc.

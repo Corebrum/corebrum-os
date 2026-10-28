@@ -165,8 +165,12 @@ if ! grep -q 'XDG_CURRENT_DESKTOP=sway' "${ROOT}/scripts/desktop/corebrum-sessio
   echo "FAIL: the session does not name the desktop sway" >&2
   exit 1
 fi
-if ! grep -q 'swaybg swayidle wlgreet gtklock' "${ROOT}/scripts/phases/02-desktop.sh"; then
+if ! grep -q 'swaybg swayidle wlgreet "$locker"' "${ROOT}/scripts/phases/02-desktop.sh"; then
   echo "FAIL: the desktop profile does not consider the Sway packages" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum_lock_package' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not choose the lock program for this Ubuntu release" >&2
   exit 1
 fi
 if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-terminal.sh"; then
@@ -394,8 +398,20 @@ if [[ "$magic" != "52494646" ]]; then
   echo "FAIL: config/brand/agents/grok.webp is not a WebP" >&2
   exit 1
 fi
-if ! grep -q 'swaybg swayidle wlgreet gtklock' "${ROOT}/scripts/phases/02-desktop.sh"; then
-  echo "FAIL: the desktop profile does not consider swaybg, swayidle, wlgreet, and gtklock" >&2
+if ! grep -q 'swaybg swayidle wlgreet "$locker"' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider swaybg, swayidle, wlgreet, and the lock program" >&2
+  exit 1
+fi
+if ! grep -q 'image=/usr/share/hypr/wall2.png' "${ROOT}/config/sway/swaylock.conf"; then
+  echo "FAIL: the Ubuntu 24.04 lock screen does not use the Corebrum wallpaper" >&2
+  exit 1
+fi
+if ! grep -q 'ring-color=3d9a8b' "${ROOT}/config/sway/swaylock.conf"; then
+  echo "FAIL: the Ubuntu 24.04 lock ring is not teal" >&2
+  exit 1
+fi
+if ! grep -q 'config/sway/swaylock.conf' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the swaylock config" >&2
   exit 1
 fi
 if grep -q 'wlgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then

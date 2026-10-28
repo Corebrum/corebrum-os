@@ -1,8 +1,8 @@
 # Corebrum OS
 
-The operating environment for Physical AI. Corebrum OS runs on Ubuntu Server 26.04 LTS, on x86-64 and on ARM64 (aarch64), including Raspberry Pi. It is not a new kernel or a new package manager. Ubuntu 24.04 is not supported.
+The operating environment for Physical AI. Corebrum OS runs on Ubuntu Server 24.04 LTS and 26.04 LTS, on x86-64 and on ARM64 (aarch64), including Raspberry Pi. It is not a new kernel or a new package manager. Other Ubuntu releases are not supported.
 
-The desktop design was inspired by Omarchy: a keyboard-first Hyprland session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, Gazebo, and AgenticROS are tiles in that grid. Quickshell is not in Ubuntu 26.04, so the session uses Waybar, Fuzzel, and `corebrum-grid`. Hyprland comes from the Ubuntu archive. ROS 2 is Lyrical Luth.
+The desktop design was inspired by Omarchy: a keyboard-first tiling session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, Gazebo, and AgenticROS are tiles in that grid. Quickshell is not in these Ubuntu archives, so the session uses Sway, Waybar, Fuzzel, and `corebrum-grid`. Sway comes from the Ubuntu archive. ROS 2 is Jazzy on Ubuntu 24.04 and Lyrical Luth on Ubuntu 26.04. Ubuntu 24.04 locks with swaylock. Ubuntu 26.04 locks with gtklock.
 
 AI Agents are built into the OS. [AgenticROS](https://agenticros.com) gives those agents full control over their own ROS-powered bodies, including eyes, wheels, legs, arms, propellers, and more.
 
@@ -16,7 +16,7 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 ## Current status
 
-Supported hosts are Ubuntu Server 26.04 on x86-64 and ARM64. The desktop, ROS 2 Lyrical, RealSense, AgenticROS, and the AI agents run on both, including a Raspberry Pi. The phase record is in `COREBRUM_BUILD_PLAN.md`. Ubuntu 24.04 is rejected before any package is installed. See `docs/decisions/0063-ubuntu-2604-arm.md`.
+Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. The desktop, ROS 2, RealSense, AgenticROS, and the AI agents run on both, including a Raspberry Pi. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. The phase record is in `COREBRUM_BUILD_PLAN.md`. Other Ubuntu releases are rejected before any package is installed. See `docs/decisions/0088-ubuntu-2404.md`.
 
 ## Install
 
@@ -30,7 +30,7 @@ cd corebrum-os
 sudo ./scripts/install.sh --profile desktop
 ```
 
-`--profile desktop` installs the base profile first, then the Hyprland session and workstation services. You do not need to run `--profile base` before it.
+`--profile desktop` installs the base profile first, then the Sway session and workstation services. You do not need to run `--profile base` before it.
 
 After the `corebrum` command exists, the same install is `sudo corebrum install desktop`.
 
