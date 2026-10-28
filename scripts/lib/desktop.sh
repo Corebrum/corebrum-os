@@ -15,6 +15,8 @@ source "${COREBRUM_ROOT}/scripts/lib/ppa.sh"
 source "${COREBRUM_ROOT}/scripts/lib/preflight.sh"
 # shellcheck source=node.sh
 source "${COREBRUM_ROOT}/scripts/lib/node.sh"
+# shellcheck source=gtklock.sh
+source "${COREBRUM_ROOT}/scripts/lib/gtklock.sh"
 # shellcheck source=../desktop/corebrum-realsense-install.sh
 source "${COREBRUM_ROOT}/scripts/desktop/corebrum-realsense-install.sh"
 
@@ -219,10 +221,10 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/systemd/user/hyprpaper.service.d/corebrum.conf" /etc/systemd/user/hyprpaper.service.d/corebrum.conf 644
   corebrum_disable_packaged_hyprpaper
   corebrum_install_file "${root}/config/systemd/user/hypridle.service.d/corebrum.conf" /etc/systemd/user/hypridle.service.d/corebrum.conf 644
-  if [[ "$locker" == "swaylock" ]]; then
-    corebrum_install_file "${root}/config/sway/swaylock.conf" /etc/corebrum/sway/swaylock.conf 644
-  elif [[ "${DRY_RUN:-0}" -eq 0 ]]; then
+  if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
     rm -f /etc/corebrum/sway/swaylock.conf
+  else
+    corebrum_log "dry-run: remove /etc/corebrum/sway/swaylock.conf"
   fi
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
     rm -f /usr/local/bin/corebrum-waypaper-menu
@@ -305,6 +307,12 @@ corebrum_desktop_managed_paths() {
   cat <<'EOF'
 /etc/corebrum/sway/config
 /etc/corebrum/sway/swaylock.conf
+/usr/local/bin/gtklock
+/usr/local/lib/libgtk-session-lock.so
+/usr/local/lib/libgtk-session-lock.so.0
+/usr/local/lib/libgtk-session-lock.so.0.2.0
+/usr/local/lib/pkgconfig/gtk-session-lock-0.pc
+/usr/local/include/gtk-session-lock/gtk-session-lock.h
 /etc/corebrum/gtklock/config.ini
 /etc/corebrum/gtklock/style.css
 /etc/corebrum/gtklock/layout.ui

@@ -1,0 +1,7 @@
+component: gtklock
+ubuntu: 24.04
+arch: x86_64
+source: https://github.com/jovanlanik/gtklock/archive/refs/tags/v4.0.0.tar.gz
+packages: gtklock
+pin: gtklock 4.0.0 (db20bf27bd5dd01901ea1753c89c170777dd7cf8fca19130cf90f5f4e3fb9633) with gtk-session-lock 0.2.0 (a4245c6930580c15ed263b9a7bb7e39f47693baec78be1026b4e0e28b233cb4e)
+notes: Ubuntu 24.04 publishes gtklock 2.1.0, which cannot lock Sway 1.9. The desktop install builds these two tags into /usr/local and writes /etc/pam.d/gtklock. Ubuntu 26.04 installs archive gtklock 4.0.0 and does not build this. See docs/decisions/0089-noble-gtklock.md.

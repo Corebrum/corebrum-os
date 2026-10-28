@@ -83,20 +83,21 @@ if ! grep -Eq 'swaybg candidate |swaybg is not in the archive' <<<"$desktop_outp
   exit 1
 fi
 release_codename="$(. /etc/os-release && printf '%s' "${VERSION_CODENAME:-}")"
-case "$release_codename" in
-  noble) lock_pkg=swaylock ;;
-  *) lock_pkg=gtklock ;;
-esac
-if ! grep -Eq "${lock_pkg} candidate |${lock_pkg} is not in the archive" <<<"$desktop_output"; then
-  echo "FAIL: desktop dry-run did not record the ${lock_pkg} install" >&2
+if [[ "$release_codename" == "noble" ]]; then
+  if ! grep -Eq 'gtklock 4.0.0 will be built from source|gtklock 4.0.0 is already installed|dry-run: build gtk-session-lock 0.2.0 and gtklock 4.0.0' <<<"$desktop_output"; then
+    echo "FAIL: Ubuntu 24.04 desktop dry-run did not plan the gtklock 4 build" >&2
+    exit 1
+  fi
+  if grep -q 'gtklock candidate' <<<"$desktop_output"; then
+    echo "FAIL: Ubuntu 24.04 desktop dry-run still installs archive gtklock" >&2
+    exit 1
+  fi
+elif ! grep -Eq 'gtklock candidate |gtklock is not in the archive' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the gtklock install" >&2
   exit 1
 fi
-if [[ "$release_codename" == "noble" ]] && grep -q 'gtklock candidate' <<<"$desktop_output"; then
-  echo "FAIL: Ubuntu 24.04 desktop dry-run still installs gtklock" >&2
-  exit 1
-fi
-if [[ "$release_codename" != "noble" ]] && grep -q 'swaylock candidate' <<<"$desktop_output"; then
-  echo "FAIL: Ubuntu 26.04 desktop dry-run installs swaylock" >&2
+if grep -q 'swaylock candidate' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run installs swaylock" >&2
   exit 1
 fi
 if grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then

@@ -47,7 +47,7 @@ Sway on noble is 1.9. The config on this branch is written for that syntax. Sway
 | `gtklock` | 2.1.0-1build2 | 4.0.0-1build1 |
 | `wtype` | 0.4-3 | 0.4-3build1 |
 
-Two of those version gaps are why the 24.04 lock screen does not use the resolute gtklock layout.
+The gtklock gap is why Ubuntu 24.04 builds gtklock 4.0.0 instead of installing the archive package. The lock screen still uses the same layout file.
 
 `gtklock` 2.1.0 is the noble package. `--layout` and `ext-session-lock` arrived in gtklock 3.0.0. This branch's lock screen is gtklock 4.0.0: `config/gtklock/config.ini` sets `layout` and `style`, and the password field comes from `config/gtklock/layout.ui`. That file has not been run on gtklock 2.1.0.
 
@@ -55,7 +55,7 @@ Two of those version gaps are why the 24.04 lock screen does not use the resolut
 
 `wtype` 0.4 is in noble for amd64 and arm64. Super+C, Super+X, and Super+V on Sway go through it. See `docs/decisions/0086-sway-edit-keys.md`.
 
-The 24.04 desktop installs archive `swaylock` instead of `gtklock`. Super+Escape runs `swaylock --config /etc/corebrum/sway/swaylock.conf`, with `/usr/share/hypr/wall2.png` and a teal ring. Ubuntu 26.04 keeps gtklock 4. Login stays `corebrum-login` on both releases. `wlgreet` stays the fallback.
+The 24.04 desktop builds gtklock 4.0.0 and gtk-session-lock 0.2.0 instead of installing archive gtklock 2.1.0. Super+Escape runs `gtklock --config /etc/corebrum/gtklock/config.ini` on both releases. Login stays `corebrum-login`. `wlgreet` stays the fallback. See `docs/decisions/0089-noble-gtklock.md`.
 
 ## ROS 2
 

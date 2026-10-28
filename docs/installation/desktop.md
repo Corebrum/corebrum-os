@@ -2,11 +2,11 @@
 
 Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Sway, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, GNOME Text Editor, Mako, and a greetd login. A new window splits the longer side of the focused tile: beside a wide tile, and below a tall tile. See `docs/decisions/0080-sway-session.md`.
 
-The greeter is a minimal Sway. `corebrum-login` draws `/usr/share/corebrum/logo.png` above a centered username and password card, with `/usr/share/hypr/wall2.png` behind it. There is no Login title. If that client cannot start, the greeter falls back to `wlgreet` and the separate logo. Super+Escape locks the screen on the same wallpaper. Ubuntu 26.04 uses `gtklock`: the logo, a centered password field, and Unlock, with the time and date in the top right. Ubuntu 24.04 uses `swaylock` and a teal ring, because that archive's `gtklock` cannot lock Sway. Quickshell is not in Ubuntu 26.04, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The earlier login and lock choices are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`. See `docs/decisions/0082-gtklock-password.md`, `docs/decisions/0083-login-lock-logo.md`, and `docs/decisions/0087-centered-login-lock.md`.
+The greeter is a minimal Sway. `corebrum-login` draws `/usr/share/corebrum/logo.png` above a centered username and password card, with `/usr/share/hypr/wall2.png` behind it. There is no Login title. If that client cannot start, the greeter falls back to `wlgreet` and the separate logo. Super+Escape locks the screen on the same wallpaper. Both releases use gtklock 4: the logo, a centered password field, and Unlock, with the time and date in the top right. Ubuntu 24.04 builds that gtklock because the archive package cannot lock Sway. See `docs/decisions/0089-noble-gtklock.md`. Quickshell is not in Ubuntu 26.04, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The earlier login and lock choices are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`. See `docs/decisions/0082-gtklock-password.md`, `docs/decisions/0083-login-lock-logo.md`, and `docs/decisions/0087-centered-login-lock.md`.
 
 ## Sway source
 
-Sway, swaybg, swayidle, and wlgreet come from the Ubuntu archive on 24.04 and 26.04. Ubuntu 26.04 also installs gtklock. Ubuntu 24.04 installs swaylock. This branch does not add the Hyprland PPA. Preflight accepts Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. The package difference from the Hyprland desktop on `master`, including the Ubuntu 24.04 versions, is `docs/installation/sway-hyprland.md`. See `docs/decisions/0080-sway-session.md`, `docs/decisions/0088-ubuntu-2404.md`, and `docs/decisions/0010-ubuntu-2604-packages.md`.
+Sway, swaybg, swayidle, and wlgreet come from the Ubuntu archive on 24.04 and 26.04. Ubuntu 26.04 also installs gtklock. Ubuntu 24.04 builds gtklock 4.0.0. This branch does not add the Hyprland PPA. Preflight accepts Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. The package difference from the Hyprland desktop on `master`, including the Ubuntu 24.04 versions, is `docs/installation/sway-hyprland.md`. See `docs/decisions/0080-sway-session.md`, `docs/decisions/0088-ubuntu-2404.md`, and `docs/decisions/0010-ubuntu-2604-packages.md`.
 
 A Raspberry Pi 5 keeps two DRM devices: `v3d` on card0 has no HDMI connector, and `vc4` carries the display. The greeter, the session, and the lock screen select that vc4 device when it is present and leave an x86-64 machine unchanged. See `docs/decisions/0060-arm64-desktop.md`.
 
@@ -62,7 +62,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Sw
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
 | Super+Arrows | Move focus to the tile in that direction on the screen |
 | Super+Shift+Arrows | Swap with the tile in that direction on the screen |
-| Super+Escape | Lock the screen. Ubuntu 26.04 uses gtklock. Ubuntu 24.04 uses swaylock. Type the account password and press Enter |
+| Super+Escape | Lock the screen with gtklock. Type the account password and press Enter, or press Unlock |
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Log out and return to the greeter |
 | Control+Space | Transcribe the microphone. Press again to copy the words |

@@ -50,12 +50,20 @@ if corebrum_supported_release debian noble 24.04; then
   echo "FAIL: a non-Ubuntu noble release should be rejected" >&2
   exit 1
 fi
-if [[ "$(corebrum_lock_package noble)" != "swaylock" ]]; then
-  echo "FAIL: noble should lock with swaylock" >&2
+if [[ "$(corebrum_lock_package noble)" != "gtklock" ]]; then
+  echo "FAIL: noble should lock with gtklock" >&2
   exit 1
 fi
 if [[ "$(corebrum_lock_package resolute)" != "gtklock" ]]; then
   echo "FAIL: resolute should lock with gtklock" >&2
+  exit 1
+fi
+if ! corebrum_gtklock_from_source noble; then
+  echo "FAIL: noble should build gtklock" >&2
+  exit 1
+fi
+if corebrum_gtklock_from_source resolute; then
+  echo "FAIL: resolute should use the archive gtklock" >&2
   exit 1
 fi
 if corebrum_lock_package jammy; then
@@ -64,8 +72,8 @@ if corebrum_lock_package jammy; then
 fi
 # shellcheck source=../../scripts/desktop/corebrum-lock.sh
 source "${ROOT}/scripts/desktop/corebrum-lock.sh"
-if [[ "$(corebrum_lock_package noble)" != "swaylock" || "$(corebrum_lock_package resolute)" != "gtklock" ]]; then
-  echo "FAIL: the lock command does not follow the noble and resolute split" >&2
+if [[ "$(corebrum_lock_package noble)" != "gtklock" || "$(corebrum_lock_package resolute)" != "gtklock" ]]; then
+  echo "FAIL: the lock command does not use gtklock on noble and resolute" >&2
   exit 1
 fi
 if corebrum_supported_ubuntu "jammy"; then

@@ -255,7 +255,7 @@ if ! grep -q '/usr/sbin/wlgreet' "${ROOT}/scripts/desktop/corebrum-greeter.sh"; 
   echo "FAIL: the greeter does not run wlgreet" >&2
   exit 1
 fi
-if ! grep -q 'gtklock --config /etc/corebrum/gtklock/config.ini' "${ROOT}/scripts/desktop/corebrum-lock.sh"; then
+if ! grep -q -- '--config /etc/corebrum/gtklock/config.ini' "${ROOT}/scripts/desktop/corebrum-lock.sh"; then
   echo "FAIL: the lock command does not use the system gtklock config" >&2
   exit 1
 fi
@@ -402,16 +402,20 @@ if ! grep -q 'swaybg swayidle wlgreet "$locker"' "${ROOT}/scripts/phases/02-desk
   echo "FAIL: the desktop profile does not consider swaybg, swayidle, wlgreet, and the lock program" >&2
   exit 1
 fi
-if ! grep -q 'image=/usr/share/hypr/wall2.png' "${ROOT}/config/sway/swaylock.conf"; then
-  echo "FAIL: the Ubuntu 24.04 lock screen does not use the Corebrum wallpaper" >&2
+if ! grep -q 'rm -f /etc/corebrum/sway/swaylock.conf' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not remove the swaylock config" >&2
   exit 1
 fi
-if ! grep -q 'ring-color=3d9a8b' "${ROOT}/config/sway/swaylock.conf"; then
-  echo "FAIL: the Ubuntu 24.04 lock ring is not teal" >&2
+if grep -q 'config/sway/swaylock.conf"' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install still copies the swaylock config" >&2
   exit 1
 fi
-if ! grep -q 'config/sway/swaylock.conf' "${ROOT}/scripts/lib/desktop.sh"; then
-  echo "FAIL: the desktop install does not copy the swaylock config" >&2
+if ! grep -q 'auth include login' "${ROOT}/config/pam.d/gtklock"; then
+  echo "FAIL: the gtklock PAM service does not use the login stack" >&2
+  exit 1
+fi
+if ! grep -q 'db20bf27bd5dd01901ea1753c89c170777dd7cf8fca19130cf90f5f4e3fb9633' "${ROOT}/scripts/lib/gtklock.sh"; then
+  echo "FAIL: gtklock 4.0.0 is not pinned" >&2
   exit 1
 fi
 if grep -q 'wlgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then

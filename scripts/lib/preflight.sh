@@ -36,13 +36,30 @@ corebrum_supported_release() {
   esac
 }
 
-# Noble's gtklock 2.1 cannot lock Sway. Resolute's gtklock 4 can.
+# Both releases lock with gtklock 4. Noble builds it. Resolute uses the archive package.
 corebrum_lock_package() {
   case "$1" in
-    noble) printf 'swaylock\n' ;;
-    resolute) printf 'gtklock\n' ;;
+    noble|resolute) printf 'gtklock\n' ;;
     *) return 1 ;;
   esac
+}
+
+# Noble's archive gtklock is 2.1 and cannot lock Sway 1.9.
+corebrum_gtklock_from_source() {
+  [[ "$1" == "noble" ]]
+}
+
+corebrum_gtklock_v4_path() {
+  local bin version
+  for bin in /usr/local/bin/gtklock /usr/bin/gtklock; do
+    [[ -x "$bin" ]] || continue
+    version="$("$bin" -v 2>/dev/null || true)"
+    if [[ "$version" == gtklock\ v4.* ]]; then
+      printf '%s\n' "$bin"
+      return 0
+    fi
+  done
+  return 1
 }
 
 corebrum_supported_arch() {

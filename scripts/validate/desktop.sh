@@ -146,15 +146,20 @@ done
 codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
 locker="$(corebrum_lock_package "$codename" || true)"
 [[ -n "$locker" ]] || locker=gtklock
-if [[ "$locker" == "swaylock" ]]; then
-  if [[ -f /etc/corebrum/sway/swaylock.conf ]]; then
-    corebrum_log "ok: /etc/corebrum/sway/swaylock.conf"
-  else
-    corebrum_log "missing: /etc/corebrum/sway/swaylock.conf"
-    failed=1
-  fi
+if [[ -f /etc/corebrum/sway/swaylock.conf ]]; then
+  corebrum_log "missing: swaylock config should be removed"
+  failed=1
 fi
 for pkg in swaybg swayidle wlgreet "$locker"; do
+  if [[ "$pkg" == "gtklock" ]] && corebrum_gtklock_from_source "$codename"; then
+    if corebrum_gtklock_v4_path >/dev/null 2>&1; then
+      corebrum_log "ok: gtklock"
+    else
+      corebrum_log "missing: gtklock"
+      failed=1
+    fi
+    continue
+  fi
   policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"
   candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$policy")"
   if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then

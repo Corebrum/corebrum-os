@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Lock the Sway session. Ubuntu 24.04 uses swaylock. Ubuntu 26.04 uses gtklock.
+# Lock the Sway session with gtklock 4. Ubuntu 24.04 builds that version.
+# Ubuntu 26.04 uses the archive package. Keep the package case aligned with
+# corebrum_lock_package in scripts/lib/preflight.sh.
 set -euo pipefail
 
 corebrum_lock_codename() {
@@ -13,21 +15,33 @@ corebrum_lock_codename() {
   printf '%s\n' "$codename"
 }
 
-# Keep this case aligned with corebrum_lock_package in scripts/lib/preflight.sh.
 corebrum_lock_package() {
   case "$1" in
-    noble) printf 'swaylock\n' ;;
-    resolute) printf 'gtklock\n' ;;
+    noble|resolute) printf 'gtklock\n' ;;
     *) return 1 ;;
   esac
 }
 
+corebrum_lock_bin() {
+  local bin version
+  for bin in /usr/local/bin/gtklock /usr/bin/gtklock; do
+    [[ -x "$bin" ]] || continue
+    version="$("$bin" -v 2>/dev/null || true)"
+    if [[ "$version" == gtklock\ v4.* ]]; then
+      printf '%s\n' "$bin"
+      return 0
+    fi
+  done
+  return 1
+}
+
 corebrum_lock_main() {
-  local codename package here
+  local codename package bin here
   codename="$(corebrum_lock_codename)"
   package="$(corebrum_lock_package "$codename" || true)"
-  if [[ -z "$package" ]] || ! command -v "$package" >/dev/null 2>&1; then
-    printf 'corebrum-lock: %s is not installed\n' "${package:-a lock program}" >&2
+  bin="$(corebrum_lock_bin || true)"
+  if [[ "$package" != "gtklock" || -z "$bin" ]]; then
+    printf 'corebrum-lock: gtklock 4 is not installed\n' >&2
     exit 1
   fi
 
@@ -43,19 +57,11 @@ corebrum_lock_main() {
     corebrum_export_vc4_devices
   fi
 
-  if [[ "$package" == "swaylock" ]]; then
-    if [[ ! -f /etc/corebrum/sway/swaylock.conf ]]; then
-      printf 'corebrum-lock: missing /etc/corebrum/sway/swaylock.conf\n' >&2
-      exit 1
-    fi
-    exec swaylock --config /etc/corebrum/sway/swaylock.conf
-  fi
-
   if [[ ! -f /etc/corebrum/gtklock/config.ini ]]; then
     printf 'corebrum-lock: missing /etc/corebrum/gtklock/config.ini\n' >&2
     exit 1
   fi
-  exec gtklock --config /etc/corebrum/gtklock/config.ini
+  exec "$bin" --config /etc/corebrum/gtklock/config.ini
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
