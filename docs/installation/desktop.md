@@ -6,7 +6,7 @@ The greeter is `wlgreet` inside a minimal Sway, with `/usr/share/hypr/wall2.png`
 
 ## Sway source
 
-Sway, swaybg, swayidle, wlgreet, and gtklock come from the Ubuntu archive. This branch does not add the Hyprland PPA. Preflight still requires Ubuntu resolute, so this branch does not install on Ubuntu 24.04. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. See `docs/decisions/0080-sway-session.md`, `docs/decisions/0010-ubuntu-2604-packages.md`, and `docs/decisions/0063-ubuntu-2604-arm.md`.
+Sway, swaybg, swayidle, wlgreet, and gtklock come from the Ubuntu archive. This branch does not add the Hyprland PPA. Preflight still requires Ubuntu resolute, so this branch does not install on Ubuntu 24.04. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. The package difference from the Hyprland desktop on `master`, including the Ubuntu 24.04 versions, is `docs/installation/sway-hyprland.md`. See `docs/decisions/0080-sway-session.md`, `docs/decisions/0010-ubuntu-2604-packages.md`, and `docs/decisions/0063-ubuntu-2604-arm.md`.
 
 A Raspberry Pi 5 keeps two DRM devices: `v3d` on card0 has no HDMI connector, and `vc4` carries the display. The greeter, the session, and the lock screen select that vc4 device when it is present and leave an x86-64 machine unchanged. See `docs/decisions/0060-arm64-desktop.md`.
 
