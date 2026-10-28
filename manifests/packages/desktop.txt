@@ -1,12 +1,13 @@
 # Corebrum desktop profile
 # Ubuntu 24.04 (noble) official archive only.
 # One package name per line. Blank lines and # comments are ignored.
-# hyprland has no noble candidate as of 2026-10-22. The installer stops
-# before changing the system when apt-cache has no hyprland candidate.
+# sway is in the Ubuntu 24.04 and 26.04 archives. The installer stops
+# before changing the system when apt-cache has no sway candidate.
 # quickshell is not listed: it is not in noble, and this phase has no
-# Quickshell configuration. See docs/decisions/0005-desktop-packages-on-noble.md.
+# Quickshell configuration. See docs/decisions/0005-desktop-packages-on-noble.md
+# and docs/decisions/0080-sway-session.md.
 
-hyprland
+sway
 waybar
 kitty
 fuzzel
@@ -38,4 +39,5 @@ gstreamer1.0-pipewire
 gir1.2-gstreamer-1.0
 gir1.2-gst-plugins-base-1.0
 xwayland
+wtype
 dbus-user-session

@@ -277,6 +277,7 @@ corebrum_refresh_logged_in_sessions() {
 
 corebrum_uninstall_services() {
   local portal="/etc/xdg/xdg-desktop-portal/hyprland-portals.conf"
+  local sway_portal="/etc/xdg/xdg-desktop-portal/sway-portals.conf"
   corebrum_disable_recorded_system_unit enabled_network_manager NetworkManager.service
   corebrum_disable_recorded_system_unit enabled_bluetooth bluetooth.service
   corebrum_disable_recorded_system_unit enabled_power_profiles power-profiles-daemon.service
@@ -284,12 +285,18 @@ corebrum_uninstall_services() {
   corebrum_disable_recorded_user_unit enabled_user_wireplumber wireplumber.service
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: remove ${portal} when Corebrum owns it"
+    corebrum_log "dry-run: remove ${sway_portal} when Corebrum owns it"
     return 0
   fi
   if [[ -f "$portal" ]] && grep -q "Managed by Corebrum OS" "$portal"; then
     corebrum_backup_file "$portal"
     rm -f "$portal"
     corebrum_log "removed ${portal}"
-    rmdir /etc/xdg/xdg-desktop-portal 2>/dev/null || true
   fi
+  if [[ -f "$sway_portal" ]] && grep -q "Managed by Corebrum OS" "$sway_portal"; then
+    corebrum_backup_file "$sway_portal"
+    rm -f "$sway_portal"
+    corebrum_log "removed ${sway_portal}"
+  fi
+  rmdir /etc/xdg/xdg-desktop-portal 2>/dev/null || true
 }

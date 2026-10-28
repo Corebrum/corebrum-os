@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Start Hyprland with the Corebrum system config. greetd runs this after login.
+# Start Sway with the Corebrum system config. greetd runs this after login.
 set -euo pipefail
 
-export XDG_CURRENT_DESKTOP=Hyprland
-export XDG_SESSION_DESKTOP=Hyprland
+export XDG_CURRENT_DESKTOP=sway
+export XDG_SESSION_DESKTOP=sway
 export XDG_SESSION_TYPE=wayland
 
 if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
@@ -16,7 +16,7 @@ if [[ -f /etc/profile.d/corebrum-ros.sh ]]; then
   source /etc/profile.d/corebrum-ros.sh || echo "corebrum-session: ROS profile failed" >&2
 fi
 
-config="/etc/corebrum/hypr/hyprland.conf"
+config="/etc/corebrum/sway/config"
 if [[ ! -f "$config" ]]; then
   echo "corebrum-session: missing ${config}" >&2
   exit 1
@@ -33,21 +33,11 @@ else
   echo "corebrum-session: missing drm helper" >&2
   exit 1
 fi
+# Sway reads WLR_DRM_DEVICES. On a Raspberry Pi that is the vc4 scanout device.
 corebrum_export_vc4_devices
-config="$(corebrum_hyprland_config "$config")"
 
-# start-hyprland is the watchdog shipped with Hyprland. Starting the
-# compositor directly leaves a warning on the desktop. Arguments after --
-# are passed through, so the Corebrum config stays in use.
-if command -v start-hyprland >/dev/null 2>&1; then
-  exec start-hyprland -- --config "$config"
+if ! command -v sway >/dev/null 2>&1; then
+  echo "corebrum-session: sway is not installed" >&2
+  exit 1
 fi
-if command -v Hyprland >/dev/null 2>&1; then
-  exec Hyprland --config "$config"
-fi
-if command -v hyprland >/dev/null 2>&1; then
-  exec hyprland --config "$config"
-fi
-
-echo "corebrum-session: Hyprland is not installed" >&2
-exit 1
+exec sway --config "$config"

@@ -4,24 +4,24 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 osd="${ROOT}/scripts/desktop/corebrum-osd.sh"
-conf="${ROOT}/config/hypr/hyprland.conf"
+conf="${ROOT}/config/sway/config"
 mako="${ROOT}/config/mako/config"
 fail=0
 
 require_bind() {
   local needle="$1"
   if ! grep -qF -- "$needle" "$conf"; then
-    echo "FAIL: hyprland.conf missing ${needle}" >&2
+    echo "FAIL: sway config missing ${needle}" >&2
     fail=1
   fi
 }
 
-require_bind "bind = , XF86AudioRaiseVolume, exec, /usr/local/bin/corebrum-osd volume-up"
-require_bind "bind = , XF86AudioLowerVolume, exec, /usr/local/bin/corebrum-osd volume-down"
-require_bind "bind = , XF86AudioMute, exec, /usr/local/bin/corebrum-osd volume-mute"
-require_bind "bind = , XF86AudioMicMute, exec, /usr/local/bin/corebrum-osd mic-mute"
-require_bind "bind = , XF86MonBrightnessUp, exec, /usr/local/bin/corebrum-osd brightness-up"
-require_bind "bind = , XF86MonBrightnessDown, exec, /usr/local/bin/corebrum-osd brightness-down"
+require_bind "bindsym XF86AudioRaiseVolume exec /usr/local/bin/corebrum-osd volume-up"
+require_bind "bindsym XF86AudioLowerVolume exec /usr/local/bin/corebrum-osd volume-down"
+require_bind "bindsym XF86AudioMute exec /usr/local/bin/corebrum-osd volume-mute"
+require_bind "bindsym XF86AudioMicMute exec /usr/local/bin/corebrum-osd mic-mute"
+require_bind "bindsym XF86MonBrightnessUp exec /usr/local/bin/corebrum-osd brightness-up"
+require_bind "bindsym XF86MonBrightnessDown exec /usr/local/bin/corebrum-osd brightness-down"
 if grep -q 'wpctl set-volume' "$conf"; then
   echo "FAIL: volume keys still change the level without a notification" >&2
   fail=1

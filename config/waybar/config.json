@@ -4,14 +4,21 @@
   "position": "top",
   "height": 34,
   "spacing": 8,
-  "modules-left": ["hyprland/workspaces"],
-  "modules-center": ["hyprland/window"],
+  "modules-left": ["sway/workspaces"],
+  "modules-center": ["sway/window"],
   "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "custom/agenticros", "tray", "clock"],
-  "hyprland/workspaces": {
-    "format": "{id}",
-    "all-outputs": true
+  "sway/workspaces": {
+    "format": "{name}",
+    "all-outputs": true,
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    }
   },
-  "hyprland/window": {
+  "sway/window": {
     "max-length": 48
   },
   "clock": {

@@ -25,4 +25,4 @@ The official Ubuntu 26.04 package `hyprland` 0.53.3+ds-4 was downloaded from Lau
 
 ## Consequences
 
-Decision 0006 names `ppa:cppiber/hyprland` as that source. The pin in that decision is what keeps the rest of the PPA from replacing Ubuntu packages such as Waybar, Fuzzel, and PipeWire. Robotics packages stay out of this phase.
+Decision 0006 names `ppa:cppiber/hyprland` as that source. The pin in that decision is what keeps the rest of the PPA from replacing Ubuntu packages such as Waybar, Fuzzel, and PipeWire. Robotics packages stay out of this phase. Decision 0080 uses the archive Sway packages, including wlgreet, and does not add that PPA.

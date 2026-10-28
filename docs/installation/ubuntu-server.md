@@ -69,4 +69,4 @@ The second install is successful when validation still passes, no duplicate loca
 
 The procedure above is the one to repeat on a fresh Ubuntu Server 26.04 machine, x86-64 or ARM64.
 
-Phase 2 is documented in `docs/installation/desktop.md`. Hyprland comes from the Ubuntu 26.04 archive. Phase 3 workstation services are documented in `docs/installation/services.md`. They leave the existing Netplan Ethernet configuration in place.
+Phase 2 is documented in `docs/installation/desktop.md`. Sway comes from the Ubuntu 26.04 archive. Phase 3 workstation services are documented in `docs/installation/services.md`. They leave the existing Netplan Ethernet configuration in place.

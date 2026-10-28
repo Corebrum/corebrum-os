@@ -4,7 +4,7 @@ set -euo pipefail
 
 COREBRUM_AUTOLOCK_INSTALL_MARK='   install'
 COREBRUM_AUTOLOCK_ON_MARK='   on'
-COREBRUM_AUTOLOCK_SYSTEM_CONFIG=/etc/corebrum/hypr/hypridle.conf
+COREBRUM_AUTOLOCK_SYSTEM_CONFIG=/etc/corebrum/sway/idle.conf
 
 corebrum_autolock_die() {
   printf 'corebrum-autolock: %s\n' "$1" >&2
@@ -34,7 +34,7 @@ corebrum_autolock_ready() {
     [[ "${COREBRUM_AUTOLOCK_READY:-0}" == 1 ]]
     return
   fi
-  command -v hypridle >/dev/null 2>&1
+  command -v swayidle >/dev/null 2>&1
 }
 
 corebrum_autolock_minutes() {
@@ -129,26 +129,14 @@ corebrum_autolock_render() {
     *) corebrum_autolock_die "autolock timer must be 5, 10, 30, or 60 minutes" ;;
   esac
   seconds=$((minutes * 60))
-  cat <<EOF
-general {
-    lock_cmd = /usr/local/bin/corebrum-lock
-    before_sleep_cmd = loginctl lock-session
-    ignore_dbus_inhibit = false
-    ignore_systemd_inhibit = false
-}
-
-listener {
-    timeout = ${seconds}
-    on-timeout = loginctl lock-session
-}
-EOF
+  printf 'timeout=%s\n' "$seconds"
 }
 
 corebrum_autolock_config_path() {
   local minutes_file
   minutes_file="$(corebrum_autolock_state_dir)/autolock-minutes"
   if [[ -f "$minutes_file" ]]; then
-    printf '%s\n' "$(corebrum_autolock_state_dir)/hypridle.conf"
+    printf '%s\n' "$(corebrum_autolock_state_dir)/idle.conf"
   else
     printf '%s\n' "$COREBRUM_AUTOLOCK_SYSTEM_CONFIG"
   fi
@@ -177,24 +165,31 @@ corebrum_autolock_start() {
     corebrum_autolock_config_path
     return 0
   fi
-  command -v hypridle >/dev/null 2>&1 || return 0
+  command -v swayidle >/dev/null 2>&1 || return 0
   cfg="$(corebrum_autolock_config_path)"
   [[ -f "$cfg" ]] || return 0
-  if pgrep -x hypridle >/dev/null 2>&1; then
-    pkill -x hypridle || true
+  seconds="$(sed -n 's/^timeout=//p' "$cfg" | head -n 1)"
+  case "$seconds" in
+    '' | *[!0-9]*) return 0 ;;
+  esac
+  if pgrep -x swayidle >/dev/null 2>&1; then
+    pkill -x swayidle || true
     local _
     for _ in 1 2 3 4 5 6 7 8 9 10; do
-      pgrep -x hypridle >/dev/null 2>&1 || break
+      pgrep -x swayidle >/dev/null 2>&1 || break
       sleep 0.1
     done
   fi
-  setsid --fork -- hypridle --config "$cfg" </dev/null >/dev/null 2>&1
+  # swayidle honors a systemd idle inhibitor, so Stay awake pauses the timer.
+  setsid --fork -- swayidle -w \
+    timeout "$seconds" /usr/local/bin/corebrum-lock \
+    before-sleep 'loginctl lock-session' </dev/null >/dev/null 2>&1
 }
 
 corebrum_autolock_set_minutes() {
   local minutes="$1" dir cfg label
   dir="$(corebrum_autolock_state_dir)"
-  cfg="${dir}/hypridle.conf"
+  cfg="${dir}/idle.conf"
   if [[ "${COREBRUM_AUTOLOCK_STUB:-0}" == 1 ]]; then
     mkdir -p "$dir"
     printf '%s\n' "$minutes" >"${dir}/autolock-minutes"
@@ -264,20 +259,16 @@ corebrum_autolock_toggle() {
 corebrum_autolock_install_script() {
   cat <<'EOF'
 set +e
-candidate=$(apt-cache policy hypridle | awk '/Candidate:/ { print $2; exit }')
-locker=$(apt-cache policy hyprlock | awk '/Candidate:/ { print $2; exit }')
+candidate=$(apt-cache policy swayidle | awk '/Candidate:/ { print $2; exit }')
+locker=$(apt-cache policy gtklock | awk '/Candidate:/ { print $2; exit }')
 if [ -z "$candidate" ] || [ "$candidate" = "(none)" ] || [ -z "$locker" ] || [ "$locker" = "(none)" ]; then
-  printf '%s\n' "hypridle is not in this Ubuntu archive."
+  printf '%s\n' "swayidle and gtklock are not both in this Ubuntu archive."
   printf '\n'
   read -r -p 'Press Enter to close. '
   exit 0
 fi
-sudo apt-get update && sudo apt-get install -y hypridle
+sudo apt-get update && sudo apt-get install -y swayidle gtklock
 ec=$?
-if [ "$ec" -eq 0 ]; then
-  sudo systemctl --global disable hypridle.service
-  ec=$?
-fi
 if [ "$ec" -eq 0 ]; then
   /usr/local/bin/corebrum-autolock start
   ec=$?

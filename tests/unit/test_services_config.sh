@@ -33,6 +33,13 @@ for name in ("network", "pulseaudio", "battery", "custom/agenticros", "tray"):
         raise SystemExit(f"FAIL: waybar missing {name} settings")
 if "bluetooth" in right or "bluetooth" in cfg:
     raise SystemExit("FAIL: waybar still shows a Bluetooth status beside the Blueman tray icon")
+left = cfg.get("modules-left", [])
+if left != ["sway/workspaces"]:
+    raise SystemExit(f"FAIL: waybar modules-left is {left!r}")
+persistent = cfg.get("sway/workspaces", {}).get("persistent-workspaces", {})
+for name in ("1", "2", "3", "4", "5"):
+    if name not in persistent:
+        raise SystemExit(f"FAIL: workspace {name} is not kept on the bar")
 tagline = next((bar for bar in bars if bar.get("name") == "tagline"), None)
 if tagline is None:
     raise SystemExit("FAIL: waybar has no tagline bar")
@@ -40,5 +47,10 @@ text = tagline.get("custom/tagline", {}).get("format", "")
 if text != "Corebrum: The Physical AI Operating System":
     raise SystemExit(f"FAIL: tagline text is {text!r}")
 PY
+
+if ! grep -q '#workspaces button.focused' "${ROOT}/config/waybar/style.css"; then
+  echo "FAIL: the focused workspace number is not marked" >&2
+  exit 1
+fi
 
 echo "ok: services-config"

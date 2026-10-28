@@ -18,11 +18,11 @@ Apply it with:
 sudo ./scripts/install.sh --profile desktop
 ```
 
-That command also installs the base profile and the Hyprland session if they are not already present. It enables NetworkManager, Bluetooth, and power-profiles-daemon. It disables `NetworkManager-wait-online.service` so boot does not wait for Wi-Fi. It does not suspend the machine.
+That command also installs the base profile and the Sway session if they are not already present. It enables NetworkManager, Bluetooth, and power-profiles-daemon. It disables `NetworkManager-wait-online.service` so boot does not wait for Wi-Fi. It does not suspend the machine.
 
 ## After a successful install
 
-Log in again if the bar and tray did not refresh. Waybar adds volume, Bluetooth, battery, and a tray. Waybar 0.9 needs a link from `/tmp/hypr` to Hyprland's runtime socket; the session creates that link before starting the bar. The app grid adds Audio, Network, Bluetooth, and Display.
+Log in again if the bar and tray did not refresh. Waybar adds volume, Bluetooth, battery, and a tray. The Sway bar reads the Sway socket. The app grid adds Audio, Network, Bluetooth, and Display.
 
 | Key | Action |
 | --- | --- |
@@ -40,7 +40,7 @@ Super+Print and Super+Alt+P ask which picture and microphone to include. Screen 
 
 Wi-Fi is configured with Super+Space Network Configuration (`nm-connection-editor`) or `nmtui`. Ethernet remains the existing Netplan connection. Volume is `pavucontrol` or the volume keys. Bluetooth is `blueman-manager`. Displays are `wdisplays`. A USB disk should show up in Thunar; mounting asks for the polkit prompt from `mate-polkit`.
 
-Firefox screen sharing uses `xdg-desktop-portal-wlr`. The portal choice is `/etc/xdg/xdg-desktop-portal/hyprland-portals.conf`.
+Firefox screen sharing uses `xdg-desktop-portal-wlr`. The Sway session reads `/etc/xdg/xdg-desktop-portal/sway-portals.conf`. The same settings are also installed as `/etc/xdg/xdg-desktop-portal/hyprland-portals.conf`.
 
 ```bash
 ./scripts/validate/services.sh

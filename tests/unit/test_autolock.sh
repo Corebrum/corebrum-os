@@ -4,14 +4,14 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 menu="${ROOT}/scripts/desktop/corebrum-autolock.sh"
-conf="${ROOT}/config/hypr/hyprland.conf"
+conf="${ROOT}/config/sway/config"
 fail=0
 
 if ! grep -q '/usr/local/bin/corebrum-autolock refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not refresh Autolock" >&2
   fail=1
 fi
-if ! grep -q 'bind = $mainMod SHIFT, Escape, exec, /usr/local/bin/corebrum-autolock toggle' "$conf"; then
+if ! grep -q 'bindsym $mod+Shift+Escape exec /usr/local/bin/corebrum-autolock toggle' "$conf"; then
   echo "FAIL: Super+Shift+Escape does not toggle stay awake" >&2
   fail=1
 fi
@@ -19,24 +19,20 @@ if ! grep -q '/usr/local/bin/corebrum-autolock start' "$conf"; then
   echo "FAIL: the session does not start the autolock timer" >&2
   fail=1
 fi
-if ! grep -q 'ignore_systemd_inhibit = false' "${ROOT}/config/hypr/hypridle.conf"; then
-  echo "FAIL: stay awake cannot pause hypridle" >&2
+if ! grep -q 'swayidle honors a systemd idle inhibitor' "${ROOT}/config/sway/idle.conf"; then
+  echo "FAIL: stay awake cannot pause swayidle" >&2
   fail=1
 fi
-if ! grep -q 'timeout = 600' "${ROOT}/config/hypr/hypridle.conf"; then
+if ! grep -q 'timeout=600' "${ROOT}/config/sway/idle.conf"; then
   echo "FAIL: the default autolock timer is not 10 minutes" >&2
   fail=1
 fi
-if ! grep -q '/etc/xdg/hypr/hypridle.conf' "${ROOT}/scripts/lib/desktop.sh"; then
-  echo "FAIL: hypridle cannot see a system config" >&2
+if ! grep -q '/etc/corebrum/sway/idle.conf' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: swayidle cannot see a system config" >&2
   fail=1
 fi
-if ! grep -q 'hypridle' "${ROOT}/scripts/phases/02-desktop.sh"; then
-  echo "FAIL: the desktop profile does not consider hypridle" >&2
-  fail=1
-fi
-if grep -q '^hypridle' "${ROOT}/manifests/packages/desktop.txt"; then
-  echo "FAIL: desktop profile preinstalls hypridle on Ubuntu 24.04" >&2
+if ! grep -q 'swayidle' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider swayidle" >&2
   fail=1
 fi
 if ! grep -q 'ExecStart=/bin/true' "${ROOT}/config/systemd/user/hypridle.service.d/corebrum.conf"; then
@@ -78,8 +74,8 @@ if [[ "$output" != "minutes 60" ]]; then
   echo "FAIL: hour choice was ${output}" >&2
   fail=1
 fi
-if ! grep -q 'timeout = 3600' "${state}/corebrum/hypridle.conf"; then
-  echo "FAIL: saved hypridle config is not one hour" >&2
+if ! grep -q 'timeout=3600' "${state}/corebrum/idle.conf"; then
+  echo "FAIL: saved idle config is not one hour" >&2
   fail=1
 fi
 output="$(COREBRUM_AUTOLOCK_AWAKE=0 bash "$menu" toggle)"
@@ -94,11 +90,11 @@ if [[ "$output" != "awake off" ]]; then
 fi
 
 output="$(COREBRUM_AUTOLOCK_READY=0 bash "$menu" open)"
-if [[ "$output" != *'apt-get install -y hypridle'* ]]; then
-  echo "FAIL: selecting Autolock did not install hypridle" >&2
+if [[ "$output" != *'apt-get install -y swayidle'* ]]; then
+  echo "FAIL: selecting Autolock did not install swayidle" >&2
   fail=1
 fi
-if [[ "$output" != *'hypridle is not in this Ubuntu archive'* ]]; then
+if [[ "$output" != *'swayidle and gtklock are not both in this Ubuntu archive'* ]]; then
   echo "FAIL: the installer does not explain a missing archive package" >&2
   fail=1
 fi

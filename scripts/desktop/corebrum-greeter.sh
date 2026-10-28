@@ -2,7 +2,9 @@
 # The one client cage runs for the login screen. cage exits when this process exits.
 set -euo pipefail
 
-exec gtkgreet \
-  --command /usr/local/bin/corebrum-session \
-  --disable-custom-commands \
-  --style /etc/corebrum/greetd/gtkgreet.css
+if [[ ! -x /usr/sbin/wlgreet ]]; then
+  printf 'corebrum-greeter: wlgreet is not installed\n' >&2
+  exit 1
+fi
+
+exec /usr/sbin/wlgreet --config /etc/corebrum/greetd/wlgreet.toml

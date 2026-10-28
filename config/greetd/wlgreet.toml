@@ -1,0 +1,34 @@
+# wlgreet 0.5. The session command is Corebrum. Cage is the compositor.
+command = "/usr/local/bin/corebrum-session"
+outputMode = "all"
+scale = 1
+
+[background]
+red = 0.11
+green = 0.11
+blue = 0.11
+opacity = 1.0
+
+[headline]
+red = 1.0
+green = 1.0
+blue = 1.0
+opacity = 1.0
+
+[prompt]
+red = 1.0
+green = 1.0
+blue = 1.0
+opacity = 1.0
+
+[promptErr]
+red = 1.0
+green = 0.4
+blue = 0.2
+opacity = 1.0
+
+[border]
+red = 0.239
+green = 0.604
+blue = 0.545
+opacity = 1.0

@@ -1,8 +1,8 @@
 # Managed by Corebrum OS. A previous file is backed up under /var/log/corebrum/backups.
 # VT 7 is the greeter. VT 1 remains a text console.
-# corebrum-greetd runs cage -s -d. cage exits when gtkgreet exits.
-# greetd then starts the user session. On a Raspberry Pi the wrapper selects
-# the vc4 HDMI device. x86_64 has no vc4 device, so cage is unchanged.
+# corebrum-greetd runs a minimal Sway for wlgreet. That Sway exits when
+# wlgreet exits, and greetd then starts the user session. On a Raspberry Pi
+# the wrapper selects the vc4 HDMI device.
 
 [terminal]
 vt = 7

@@ -1,0 +1,105 @@
+# Corebrum Sway session. Syntax is Sway 1.9 so Ubuntu 24.04 and 26.04 both accept it.
+# System-owned. It is not copied into a home directory.
+# There is no dwindle layout. corebrum-autotile splits the longer side of the focused tile.
+# Sway 1.9 has no rounded corners and no window animations.
+
+set $mod Mod4
+
+gaps inner 4
+gaps outer 8
+default_border pixel 2
+smart_borders off
+focus_follows_mouse yes
+
+client.focused #3d9a8b #3d9a8b #ffffff #3d9a8b #3d9a8b
+client.focused_inactive #3a3a3a #3a3a3a #ffffff #3a3a3a #3a3a3a
+client.unfocused #3a3a3a #3a3a3a #ffffff #3a3a3a #3a3a3a
+
+input type:keyboard {
+    xkb_layout us
+}
+
+bindsym $mod+Return exec /usr/local/bin/corebrum-terminal
+bindsym $mod+Shift+Return exec firefox
+bindsym $mod+Shift+f exec thunar
+bindsym $mod+Shift+n exec gnome-text-editor
+bindsym $mod+w kill
+bindsym $mod+f fullscreen toggle
+bindsym $mod+t floating toggle
+bindsym $mod+c exec /usr/local/bin/corebrum-edit-keys copy
+bindsym $mod+x exec /usr/local/bin/corebrum-edit-keys cut
+bindsym $mod+v exec /usr/local/bin/corebrum-edit-keys paste
+bindsym $mod+space exec /usr/local/bin/corebrum-launcher
+bindsym $mod+Mod1+space exec /usr/local/bin/corebrum-grid
+bindsym $mod+s scratchpad show
+bindsym $mod+Escape exec /usr/local/bin/corebrum-lock
+bindsym $mod+Shift+Escape exec /usr/local/bin/corebrum-autolock toggle
+bindsym $mod+Shift+e exit
+
+bindsym Print exec sh -c 'geom="$(slurp)" || exit 0; grim -g "$geom" - | wl-copy'
+bindsym Shift+Print exec sh -c 'grim - | wl-copy'
+bindsym $mod+Print exec /usr/local/bin/corebrum-record start
+bindsym $mod+Shift+Print exec /usr/local/bin/corebrum-record stop
+bindsym $mod+p exec sh -c 'geom="$(slurp)" || exit 0; grim -g "$geom" - | wl-copy'
+bindsym $mod+Shift+p exec sh -c 'grim - | wl-copy'
+bindsym $mod+Mod1+p exec /usr/local/bin/corebrum-record start
+bindsym $mod+Mod1+Shift+p exec /usr/local/bin/corebrum-record stop
+bindsym $mod+Shift+c exec sh -c 'cliphist list | wofi --dmenu --conf /etc/corebrum/wofi/config --style /etc/corebrum/wofi/style.css --prompt Clipboard | cliphist decode | wl-copy'
+
+bindsym XF86AudioRaiseVolume exec /usr/local/bin/corebrum-osd volume-up
+bindsym XF86AudioLowerVolume exec /usr/local/bin/corebrum-osd volume-down
+bindsym XF86AudioMute exec /usr/local/bin/corebrum-osd volume-mute
+bindsym XF86AudioMicMute exec /usr/local/bin/corebrum-osd mic-mute
+bindsym XF86MonBrightnessUp exec /usr/local/bin/corebrum-osd brightness-up
+bindsym XF86MonBrightnessDown exec /usr/local/bin/corebrum-osd brightness-down
+
+bindsym $mod+Left exec /usr/local/bin/corebrum-tile focus left
+bindsym $mod+Right exec /usr/local/bin/corebrum-tile focus right
+bindsym $mod+Up exec /usr/local/bin/corebrum-tile focus up
+bindsym $mod+Down exec /usr/local/bin/corebrum-tile focus down
+bindsym $mod+k exec /usr/local/bin/corebrum-edit-keys clear
+bindsym Ctrl+space exec "/usr/local/bin/corebrum voice hear toggle"
+bindsym $mod+Shift+Left exec /usr/local/bin/corebrum-tile swap left
+bindsym $mod+Shift+Right exec /usr/local/bin/corebrum-tile swap right
+bindsym $mod+Shift+Up exec /usr/local/bin/corebrum-tile swap up
+bindsym $mod+Shift+Down exec /usr/local/bin/corebrum-tile swap down
+
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+
+for_window [app_id="corebrum-launcher"] floating enable
+for_window [app_id="corebrum-setup"] floating enable
+for_window [app_id="corebrum-camera"] floating enable, sticky enable, border none
+for_window [app_id="corebrum-agent"] move scratchpad
+
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SWAYSOCK
+exec /usr/libexec/polkit-mate-authentication-agent-1
+exec nm-applet --indicator
+exec blueman-applet
+exec systemctl --user start thunar.service
+exec wl-paste --watch cliphist store
+# Same image as login and lock. A saved choice is drawn over it.
+output * bg /usr/share/hypr/wall2.png fill
+exec /usr/local/bin/corebrum-wallpaper-menu restore
+exec waybar --config /etc/corebrum/waybar/config.json --style /etc/corebrum/waybar/style.css
+exec mako --config /etc/corebrum/mako/config
+# Weekly reminder. This does not run apt or git. The pause lets Mako start first.
+exec sh -c 'sleep 2; exec /usr/local/bin/corebrum-updates-menu remind'
+exec /usr/local/bin/corebrum-autolock start
+exec /usr/local/bin/corebrum-autotile
+exec /usr/local/bin/corebrum-terminal --class corebrum-agent
+# First graphical login. RealSense and AgenticROS need ROS 2, so the wizard
+# offers them in that order. When ROS 2, RealSense, AgenticROS, and every AI
+# agent are already installed, login writes
+# ${XDG_STATE_HOME:-~/.local/state}/corebrum/setup-done and stays closed.
+# Skip and Exit are on every step. Exit writes that marker, and later logins
+# do not open the wizard.
+exec /usr/local/bin/corebrum-setup login

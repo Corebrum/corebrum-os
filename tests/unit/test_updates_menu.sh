@@ -140,7 +140,7 @@ fi
 rm -rf "$repo"
 
 grep -F 'corebrum-updates-menu.sh' "${ROOT}/scripts/lib/desktop.sh" >/dev/null || fail "desktop install does not ship Updates"
-grep -F '/usr/local/bin/corebrum-updates-menu remind' "${ROOT}/config/hypr/hyprland.conf" >/dev/null \
+grep -F '/usr/local/bin/corebrum-updates-menu remind' "${ROOT}/config/sway/config" >/dev/null \
   || fail "login does not remind about Updates"
 
 printf 'ok: updates-menu\n'

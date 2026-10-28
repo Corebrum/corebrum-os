@@ -50,6 +50,16 @@ else
   failed=1
 fi
 
+if [[ -f /etc/corebrum/sway/config ]]; then
+  sway_portal="/etc/xdg/xdg-desktop-portal/sway-portals.conf"
+  if [[ -f "$sway_portal" ]] && grep -q 'org.freedesktop.impl.portal.ScreenCast=wlr' "$sway_portal"; then
+    corebrum_log "ok: sway screen-cast portal"
+  else
+    corebrum_log "missing: sway screen-cast portal config"
+    failed=1
+  fi
+fi
+
 if ip -4 route show default 2>/dev/null | grep -q .; then
   corebrum_log "ok: default route"
 else

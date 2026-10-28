@@ -2,49 +2,47 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-conf="${ROOT}/config/hypr/hyprland.conf"
+conf="${ROOT}/config/sway/config"
 
 require() {
   local needle="$1"
   if ! grep -qF -- "$needle" "$conf"; then
-    echo "FAIL: hyprland.conf missing ${needle}" >&2
+    echo "FAIL: sway config missing ${needle}" >&2
     exit 1
   fi
 }
 
-require "layout = dwindle"
-require "preserve_split = true"
-if grep -Eq '^[[:space:]]*pseudotile[[:space:]]*=' "$conf"; then
-  echo "FAIL: dwindle:pseudotile was removed in Hyprland 0.55" >&2
-  exit 1
-fi
+require "gaps inner 4"
+require "gaps outer 8"
+require "default_border pixel 2"
+require "/usr/local/bin/corebrum-autotile"
 require "/usr/local/bin/corebrum-terminal"
-require "bind = \$mainMod SHIFT, Return, exec, firefox"
-require "bind = \$mainMod SHIFT, F, exec, thunar"
-require "bind = \$mainMod SHIFT, N, exec, gnome-text-editor"
-require "bind = \$mainMod, Print, exec, /usr/local/bin/corebrum-record start"
-require "bind = \$mainMod SHIFT, Print, exec, /usr/local/bin/corebrum-record stop"
-require "bind = \$mainMod, P, exec,"
-require "bind = \$mainMod SHIFT, P, exec,"
-require "bind = \$mainMod ALT, P, exec, /usr/local/bin/corebrum-record start"
-require "bind = \$mainMod ALT SHIFT, P, exec, /usr/local/bin/corebrum-record stop"
+require "bindsym \$mod+Shift+Return exec firefox"
+require "bindsym \$mod+Shift+f exec thunar"
+require "bindsym \$mod+Shift+n exec gnome-text-editor"
+require "bindsym \$mod+Print exec /usr/local/bin/corebrum-record start"
+require "bindsym \$mod+Shift+Print exec /usr/local/bin/corebrum-record stop"
+require "bindsym \$mod+p exec"
+require "bindsym \$mod+Shift+p exec"
+require "bindsym \$mod+Mod1+p exec /usr/local/bin/corebrum-record start"
+require "bindsym \$mod+Mod1+Shift+p exec /usr/local/bin/corebrum-record stop"
 if grep -q 'wf-recorder' "$conf"; then
-  echo "FAIL: recording still calls wf-recorder from hyprland.conf" >&2
+  echo "FAIL: recording still calls wf-recorder from the sway config" >&2
   exit 1
 fi
-if ! grep -q 'match:class = \^(corebrum-camera)\$' "$conf"; then
+if ! grep -q 'app_id="corebrum-camera"' "$conf"; then
   echo "FAIL: the camera preview has no window rule" >&2
   exit 1
 fi
-require "bind = \$mainMod, W, killactive"
-if grep -q 'bind = $mainMod, Q, killactive' "$conf"; then
+require "bindsym \$mod+w kill"
+if grep -q 'bindsym $mod+q kill' "$conf"; then
   echo "FAIL: Super+Q still closes the focused window" >&2
   exit 1
 fi
-require "fullscreen"
-require "togglespecialworkspace, agent"
+require "fullscreen toggle"
+require "scratchpad show"
 require "/usr/local/bin/corebrum-lock"
-require "workspace, 1"
+require "workspace number 1"
 require "/usr/local/bin/corebrum-grid"
 require "/usr/local/bin/corebrum-launcher"
 if ! grep -q 'Name=Files' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -124,16 +122,15 @@ if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$
   exit 1
 fi
 require "waybar --config /etc/corebrum/waybar/config.json"
-require "disable_splash_rendering = true"
 require "/usr/local/bin/corebrum-osd volume-up"
 require "/usr/local/bin/corebrum-osd brightness-down"
 require "/usr/local/bin/corebrum-autolock start"
 require 'corebrum/setup-done'
 require '/usr/local/bin/corebrum-updates-menu remind'
 require '/usr/local/bin/corebrum-setup login'
-require 'match:class = ^(corebrum-setup)$'
-require 'cmd=$(command -v hyprpaper)'
-require 'corebrum/hyprpaper.conf'
+require 'app_id="corebrum-setup"'
+require 'output * bg /usr/share/hypr/wall2.png fill'
+require '/usr/local/bin/corebrum-wallpaper-menu restore'
 if grep -q 'waypaper --restore' "$conf"; then
   echo "FAIL: the session still restores Waypaper" >&2
   exit 1
@@ -147,7 +144,6 @@ require "nm-applet --indicator"
 require "blueman-applet"
 require "systemctl --user start thunar.service"
 # shellcheck disable=SC2016
-require 'ln -sfn "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE" "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE"'
 require "wl-paste --watch cliphist store"
 if grep -q 'grimshot' "$conf"; then
   echo "FAIL: grimshot depends on sway and is not part of the session" >&2
@@ -161,20 +157,16 @@ if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-
   echo "FAIL: the session does not source the ROS profile when it is installed" >&2
   exit 1
 fi
-if ! grep -q 'exec start-hyprland -- --config' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
-  echo "FAIL: the session does not start Hyprland through start-hyprland" >&2
+if ! grep -q 'exec sway --config' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
+  echo "FAIL: the session does not start Sway" >&2
   exit 1
 fi
-if ! grep -q 'exec Hyprland --config' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
-  echo "FAIL: the session has no direct Hyprland fallback" >&2
+if ! grep -q 'XDG_CURRENT_DESKTOP=sway' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
+  echo "FAIL: the session does not name the desktop sway" >&2
   exit 1
 fi
-if ! grep -q 'hyprland-qtutils' "${ROOT}/scripts/phases/02-desktop.sh"; then
-  echo "FAIL: the desktop profile does not consider hyprland-qtutils" >&2
-  exit 1
-fi
-if ! grep -q 'corebrum_ubuntu_archive_version hyprland-qtutils' "${ROOT}/scripts/phases/02-desktop.sh"; then
-  echo "FAIL: hyprland-qtutils is not limited to the Ubuntu archive" >&2
+if ! grep -q 'swaybg swayidle wlgreet gtklock' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider the Sway packages" >&2
   exit 1
 fi
 if ! grep -q '/etc/profile.d/corebrum-ros.sh' "${ROOT}/scripts/desktop/corebrum-terminal.sh"; then
@@ -193,8 +185,30 @@ if ! grep -q "corebrum-greetd" "${ROOT}/config/greetd/gtkgreet.toml"; then
   echo "FAIL: gtkgreet does not start the Corebrum greeter" >&2
   exit 1
 fi
-if ! grep -q 'exec cage -s -d -- /usr/local/bin/corebrum-greeter' "${ROOT}/scripts/desktop/corebrum-greetd.sh"; then
-  echo "FAIL: the greeter wrapper does not keep cage -s -d" >&2
+if ! grep -q 'exec sway --config /etc/corebrum/greetd/sway-config' "${ROOT}/scripts/desktop/corebrum-greetd.sh"; then
+  echo "FAIL: the greeter wrapper does not start the greeter Sway" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum-greeter; swaymsg exit' "${ROOT}/config/greetd/sway-config"; then
+  echo "FAIL: the greeter Sway does not exit after wlgreet" >&2
+  exit 1
+fi
+if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/greetd/sway-config"; then
+  echo "FAIL: the login screen does not use the Corebrum wallpaper" >&2
+  exit 1
+fi
+if ! grep -q 'exec /usr/local/bin/corebrum-login-logo' "${ROOT}/config/greetd/sway-config"; then
+  echo "FAIL: the login screen does not show the Corebrum logo" >&2
+  exit 1
+fi
+logo_margin="$(python3 "${ROOT}/scripts/desktop/corebrum-login-logo.py" margin 1080)"
+if [[ "$logo_margin" != "232" ]]; then
+  echo "FAIL: the login logo is not above the card on a 1080p screen (got ${logo_margin})" >&2
+  exit 1
+fi
+logo_margin="$(python3 "${ROOT}/scripts/desktop/corebrum-login-logo.py" margin 400)"
+if [[ "$logo_margin" != "16" ]]; then
+  echo "FAIL: the login logo does not stay on a short screen (got ${logo_margin})" >&2
   exit 1
 fi
 if ! grep -q 'corebrum_vc4_card' "${ROOT}/scripts/lib/vc4.sh"; then
@@ -205,48 +219,60 @@ if ! grep -q 'no_hardware_cursors = true' "${ROOT}/scripts/desktop/corebrum-drm.
   echo "FAIL: the Pi session does not disable hardware cursors" >&2
   exit 1
 fi
-if ! grep -q -- "--command /usr/local/bin/corebrum-session" "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
-  echo "FAIL: gtkgreet does not start the Corebrum session" >&2
+if ! grep -q -- 'command = "/usr/local/bin/corebrum-session"' "${ROOT}/config/greetd/wlgreet.toml"; then
+  echo "FAIL: wlgreet does not start the Corebrum session" >&2
   exit 1
 fi
-if ! grep -q -- "--disable-custom-commands" "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
-  echo "FAIL: the login screen still accepts a custom session command" >&2
+if ! grep -q '/usr/sbin/wlgreet' "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
+  echo "FAIL: the greeter does not run wlgreet" >&2
   exit 1
 fi
-if ! grep -q '#command-selector' "${ROOT}/config/greetd/gtkgreet.css"; then
-  echo "FAIL: the login screen still shows the session dropdown" >&2
+if ! grep -q 'gtklock --config /etc/corebrum/gtklock/config.ini' "${ROOT}/scripts/desktop/corebrum-lock.sh"; then
+  echo "FAIL: the lock command does not use the system gtklock config" >&2
   exit 1
 fi
-if ! grep -q 'hyprlock --config /etc/corebrum/hypr/hyprlock.conf' "${ROOT}/scripts/desktop/corebrum-lock.sh"; then
-  echo "FAIL: the lock command does not use the system hyprlock config" >&2
+if ! grep -q 'background=/usr/share/hypr/wall2.png' "${ROOT}/config/gtklock/config.ini"; then
+  echo "FAIL: the lock screen does not use the Corebrum wallpaper" >&2
   exit 1
 fi
-if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/hypr/hyprlock.conf"; then
-  echo "FAIL: the lock screen does not use the Hyprland wallpaper" >&2
+if ! grep -q 'entry#input-field' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock screen does not style the password field" >&2
   exit 1
 fi
-if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/greetd/gtkgreet.css"; then
-  echo "FAIL: the login screen does not use the Hyprland wallpaper" >&2
+if ! grep -q '3d9a8b' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock password field is not teal" >&2
   exit 1
 fi
-if ! grep -q '/usr/share/corebrum/logo.png' "${ROOT}/config/hypr/hyprlock.conf"; then
-  echo "FAIL: the lock screen does not show the Corebrum logo" >&2
+if ! grep -q 'file:///usr/share/corebrum/logo.png' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock screen does not draw the Corebrum logo" >&2
   exit 1
 fi
-if ! grep -q 'rounding = 0' "${ROOT}/config/hypr/hyprlock.conf"; then
-  echo "FAIL: the lock logo uses hyprlock's circle crop" >&2
+if ! grep -q 'background-size: 759px 220px' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock logo does not keep the artwork aspect" >&2
   exit 1
 fi
-if ! grep -q 'border_size = 0' "${ROOT}/config/hypr/hyprlock.conf"; then
-  echo "FAIL: the lock logo keeps hyprlock's default border" >&2
+if ! grep -q 'box#lock-center' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock logo is not above the password field" >&2
   exit 1
 fi
-if ! grep -q 'box#window' "${ROOT}/config/greetd/gtkgreet.css"; then
-  echo "FAIL: the login screen does not place the Corebrum logo above the clock" >&2
+if ! grep -q 'layout=/etc/corebrum/gtklock/layout.ui' "${ROOT}/config/gtklock/config.ini"; then
+  echo "FAIL: the lock screen does not use the Corebrum gtklock layout" >&2
   exit 1
 fi
-if ! grep -q '/usr/share/corebrum/logo.png' "${ROOT}/config/greetd/gtkgreet.css"; then
-  echo "FAIL: the login screen does not show the Corebrum logo" >&2
+if ! grep -q 'date-format=%A, %d %B %Y' "${ROOT}/config/gtklock/config.ini"; then
+  echo "FAIL: the lock date is not the previous format" >&2
+  exit 1
+fi
+if ! grep -q 'font-size: 90pt' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock clock is not the previous size" >&2
+  exit 1
+fi
+if ! grep -q 'halign">end' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock clock is not in the top right" >&2
+  exit 1
+fi
+if ! grep -q 'valign">start' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock clock is not at the top of the screen" >&2
   exit 1
 fi
 if ! grep -q 'config/brand/logo.png' "${ROOT}/scripts/lib/desktop.sh"; then
@@ -328,8 +354,12 @@ if [[ "$magic" != "52494646" ]]; then
   echo "FAIL: config/brand/agents/grok.webp is not a WebP" >&2
   exit 1
 fi
-if ! grep -q 'hyprlock gtkgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then
-  echo "FAIL: the desktop profile does not consider hyprlock, gtkgreet, and cage" >&2
+if ! grep -q 'swaybg swayidle wlgreet gtklock' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not consider swaybg, swayidle, wlgreet, and gtklock" >&2
+  exit 1
+fi
+if grep -q 'wlgreet cage' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile still installs cage for the greeter" >&2
   exit 1
 fi
 for greet in "${ROOT}/config/greetd/config.toml" "${ROOT}/config/greetd/gtkgreet.toml"; do

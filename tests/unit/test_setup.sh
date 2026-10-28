@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 setup="${ROOT}/scripts/desktop/corebrum-setup.sh"
 menu="${ROOT}/scripts/desktop/corebrum-agents-menu.sh"
 catalog="${ROOT}/manifests/packages/agents.conf"
-conf="${ROOT}/config/hypr/hyprland.conf"
+conf="${ROOT}/config/sway/config"
 
 assert_eq() {
   local got="$1" expected="$2" message="$3"

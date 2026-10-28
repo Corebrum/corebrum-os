@@ -23,11 +23,11 @@ if ! grep -q '/usr/local/bin/corebrum-power-menu' "${ROOT}/scripts/validate/desk
   fail=1
 fi
 # shellcheck disable=SC2016
-if ! grep -q 'bind = $mainMod SHIFT, E, exit' "${ROOT}/config/hypr/hyprland.conf"; then
+if ! grep -q 'bindsym $mod+Shift+e exit' "${ROOT}/config/sway/config"; then
   echo "FAIL: Super+Shift+E no longer leaves the session" >&2
   fail=1
 fi
-if grep -qE 'bind .*systemctl (reboot|poweroff)' "${ROOT}/config/hypr/hyprland.conf"; then
+if grep -qE 'bindsym .*systemctl (reboot|poweroff)' "${ROOT}/config/sway/config"; then
   echo "FAIL: reboot or power off is bound to a key" >&2
   fail=1
 fi

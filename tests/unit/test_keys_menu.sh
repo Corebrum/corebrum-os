@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 menu="${ROOT}/scripts/desktop/corebrum-keys-menu.sh"
-conf="${ROOT}/config/hypr/hyprland.conf"
+conf="${ROOT}/config/sway/config"
 fail=0
 
 require_line() {
@@ -18,7 +18,7 @@ require_line() {
 require_bind() {
   local needle="$1"
   if ! grep -qF -- "$needle" "$conf"; then
-    echo "FAIL: hyprland.conf missing bind ${needle}" >&2
+    echo "FAIL: sway config missing bind ${needle}" >&2
     fail=1
   fi
 }
@@ -43,7 +43,7 @@ require_line "Super+V                Paste"
 require_line "Super+Space            Open the application menu"
 require_line "Super+Alt+Space        Open the app grid"
 require_line "Super+S                Toggle the agent scratchpad terminal"
-require_line "Super+Escape           Lock the screen"
+require_line "Super+Escape           Lock the screen. Type the account password and press Enter"
 require_line "Super+Shift+Escape     Pause autolock, or resume it"
 require_line "Super+Shift+E          Log out and return to the login screen"
 require_line "Super+Shift+C          Clipboard history"
@@ -53,54 +53,56 @@ require_line "Super+P                Copy a selected area"
 require_line "Super+Shift+P          Copy the whole screen"
 require_line "Super+Alt+P            Record the area, camera, or audio"
 require_line "Super+Alt+Shift+P      Stop recording"
-require_line "Super+Arrows           Move focus"
-require_line "Super+Shift+Arrows     Swap the focused tile"
+require_line "Super+Arrows           Move focus to the tile in that direction"
+require_line "Super+Shift+Arrows     Swap with the tile in that direction"
 require_line "Super+1 … Super+5      Switch to that workspace"
 require_line "Super+Shift+1 … 5      Move the focused window to that workspace"
 
-require_bind 'bind = $mainMod, Return, exec, /usr/local/bin/corebrum-terminal'
-require_bind 'bind = $mainMod SHIFT, Return, exec, firefox'
-require_bind 'bind = $mainMod SHIFT, F, exec, thunar'
-require_bind 'bind = $mainMod SHIFT, N, exec, gnome-text-editor'
-require_bind 'bind = $mainMod, W, killactive'
-require_bind 'bind = $mainMod, F, fullscreen'
-require_bind 'bind = $mainMod, T, togglefloating'
-require_bind 'bind = $mainMod, C, exec, /usr/local/bin/corebrum-edit-keys copy'
-require_bind 'bind = $mainMod, X, exec, /usr/local/bin/corebrum-edit-keys cut'
-require_bind 'bind = $mainMod, V, exec, /usr/local/bin/corebrum-edit-keys paste'
-require_bind 'bind = $mainMod, Space, exec, /usr/local/bin/corebrum-launcher'
-require_bind 'bind = $mainMod ALT, Space, exec, /usr/local/bin/corebrum-grid'
-require_bind 'bind = $mainMod, S, togglespecialworkspace, agent'
-require_bind 'bind = $mainMod, Escape, exec, /usr/local/bin/corebrum-lock'
-require_bind 'bind = $mainMod SHIFT, Escape, exec, /usr/local/bin/corebrum-autolock toggle'
-require_bind 'bind = $mainMod SHIFT, E, exit'
-require_bind 'bind = $mainMod SHIFT, C, exec,'
-require_bind 'bind = $mainMod, Print, exec, /usr/local/bin/corebrum-record start'
-require_bind 'bind = $mainMod SHIFT, Print, exec, /usr/local/bin/corebrum-record stop'
-require_bind 'bind = $mainMod, P, exec,'
-require_bind 'bind = $mainMod SHIFT, P, exec,'
-require_bind 'bind = $mainMod ALT, P, exec, /usr/local/bin/corebrum-record start'
-require_bind 'bind = $mainMod ALT SHIFT, P, exec, /usr/local/bin/corebrum-record stop'
-require_bind 'bind = $mainMod, left, movefocus, l'
-require_bind 'bind = $mainMod, K, exec, /usr/local/bin/corebrum-edit-keys clear'
-require_bind 'bind = CTRL, Space, exec, /usr/local/bin/corebrum voice hear toggle'
-if grep -q 'bind = $mainMod, H, exec, /usr/local/bin/corebrum voice hear toggle' "$conf"; then
+require_bind 'bindsym $mod+Return exec /usr/local/bin/corebrum-terminal'
+require_bind 'bindsym $mod+Shift+Return exec firefox'
+require_bind 'bindsym $mod+Shift+f exec thunar'
+require_bind 'bindsym $mod+Shift+n exec gnome-text-editor'
+require_bind 'bindsym $mod+w kill'
+require_bind 'bindsym $mod+f fullscreen toggle'
+require_bind 'bindsym $mod+t floating toggle'
+require_bind 'bindsym $mod+c exec /usr/local/bin/corebrum-edit-keys copy'
+require_bind 'bindsym $mod+x exec /usr/local/bin/corebrum-edit-keys cut'
+require_bind 'bindsym $mod+v exec /usr/local/bin/corebrum-edit-keys paste'
+require_bind 'bindsym $mod+space exec /usr/local/bin/corebrum-launcher'
+require_bind 'bindsym $mod+Mod1+space exec /usr/local/bin/corebrum-grid'
+require_bind 'bindsym $mod+s scratchpad show'
+require_bind 'bindsym $mod+Escape exec /usr/local/bin/corebrum-lock'
+require_bind 'bindsym $mod+Shift+Escape exec /usr/local/bin/corebrum-autolock toggle'
+require_bind 'bindsym $mod+Shift+e exit'
+require_bind 'bindsym $mod+Shift+c exec'
+require_bind 'bindsym $mod+Print exec /usr/local/bin/corebrum-record start'
+require_bind 'bindsym $mod+Shift+Print exec /usr/local/bin/corebrum-record stop'
+require_bind 'bindsym $mod+p exec'
+require_bind 'bindsym $mod+Shift+p exec'
+require_bind 'bindsym $mod+Mod1+p exec /usr/local/bin/corebrum-record start'
+require_bind 'bindsym $mod+Mod1+Shift+p exec /usr/local/bin/corebrum-record stop'
+require_bind 'bindsym $mod+Left exec /usr/local/bin/corebrum-tile focus left'
+require_bind 'bindsym $mod+Down exec /usr/local/bin/corebrum-tile focus down'
+require_bind 'bindsym $mod+k exec /usr/local/bin/corebrum-edit-keys clear'
+require_bind 'bindsym Ctrl+space exec "/usr/local/bin/corebrum voice hear toggle"'
+if grep -q 'bindsym $mod+h exec' "$conf"; then
   echo "FAIL: Super+H still transcribes the microphone" >&2
   fail=1
 fi
-if grep -qE 'bind = \$mainMod, [HJL], movefocus' "$conf"; then
+if grep -qE 'bindsym \$mod\+[hjl] focus' "$conf"; then
   echo "FAIL: Super+H, Super+J, or Super+L still moves focus" >&2
   fail=1
 fi
-require_bind 'bind = $mainMod SHIFT, left, swapwindow, l'
-if grep -qE 'bind = \$mainMod SHIFT, [HJKL], swapwindow' "$conf"; then
+require_bind 'bindsym $mod+Shift+Left exec /usr/local/bin/corebrum-tile swap left'
+require_bind 'bindsym $mod+Shift+Down exec /usr/local/bin/corebrum-tile swap down'
+if grep -qE 'bindsym \$mod\+Shift\+[hjkl] move' "$conf"; then
   echo "FAIL: Super+Shift+H, J, K, or L still swaps the focused tile" >&2
   fail=1
 fi
-require_bind 'bind = $mainMod, 1, workspace, 1'
-require_bind 'bind = $mainMod, 5, workspace, 5'
-require_bind 'bind = $mainMod SHIFT, 1, movetoworkspace, 1'
-require_bind 'bind = $mainMod SHIFT, 5, movetoworkspace, 5'
+require_bind 'bindsym $mod+1 workspace number 1'
+require_bind 'bindsym $mod+5 workspace number 5'
+require_bind 'bindsym $mod+Shift+1 move container to workspace number 1'
+require_bind 'bindsym $mod+Shift+5 move container to workspace number 5'
 
 runtime="$(mktemp -d)"
 export XDG_RUNTIME_DIR="$runtime"

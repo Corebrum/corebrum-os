@@ -167,17 +167,17 @@ corebrum_wallpaper_menu_import() {
 
 corebrum_wallpaper_menu_config() {
   local path="$1"
-  # hyprpaper 0.8.3 drops a wallpaper block with an empty monitor name, and it
-  # keeps quotation marks as part of the path. * matches every monitor.
-  cat <<EOF
-splash = false
-
-wallpaper {
-    monitor = *
-    path = ${path}
-    fit_mode = cover
+  printf '%s\n' "$path"
 }
-EOF
+
+# Login draws wall2.png from the Sway config. A saved choice is drawn over it.
+corebrum_wallpaper_menu_restore() {
+  local cfg path
+  cfg="$(corebrum_wallpaper_menu_state_dir)/wallpaper.path"
+  [[ -s "$cfg" ]] || return 0
+  path="$(tr -d '\n' <"$cfg")"
+  [[ -f "$path" ]] || return 0
+  corebrum_wallpaper_menu_apply "$path"
 }
 
 corebrum_wallpaper_menu_apply() {
@@ -187,7 +187,7 @@ corebrum_wallpaper_menu_apply() {
   esac
   [[ -f "$path" ]] || corebrum_wallpaper_menu_die "wallpaper image is missing"
   dir="$(corebrum_wallpaper_menu_state_dir)"
-  cfg="${dir}/hyprpaper.conf"
+  cfg="${dir}/wallpaper.path"
   if [[ "${COREBRUM_WALLPAPER_STUB:-0}" == 1 ]]; then
     mkdir -p "$dir"
     corebrum_wallpaper_menu_config "$path" >"$cfg"
@@ -205,18 +205,11 @@ corebrum_wallpaper_menu_apply() {
   fi
   if pgrep -x hyprpaper >/dev/null 2>&1; then
     pkill -x hyprpaper || true
-    local _
-    for _ in 1 2 3 4 5 6 7 8 9 10; do
-      if ! pgrep -x hyprpaper >/dev/null 2>&1; then
-        break
-      fi
-      sleep 0.1
-    done
   fi
-  if ! command -v hyprpaper >/dev/null 2>&1; then
-    corebrum_wallpaper_menu_die "hyprpaper is installed with the desktop and is not on PATH"
+  if ! command -v swaybg >/dev/null 2>&1; then
+    corebrum_wallpaper_menu_die "swaybg is installed with the desktop and is not on PATH"
   fi
-  setsid --fork -- hyprpaper --config "$cfg" </dev/null >/dev/null 2>&1
+  setsid --fork -- swaybg -i "$path" -m fill </dev/null >/dev/null 2>&1
 }
 
 corebrum_wallpaper_menu_open() {
@@ -265,7 +258,7 @@ corebrum_wallpaper_menu_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-wallpaper-menu refresh|open|entry-name|data-dir|images
+Usage: corebrum-wallpaper-menu refresh|open|restore|entry-name|data-dir|images
 EOF
 }
 
@@ -273,6 +266,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_wallpaper_menu_refresh ;;
   open) corebrum_wallpaper_menu_open ;;
+  restore) corebrum_wallpaper_menu_restore ;;
   entry-name) corebrum_wallpaper_menu_entry_name ;;
   data-dir) corebrum_wallpaper_menu_data_dir ;;
   images) corebrum_wallpaper_menu_images ;;

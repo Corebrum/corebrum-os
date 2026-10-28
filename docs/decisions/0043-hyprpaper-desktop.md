@@ -20,4 +20,4 @@ The packaged user service runs `/usr/bin/hyprpaper` with no config path. This se
 
 ## Consequences
 
-A new desktop install can change the session wallpaper from Super+Space without a separate package install. Login and lock still use `/usr/share/hypr/wall2.png`. The session does not start `hyprpaper` until an image has been chosen. This replaces the install-on-demand rule in decision 0020. Add image copies a file into `~/Pictures/Wallpapers` and sets that copy. See `docs/decisions/0075-wallpaper-add-image.md`.
+A new desktop install can change the session wallpaper from Super+Space without a separate package install. Login and lock still use `/usr/share/hypr/wall2.png`. The session does not start `hyprpaper` until an image has been chosen. This replaces the install-on-demand rule in decision 0020. Add image copies a file into `~/Pictures/Wallpapers` and sets that copy. See `docs/decisions/0075-wallpaper-add-image.md`. Decision 0080 draws that choice with `swaybg` instead.

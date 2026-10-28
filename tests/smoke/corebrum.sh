@@ -127,7 +127,7 @@ if ! grep -q '^NoDisplay=true$' "${ROOT}/apps/corebrum-grid.desktop"; then
   exit 1
 fi
 
-if [[ -f /etc/corebrum/hypr/hyprland.conf ]]; then
+if [[ -f /etc/corebrum/sway/config || -f /etc/corebrum/hypr/hyprland.conf ]]; then
   if ! doctor_out="$("$CMD" doctor 2>&1)"; then
     printf '%s\n' "$doctor_out" >&2
     echo "FAIL: doctor failed on an installed desktop" >&2

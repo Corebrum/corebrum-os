@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wallpaper is a Super+Space image list. The desktop profile installs hyprpaper.
+# Wallpaper is a Super+Space image list. The desktop profile installs swaybg.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -19,12 +19,11 @@ assert_grep 'corebrum-wallpaper-menu refresh' "$launcher" "launcher does not ref
 assert_grep 'config/hypr/wallpapers/' "${ROOT}/scripts/lib/desktop.sh" "desktop install does not copy the Corebrum wallpapers"
 assert_grep 'wall3.png' "${ROOT}/scripts/lib/desktop.sh" "desktop install does not include wall3.png"
 assert_grep 'dpkg-divert --local --rename' "${ROOT}/scripts/lib/desktop.sh" "desktop install does not keep a package upgrade from replacing the wallpapers"
-assert_grep 'splash = false' "$menu" "hyprpaper config leaves splash text on"
-assert_grep 'monitor = \*' "$menu" "hyprpaper config uses an empty monitor name"
-assert_grep 'hyprpaper candidate' "${ROOT}/scripts/phases/02-desktop.sh" "desktop profile does not install Ubuntu hyprpaper"
-assert_grep 'installing hyprpaper from ppa:cppiber/hyprland' "${ROOT}/scripts/phases/02-desktop.sh" "Ubuntu 24.04 desktop profile does not install hyprpaper"
-assert_grep '^hyprpaper$' "${ROOT}/manifests/packages/hyprland-ppa.txt" "Hyprland PPA pin does not allow hyprpaper"
-assert_grep '^libhyprtoolkit6$' "${ROOT}/manifests/packages/hyprland-ppa.txt" "Hyprland PPA pin does not allow hyprpaper's library"
+assert_grep 'swaybg -i' "$menu" "wallpaper menu does not start swaybg"
+assert_grep 'corebrum_wallpaper_menu_restore' "$menu" "wallpaper menu does not restore a saved image"
+assert_grep 'output \* bg /usr/share/hypr/wall2.png fill' "${ROOT}/config/sway/config" "the desktop does not show the Corebrum wallpaper"
+assert_grep 'm fill' "$menu" "wallpaper menu does not cover the screen"
+assert_grep 'for pkg in swaybg swayidle wlgreet gtklock' "${ROOT}/scripts/phases/02-desktop.sh" "desktop profile does not install Ubuntu swaybg"
 assert_grep 'systemctl --global disable hyprpaper.service' "${ROOT}/scripts/lib/desktop.sh" "desktop install leaves the packaged hyprpaper service enabled"
 if grep -q 'apt-get install -y hyprpaper' "$menu"; then
   echo "FAIL: wallpaper menu still installs hyprpaper" >&2
@@ -113,17 +112,9 @@ if [[ "$output" != "${pictures}/My Vacation.jpg" ]]; then
   echo "FAIL: choice did not select the picture (got ${output})" >&2
   fail=1
 fi
-cfg="${state}/corebrum/hyprpaper.conf"
-if ! grep -q 'splash = false' "$cfg"; then
-  echo "FAIL: saved hyprpaper config leaves splash on" >&2
-  fail=1
-fi
-if ! grep -F "monitor = *" "$cfg" >/dev/null; then
-  echo "FAIL: saved hyprpaper config has no monitor wildcard" >&2
-  fail=1
-fi
-if ! grep -F "path = ${pictures}/My Vacation.jpg" "$cfg" >/dev/null; then
-  echo "FAIL: saved hyprpaper config does not use the chosen image" >&2
+cfg="${state}/corebrum/wallpaper.path"
+if ! grep -F "${pictures}/My Vacation.jpg" "$cfg" >/dev/null; then
+  echo "FAIL: saved wallpaper path does not use the chosen image" >&2
   fail=1
 fi
 
@@ -134,7 +125,7 @@ if [[ "$output" != "${pictures}/Wallpapers/room.png" ]]; then
   echo "FAIL: add image did not copy into Wallpapers (got ${output})" >&2
   fail=1
 fi
-if ! grep -F "path = ${pictures}/Wallpapers/room.png" "$cfg" >/dev/null; then
+if ! grep -F "${pictures}/Wallpapers/room.png" "$cfg" >/dev/null; then
   echo "FAIL: add image did not set the copied wallpaper" >&2
   fail=1
 fi
@@ -158,6 +149,18 @@ fi
 output="$(COREBRUM_WALLPAPER_CHOICE='Add image' bash "$menu" open)"
 if [[ -n "$output" ]]; then
   echo "FAIL: cancelling add image still changed the wallpaper (got ${output})" >&2
+  fail=1
+fi
+
+rm -f "$cfg"
+if [[ -n "$(bash "$menu" restore)" ]]; then
+  echo "FAIL: restore drew a wallpaper when none is saved" >&2
+  fail=1
+fi
+printf '%s\n' "${pictures}/Desk.png" >"$cfg"
+output="$(bash "$menu" restore)"
+if [[ "$output" != "${pictures}/Desk.png" ]]; then
+  echo "FAIL: restore did not use the saved wallpaper (got ${output})" >&2
   fail=1
 fi
 

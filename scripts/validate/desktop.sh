@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Validate a completed desktop-profile install. Safe to run as a normal user.
-# Package and file checks do not prove that Hyprland started. See docs/installation/desktop.md.
+# Package and file checks do not prove that Sway started. See docs/installation/desktop.md.
 set -euo pipefail
 
 COREBRUM_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -31,11 +31,13 @@ for pkg in "${packages[@]}"; do
 done
 
 for path in \
-  /etc/corebrum/hypr/hyprland.conf \
-  /etc/corebrum/hypr/hyprlock.conf \
-  /etc/corebrum/hypr/hypridle.conf \
-  /etc/xdg/hypr/hypridle.conf \
-  /etc/corebrum/greetd/gtkgreet.css \
+  /etc/corebrum/sway/config \
+  /etc/corebrum/gtklock/config.ini \
+  /etc/corebrum/gtklock/style.css \
+  /etc/corebrum/gtklock/layout.ui \
+  /etc/corebrum/sway/idle.conf \
+  /etc/corebrum/greetd/wlgreet.toml \
+  /etc/corebrum/greetd/sway-config \
   /usr/share/corebrum/logo.png \
   /usr/share/corebrum/agenticros.png \
   /usr/share/corebrum/ollama.png \
@@ -52,6 +54,7 @@ for path in \
   /usr/share/corebrum/agents/openclaw.png \
   /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
+  /usr/local/bin/corebrum-login-logo \
   /usr/local/lib/corebrum/vc4.sh \
   /usr/local/lib/corebrum/drm.sh \
   /usr/local/bin/corebrum-lock \
@@ -120,18 +123,6 @@ do
   fi
 done
 
-bg_policy="$(apt-cache policy hyprland-backgrounds 2>/dev/null || true)"
-bg_candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$bg_policy")"
-if [[ -n "$bg_candidate" && "$bg_candidate" != "(none)" ]]; then
-  status="$(dpkg-query -W -f='${Status}' hyprland-backgrounds 2>/dev/null || true)"
-  if [[ "$status" == "install ok installed" ]]; then
-    corebrum_log "ok: hyprland-backgrounds"
-  else
-    corebrum_log "missing: hyprland-backgrounds"
-    failed=1
-  fi
-fi
-
 if systemctl is-enabled --quiet corebrum-getting-started.service; then
   corebrum_log "ok: corebrum-getting-started.service enabled"
 else
@@ -148,18 +139,7 @@ for cmd in waybar kitty fuzzel wofi agreety; do
   fi
 done
 
-qt_version="$(corebrum_ubuntu_archive_version hyprland-qtutils)"
-if corebrum_candidate_installable "$qt_version"; then
-  status="$(dpkg-query -W -f='${Status}' hyprland-qtutils 2>/dev/null || true)"
-  if [[ "$status" == "install ok installed" ]] && command -v hyprland-dialog >/dev/null 2>&1; then
-    corebrum_log "ok: hyprland-dialog"
-  else
-    corebrum_log "missing: hyprland-dialog"
-    failed=1
-  fi
-fi
-
-for pkg in hyprlock gtkgreet cage hypridle hyprpaper; do
+for pkg in swaybg swayidle wlgreet gtklock; do
   policy="$(apt-cache policy "$pkg" 2>/dev/null || true)"
   candidate="$(awk '/^  Candidate:/ { print $2; exit }' <<<"$policy")"
   if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then
@@ -173,11 +153,12 @@ for pkg in hyprlock gtkgreet cage hypridle hyprpaper; do
   fi
 done
 
-if command -v gtkgreet >/dev/null 2>&1 && command -v cage >/dev/null 2>&1; then
-  if grep -q 'corebrum-greetd' /etc/greetd/config.toml; then
-    corebrum_log "ok: gtkgreet login"
+if command -v wlgreet >/dev/null 2>&1 && command -v sway >/dev/null 2>&1; then
+  if grep -q 'corebrum-greetd' /etc/greetd/config.toml \
+    && grep -q 'sway --config /etc/corebrum/greetd/sway-config' /usr/local/bin/corebrum-greetd; then
+    corebrum_log "ok: wlgreet login"
   else
-    corebrum_log "missing: gtkgreet login"
+    corebrum_log "missing: wlgreet login"
     failed=1
   fi
 elif grep -q 'agreety --cmd /usr/local/bin/corebrum-session' /etc/greetd/config.toml; then
@@ -187,21 +168,26 @@ else
   failed=1
 fi
 
-if command -v Hyprland >/dev/null 2>&1 || command -v hyprland >/dev/null 2>&1; then
-  corebrum_log "ok: command Hyprland"
-  hyprland_bin="$(command -v Hyprland || command -v hyprland)"
+if command -v sway >/dev/null 2>&1; then
+  corebrum_log "ok: command sway"
   verify_log="$(mktemp)"
-  # Hyprland writes a debug log beside the working directory when stdout logs are off.
-  if (cd /tmp && "$hyprland_bin" --verify-config --config /etc/corebrum/hypr/hyprland.conf >"$verify_log" 2>&1); then
-    corebrum_log "ok: Hyprland config"
+  if sway -c /etc/corebrum/sway/config -C >"$verify_log" 2>&1; then
+    corebrum_log "ok: Sway config"
   else
-    corebrum_log "Hyprland config errors:"
-    grep -E 'Config error|error' "$verify_log" >&2 || true
+    corebrum_log "Sway config errors:"
+    cat "$verify_log" >&2 || true
+    failed=1
+  fi
+  if sway -c /etc/corebrum/greetd/sway-config -C >"$verify_log" 2>&1; then
+    corebrum_log "ok: greeter Sway config"
+  else
+    corebrum_log "greeter Sway config errors:"
+    cat "$verify_log" >&2 || true
     failed=1
   fi
   rm -f "$verify_log"
 else
-  corebrum_log "missing: command Hyprland"
+  corebrum_log "missing: command sway"
   failed=1
 fi
 
@@ -249,7 +235,7 @@ else
 fi
 
 if [[ "$failed" -eq 0 ]]; then
-  corebrum_log "desktop file validation passed; log in on VT 7 and confirm Hyprland, Super+Return, tiling, workspaces, fullscreen, and Waybar"
+  corebrum_log "desktop file validation passed; log in on VT 7 and confirm Sway, Super+Return, tiling, workspaces, fullscreen, and Waybar"
 else
   corebrum_log "desktop validation failed"
 fi

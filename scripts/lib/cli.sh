@@ -152,11 +152,14 @@ corebrum_cmd_doctor() {
     "sudo corebrum install base"; then
     failed=1
   fi
-  if [[ -f /etc/corebrum/hypr/hyprland.conf ]]; then
+  if [[ -f /etc/corebrum/sway/config ]]; then
     if ! corebrum_run_check desktop "${COREBRUM_ROOT}/scripts/validate/desktop.sh" \
       "sudo corebrum install desktop"; then
       failed=1
     fi
+  elif [[ -f /etc/corebrum/hypr/hyprland.conf ]]; then
+    corebrum_log "doctor: the installed session is still Hyprland"
+    corebrum_log "next: sudo corebrum install desktop"
   else
     corebrum_log "doctor: desktop is not installed"
     corebrum_log "next: sudo corebrum install desktop"

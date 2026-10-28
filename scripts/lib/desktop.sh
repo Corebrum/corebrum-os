@@ -30,21 +30,21 @@ corebrum_desktop_disk_check() {
   corebrum_log "desktop preflight: ${free_kib} KiB free on /"
 }
 
-# Logs the Quickshell decision and where Hyprland will come from.
+# Logs the Quickshell decision and where Sway will come from.
 corebrum_desktop_plan() {
-  local quickshell_candidate hyprland_ubuntu shell
+  local quickshell_candidate sway_ubuntu shell
   quickshell_candidate="$(corebrum_archive_candidate quickshell)"
-  hyprland_ubuntu="$(corebrum_ubuntu_archive_version hyprland)"
+  sway_ubuntu="$(corebrum_ubuntu_archive_version sway)"
   shell="$(corebrum_shell_for_candidate "$quickshell_candidate")"
   if [[ "$shell" == "quickshell" ]]; then
     corebrum_log "quickshell candidate ${quickshell_candidate} is in the Ubuntu archive; this phase ships no Quickshell config, so the session uses Waybar, Fuzzel, and the Corebrum app grid"
   else
     corebrum_log "quickshell is not in the Ubuntu archive; using Waybar, Fuzzel, and the Corebrum app grid"
   fi
-  if [[ -n "$hyprland_ubuntu" ]]; then
-    corebrum_log "hyprland candidate ${hyprland_ubuntu} from the Ubuntu archive"
+  if [[ -n "$sway_ubuntu" ]]; then
+    corebrum_log "sway candidate ${sway_ubuntu} from the Ubuntu archive"
   else
-    corebrum_log "hyprland is not in the Ubuntu archive; using ppa:cppiber/hyprland for Hyprland and the libraries it requires. Other packages from that archive stay pinned below Ubuntu"
+    corebrum_log "sway is not in the Ubuntu archive"
   fi
 }
 
@@ -157,17 +157,13 @@ corebrum_disable_getting_started() {
 
 corebrum_install_desktop_files() {
   local root="$COREBRUM_ROOT"
-  corebrum_install_file "${root}/config/hypr/hyprland.conf" /etc/corebrum/hypr/hyprland.conf 644
-  corebrum_install_file "${root}/config/hypr/hyprlock.conf" /etc/corebrum/hypr/hyprlock.conf 644
-  corebrum_install_file "${root}/config/hypr/hypridle.conf" /etc/corebrum/hypr/hypridle.conf 644
-  # hypridle 0.1.7 looks up /etc/xdg/hypr/hypridle.conf even when --config is set.
-  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
-    corebrum_log "dry-run: symlink /etc/xdg/hypr/hypridle.conf to /etc/corebrum/hypr/hypridle.conf"
-  else
-    mkdir -p /etc/xdg/hypr
-    ln -sfn /etc/corebrum/hypr/hypridle.conf /etc/xdg/hypr/hypridle.conf
-  fi
-  corebrum_install_file "${root}/config/greetd/gtkgreet.css" /etc/corebrum/greetd/gtkgreet.css 644
+  corebrum_install_file "${root}/config/sway/config" /etc/corebrum/sway/config 644
+  corebrum_install_file "${root}/config/gtklock/config.ini" /etc/corebrum/gtklock/config.ini 644
+  corebrum_install_file "${root}/config/gtklock/style.css" /etc/corebrum/gtklock/style.css 644
+  corebrum_install_file "${root}/config/gtklock/layout.ui" /etc/corebrum/gtklock/layout.ui 644
+  corebrum_install_file "${root}/config/sway/idle.conf" /etc/corebrum/sway/idle.conf 644
+  corebrum_install_file "${root}/config/greetd/wlgreet.toml" /etc/corebrum/greetd/wlgreet.toml 644
+  corebrum_install_file "${root}/config/greetd/sway-config" /etc/corebrum/greetd/sway-config 644
   corebrum_install_file "${root}/config/waybar/config.json" /etc/corebrum/waybar/config.json 644
   corebrum_install_file "${root}/config/waybar/style.css" /etc/corebrum/waybar/style.css 644
   corebrum_install_file "${root}/config/kitty/kitty.conf" /etc/corebrum/kitty/kitty.conf 644
@@ -180,10 +176,13 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-node-path.sh" /usr/local/lib/corebrum/node-path.sh 644
   corebrum_install_file "${root}/scripts/lib/vc4.sh" /usr/local/lib/corebrum/vc4.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-drm.sh" /usr/local/lib/corebrum/drm.sh 644
+  corebrum_install_file "${root}/scripts/desktop/corebrum-autotile.sh" /usr/local/bin/corebrum-autotile 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-tile.sh" /usr/local/bin/corebrum-tile 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-session.sh" /usr/local/bin/corebrum-session 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-setup.sh" /usr/local/bin/corebrum-setup 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greetd.sh" /usr/local/bin/corebrum-greetd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greeter.sh" /usr/local/bin/corebrum-greeter 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-login-logo.py" /usr/local/bin/corebrum-login-logo 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
@@ -217,6 +216,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/systemd/user/hypridle.service.d/corebrum.conf" /etc/systemd/user/hypridle.service.d/corebrum.conf 644
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
     rm -f /usr/local/bin/corebrum-waypaper-menu
+    rm -f /etc/corebrum/sway/swaylock.conf
   fi
   corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
@@ -246,12 +246,12 @@ corebrum_install_agent_marks() {
   done
 }
 
-# gtkgreet needs cage. Ubuntu 24.04 has neither gtkgreet nor hyprlock.
+# wlgreet is in the Ubuntu 24.04 and 26.04 archives and depends on sway,
+# which this profile installs. The greeter compositor is that Sway.
 corebrum_graphical_login_available() {
-  local gtkgreet cage
-  gtkgreet="$(corebrum_archive_candidate gtkgreet)"
-  cage="$(corebrum_archive_candidate cage)"
-  corebrum_candidate_installable "$gtkgreet" && corebrum_candidate_installable "$cage"
+  local wlgreet
+  wlgreet="$(corebrum_archive_candidate wlgreet)"
+  corebrum_candidate_installable "$wlgreet"
 }
 
 corebrum_install_greetd_config() {
@@ -259,7 +259,7 @@ corebrum_install_greetd_config() {
   local dest="/etc/greetd/config.toml"
   if corebrum_graphical_login_available; then
     src="${COREBRUM_ROOT}/config/greetd/gtkgreet.toml"
-    corebrum_log "login greeter: gtkgreet in cage"
+    corebrum_log "login greeter: wlgreet"
   else
     corebrum_log "login greeter: agreety"
   fi
@@ -294,11 +294,15 @@ corebrum_enable_desktop_login() {
 
 corebrum_desktop_managed_paths() {
   cat <<'EOF'
-/etc/corebrum/hypr/hyprland.conf
-/etc/corebrum/hypr/hyprlock.conf
-/etc/corebrum/hypr/hypridle.conf
-/etc/xdg/hypr/hypridle.conf
-/etc/corebrum/greetd/gtkgreet.css
+/etc/corebrum/sway/config
+/etc/corebrum/gtklock/config.ini
+/etc/corebrum/gtklock/style.css
+/etc/corebrum/gtklock/layout.ui
+/etc/corebrum/sway/idle.conf
+/etc/corebrum/greetd/wlgreet.toml
+/etc/corebrum/greetd/sway-config
+/usr/local/bin/corebrum-autotile
+/usr/local/bin/corebrum-tile
 /etc/corebrum/waybar/config.json
 /etc/corebrum/waybar/style.css
 /etc/corebrum/kitty/kitty.conf
@@ -315,6 +319,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-setup
 /usr/local/bin/corebrum-greetd
 /usr/local/bin/corebrum-greeter
+/usr/local/bin/corebrum-login-logo
 /usr/local/bin/corebrum-lock
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid

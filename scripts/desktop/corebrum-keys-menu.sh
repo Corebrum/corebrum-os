@@ -19,7 +19,7 @@ Super+V                Paste
 Super+Space            Open the application menu
 Super+Alt+Space        Open the app grid
 Super+S                Toggle the agent scratchpad terminal
-Super+Escape           Lock the screen
+Super+Escape           Lock the screen. Type the account password and press Enter
 Super+Shift+Escape     Pause autolock, or resume it
 Super+Shift+E          Log out and return to the login screen
 Super+Shift+C          Clipboard history
@@ -29,8 +29,8 @@ Super+P                Copy a selected area
 Super+Shift+P          Copy the whole screen
 Super+Alt+P            Record the area, camera, or audio
 Super+Alt+Shift+P      Stop recording
-Super+Arrows           Move focus
-Super+Shift+Arrows     Swap the focused tile
+Super+Arrows           Move focus to the tile in that direction
+Super+Shift+Arrows     Swap with the tile in that direction
 Super+1 … Super+5      Switch to that workspace
 Super+Shift+1 … 5      Move the focused window to that workspace
 EOF

@@ -26,6 +26,11 @@ corebrum_phase_services() {
     "${COREBRUM_ROOT}/config/xdg/hyprland-portals.conf" \
     /etc/xdg/xdg-desktop-portal/hyprland-portals.conf \
     644
+  # xdg-desktop-portal reads ${XDG_CURRENT_DESKTOP}-portals.conf. The session is sway.
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/xdg/hyprland-portals.conf" \
+    /etc/xdg/xdg-desktop-portal/sway-portals.conf \
+    644
   corebrum_refresh_logged_in_sessions
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "workstation services dry-run complete"

@@ -1,12 +1,12 @@
-# Hyprland desktop
+# Sway desktop
 
-Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Hyprland with dwindle tiling, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, GNOME Text Editor, Mako, and a greetd login.
+Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Sway, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, GNOME Text Editor, Mako, and a greetd login. A new window splits the longer side of the focused tile: beside a wide tile, and below a tall tile. See `docs/decisions/0080-sway-session.md`.
 
-The greeter is `gtkgreet` inside `cage`, with `/usr/share/hypr/wall2.png` behind the login box. The Corebrum logo sits above the clock and the login card. The first screen asks for the username. The password is the next screen. The session dropdown is hidden. Super+Escape locks the screen with `hyprlock`, and the same logo sits above the password field. Quickshell is not in Ubuntu 26.04, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The decisions are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`.
+The greeter is `wlgreet` inside a minimal Sway, with `/usr/share/hypr/wall2.png` behind the login card and `/usr/share/corebrum/logo.png` above that card. Super+Escape locks the screen with `gtklock` on the same wallpaper, the same logo, and a password field. The time and date are in the top right. Quickshell is not in Ubuntu 26.04, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The earlier login and lock choices are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`. See `docs/decisions/0082-gtklock-password.md` and `docs/decisions/0083-login-lock-logo.md`.
 
-## Hyprland source
+## Sway source
 
-Hyprland comes from the Ubuntu 26.04 archive on x86-64 and on ARM64. The installer does not add a Hyprland PPA. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. See `docs/decisions/0010-ubuntu-2604-packages.md` and `docs/decisions/0063-ubuntu-2604-arm.md`.
+Sway, swaybg, swayidle, wlgreet, and gtklock come from the Ubuntu archive. This branch does not add the Hyprland PPA. Preflight still requires Ubuntu resolute, so this branch does not install on Ubuntu 24.04. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. See `docs/decisions/0080-sway-session.md`, `docs/decisions/0010-ubuntu-2604-packages.md`, and `docs/decisions/0063-ubuntu-2604-arm.md`.
 
 A Raspberry Pi 5 keeps two DRM devices: `v3d` on card0 has no HDMI connector, and `vc4` carries the display. The greeter, the session, and the lock screen select that vc4 device when it is present and leave an x86-64 machine unchanged. See `docs/decisions/0060-arm64-desktop.md`.
 
@@ -34,13 +34,13 @@ sudo ./scripts/install.sh --profile desktop
 
 The same install from the checkout is `sudo ./scripts/corebrum.sh install desktop`. After the command is linked, that is `sudo corebrum install desktop`. See `docs/installation/cli.md`.
 
-That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. Hyprland comes from the Ubuntu archive. This command does not add a PPA.
+That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. Sway comes from the Ubuntu archive. This command does not add a PPA.
 
-When the archive publishes `hyprland-backgrounds`, the same command installs it, then replaces `wall0.png`, `wall1.png`, and `wall2.png` with the Corebrum images in `config/hypr/wallpapers`. It also installs `wall3.png`. Login and lock use `wall2.png`, so they show that Corebrum image. The same four files are copied to `/usr/share/hypr`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`. The same install copies `config/brand/logo.png` to `/usr/share/corebrum/logo.png` for the login and lock screens. See `docs/decisions/0037-login-lock-logo.md`.
+The same command copies `wall0.png` through `wall3.png` from `config/hypr/wallpapers` to `/usr/share/hypr`. Login and lock use `wall2.png`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`. The same install copies `config/brand/logo.png` to `/usr/share/corebrum/logo.png`. Login and lock draw that file above the prompt. See `docs/decisions/0037-login-lock-logo.md` and `docs/decisions/0083-login-lock-logo.md`.
 
 ## After a successful install
 
-Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hyprland starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/hypr/hyprland.conf`. The first login opens a setup wizard: ROS 2, then RealSense, then AgenticROS, then the AI agents. RealSense and AgenticROS stay closed until ROS 2 is installed, because RealSense stops when the ROS apt source is missing. Each step accepts Install, Skip, or Exit. When ROS 2, RealSense, AgenticROS, and every AI agent are already installed, login writes `${XDG_STATE_HOME:-~/.local/state}/corebrum/setup-done` and does not open the wizard. Exit and a finished wizard write that same marker, and later logins do not open the wizard. `corebrum-setup again` opens it after that. Super+Space can still install each piece on its own. See `docs/decisions/0042-setup-wizard.md`. Super+Space lists Updates. Choosing Ubuntu runs `apt-get update` and `apt-get upgrade` on the current release. Corebrum fast-forwards this checkout and runs `sudo corebrum install desktop`. ROS 2 reruns `sudo corebrum install ros` and upgrades the `ros-<distro>-*` packages already installed, including the Zenoh router package. Zenoh reinstalls the pinned client in `/opt/corebrum/zenoh-cli` and, when `zenoh-fleet` is already on `PATH`, the pinned fleet package. AgenticROS restores `.mcp.json`, fast-forwards its checkout, rebuilds it, and runs `agenticros init --yes`. MCP setup rewrites that tracked file with this machine's ROS wrapper. AI Agents reruns the install command only for CLIs already on `PATH`. All runs those six steps in order and stops on the first failure. The terminal says when `/var/run/reboot-required` exists and does not reboot. A login reminder once a week asks the operator to open Updates and does not apply upgrades. See `docs/decisions/0045-software-updates.md`. When `start-hyprland` is installed, the session runs through that watchdog and still passes the Corebrum config. The same install provides `hyprland-dialog` from Ubuntu `hyprland-qtutils`, which Hyprland uses for its dialogs. See `docs/decisions/0025-hyprland-startup.md`.
+Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Sway starts from `/usr/local/bin/corebrum-session` using `/etc/corebrum/sway/config`. The first login opens a setup wizard: ROS 2, then RealSense, then AgenticROS, then the AI agents. RealSense and AgenticROS stay closed until ROS 2 is installed, because RealSense stops when the ROS apt source is missing. Each step accepts Install, Skip, or Exit. When ROS 2, RealSense, AgenticROS, and every AI agent are already installed, login writes `${XDG_STATE_HOME:-~/.local/state}/corebrum/setup-done` and does not open the wizard. Exit and a finished wizard write that same marker, and later logins do not open the wizard. `corebrum-setup again` opens it after that. Super+Space can still install each piece on its own. See `docs/decisions/0042-setup-wizard.md`. Super+Space lists Updates. Choosing Ubuntu runs `apt-get update` and `apt-get upgrade` on the current release. Corebrum fast-forwards this checkout and runs `sudo corebrum install desktop`. ROS 2 reruns `sudo corebrum install ros` and upgrades the `ros-<distro>-*` packages already installed, including the Zenoh router package. Zenoh reinstalls the pinned client in `/opt/corebrum/zenoh-cli` and, when `zenoh-fleet` is already on `PATH`, the pinned fleet package. AgenticROS restores `.mcp.json`, fast-forwards its checkout, rebuilds it, and runs `agenticros init --yes`. MCP setup rewrites that tracked file with this machine's ROS wrapper. AI Agents reruns the install command only for CLIs already on `PATH`. All runs those six steps in order and stops on the first failure. The terminal says when `/var/run/reboot-required` exists and does not reboot. A login reminder once a week asks the operator to open Updates and does not apply upgrades. See `docs/decisions/0045-software-updates.md`. The session runs `sway --config /etc/corebrum/sway/config`. See `docs/decisions/0080-sway-session.md`.
 
 | Key | Action |
 | --- | --- |
@@ -60,9 +60,9 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+S | Agent scratchpad terminal |
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
-| Super+Arrows | Move focus |
-| Super+Shift+Arrows | Swap the focused tile with the one in that direction |
-| Super+Escape | Lock the screen with hyprlock |
+| Super+Arrows | Move focus to the tile in that direction on the screen |
+| Super+Shift+Arrows | Swap with the tile in that direction on the screen |
+| Super+Escape | Lock the screen with gtklock. Type the account password and press Enter |
 | Super+Shift+Escape | Pause autolock, or resume it |
 | Super+Shift+E | Log out and return to the greeter |
 | Control+Space | Transcribe the microphone. Press again to copy the words |
@@ -76,9 +76,9 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Hy
 | Super+Shift+C | Clipboard history |
 | Ctrl+Alt+F1 | Text console |
 
-Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md`.
+Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md` and `docs/decisions/0086-sway-edit-keys.md`.
 
-Super+K clears the focused Kitty window to the prompt and erases its scrollback. That is Kitty's Command+K action. Another window ignores the key. A Kitty window that is already open picks up the shortcut the next time it starts. Super+Arrows move focus. Super+Shift+Arrows swap the focused tile. See `docs/decisions/0053-terminal-clear.md`.
+Super+K clears the focused Kitty window to the prompt and erases its scrollback. That is Kitty's Command+K action. Another window ignores the key. A Kitty window that is already open picks up the shortcut the next time it starts. Super+Arrows move focus to the tile in that direction on the screen. Super+Shift+Arrows swap with that tile. See `docs/decisions/0053-terminal-clear.md` and `docs/decisions/0085-spatial-tile-keys.md`.
 
 Control+Space transcribes the default microphone. The first press listens for up to 60 seconds. The next press stops, copies the words, and shows them. If transcription is not installed, Control+Space asks Yes or No. Yes installs Ubuntu `pocketsphinx` in a terminal. `corebrum voice hear 8` still records for a fixed time in a terminal. See `docs/decisions/0055-transcribe-key.md` and `docs/decisions/0071-transcribe-control-space.md`.
 
@@ -88,15 +88,15 @@ Super+Space includes Keybindings. That entry lists the Super shortcuts in the ta
 
 Super+Space also lists Autolock. The screen locks after 10 minutes idle unless that menu, or Super+Shift+Escape, turns on Stay awake. The other rows are 5 minutes, 30 minutes, and 1 hour. Stay awake lasts until it is turned off or the session ends. See `docs/decisions/0022-autolock.md`.
 
-Super+Space lists Power. The rows are Log out, Reboot, and Power off. Choosing a row asks for that action again, and Cancel leaves the session running. Log out is the same exit as Super+Shift+E: Hyprland exits and the greeter returns. Reboot runs `systemctl reboot`. Power off runs `systemctl poweroff`. Typing reboot, shutdown, or log out finds Power and opens that list. See `docs/decisions/0044-power-menu.md`.
+Super+Space lists Power. The rows are Log out, Reboot, and Power off. Choosing a row asks for that action again, and Cancel leaves the session running. Log out is the same exit as Super+Shift+E: Sway exits and the greeter returns. Reboot runs `systemctl reboot`. Power off runs `systemctl poweroff`. Typing reboot, shutdown, or log out finds Power and opens that list. See `docs/decisions/0044-power-menu.md`.
 
-Waybar is the top bar: workspaces, window title, CPU, memory, network, and clock. Volume, mute, microphone mute, and brightness keys change the level and show a notification at the top right. Other applications use the same Mako popups. Hyprland's splash quotes are turned off. A transparent bar on the wallpaper reads `Corebrum: The Physical AI Operating System`. The grid starts with Terminal, Files, and Browser. Add a robotics tool later by appending `Label|command` to `/etc/corebrum/dashboard/tiles.conf`. Do not put `|` or `#` in the command.
+Waybar is the top bar: workspaces 1 through 5 at the left, then the window title, CPU, memory, network, and clock. Empty workspaces stay listed. The focused number is teal. Volume, mute, microphone mute, and brightness keys change the level and show a notification at the top right. Other applications use the same Mako popups. A transparent bar on the wallpaper reads `Corebrum: The Physical AI Operating System`. The grid starts with Terminal, Files, and Browser. Add a robotics tool later by appending `Label|command` to `/etc/corebrum/dashboard/tiles.conf`. Do not put `|` or `#` in the command.
 
 ```bash
 ./scripts/validate/desktop.sh
 ```
 
-That script checks packages, config files, that greetd is enabled, and that `Hyprland --verify-config` accepts `/etc/corebrum/hypr/hyprland.conf`. It does not prove the session tiled a window. After you log in, confirm Super+Return, two windows tiling, Super+1 and Super+2, Super+F, and that Waybar shows the clock. Then switch to VT 1 and back.
+That script checks packages, config files, that greetd is enabled, and that `sway -C` accepts `/etc/corebrum/sway/config`. It does not prove the session tiled a window. After you log in, confirm Super+Return, two windows tiling, Super+1 and Super+2, Super+F, and that Waybar shows the clock. Then switch to VT 1 and back.
 
 Firefox is Ubuntu's transitional snap package. Installing the desktop profile installs that snap. Super+Space shows that Firefox row with the Firefox logo.
 
@@ -106,7 +106,7 @@ Super+Space lists Text Editor from the `gnome-text-editor` package installed wit
 
 Super+Space lists Chromium separately. The entry says `install` until Canonical's `chromium` snap is present, and choosing it installs that snap. Ubuntu does not publish a Chrome or Chromium deb; `chromium-browser` is the transitional package, and the browser itself is the snap. After it is installed, the same entry launches `/snap/bin/chromium` and shows the Chromium logo. The snap's own `Chromium Web Browser` desktop files stay out of this menu.
 
-Super+Space lists Wallpaper. Choosing it lists the Corebrum wallpapers in `/usr/share/hypr` and images in `~/Pictures` and `~/Pictures/Wallpapers`. Add image opens a file chooser, copies a PNG, JPEG, or WebP into `~/Pictures/Wallpapers`, and sets that copy. The chosen image is saved under the user's state directory and drawn by `hyprpaper` on later logins. Login and lock stay on `/usr/share/hypr/wall2.png`. The desktop profile installs Ubuntu `hyprpaper`. See `docs/decisions/0043-hyprpaper-desktop.md` and `docs/decisions/0075-wallpaper-add-image.md`.
+The desktop draws `/usr/share/hypr/wall2.png` on every output. Super+Space lists Wallpaper. Choosing it lists the Corebrum wallpapers in `/usr/share/hypr` and images in `~/Pictures` and `~/Pictures/Wallpapers`. Add image opens a file chooser, copies a PNG, JPEG, or WebP into `~/Pictures/Wallpapers`, and sets that copy. The chosen image is saved under the user's state directory and drawn by `swaybg` on later logins, over that default. Login and lock stay on `/usr/share/hypr/wall2.png`. The desktop profile installs Ubuntu `swaybg`. See `docs/decisions/0043-hyprpaper-desktop.md`, `docs/decisions/0075-wallpaper-add-image.md`, and `docs/decisions/0080-sway-session.md`.
 
 Super+Space lists Remote desktop. The entry says `install` until `wayvnc` is installed. Choosing it installs the Ubuntu package when this archive has one. Ubuntu 26.04 publishes `wayvnc` 0.9.1. After that, Start shares the logged-in desktop on port 5900 and opens the connection steps, including the password. A Mac uses Finder's Connect to Server with the `vnc://` address. Screen Sharing can use the same address without that prefix. It asks for the password and does not ask for a name. The picture uses the 24-bit color Screen Sharing can draw, so the Mac window shows the desktop. The Command key acts as Super, and Command+V pastes inside the shared desktop. Screen Sharing leaves its clipboard commands gray on this connection, so text copied in another Mac app is not sent. Windows uses TigerVNC Viewer with the address and `::5900`. One colon is a display number in TigerVNC, so the address is typed with both colons. The Remote Desktop app on Windows does not open this session. Linux uses Remmina with protocol VNC, the address and `:5900`, and an empty username. TigerVNC on Linux uses the Windows addresses. Those viewers keep Alt as Alt. Stop ends it. The server does not start at login, and the desktop profile does not install `wayvnc`. See `docs/decisions/0027-vnc-menu.md`.
 
@@ -138,7 +138,7 @@ sudo systemctl set-default multi-user.target
 sudo reboot
 ```
 
-A broken Hyprland config sends you back to the greeter, because greetd starts it again when the session exits. That greeter is gtkgreet. Edit `/etc/corebrum/hypr/hyprland.conf` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
+A broken Sway config sends you back to the greeter, because greetd starts it again when the session exits. That greeter is wlgreet inside a minimal Sway when `wlgreet` is installed, and agreety otherwise. Edit `/etc/corebrum/sway/config` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
 
 ## Removal
 
@@ -146,10 +146,10 @@ A broken Hyprland config sends you back to the greeter, because greetd starts it
 sudo ./scripts/uninstall.sh --profile desktop
 ```
 
-This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes the Hyprland PPA source, pin, and key. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. It does not remove Hyprland, libinput, Waybar, Firefox, or other packages. Reboot afterward.
+This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes a Hyprland PPA source, pin, and key left by an earlier install. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. It does not remove Sway, Hyprland, Waybar, Firefox, or other packages. Reboot afterward.
 
 `./scripts/uninstall.sh --profile base` still refuses to remove the base packages.
 
 ## What is not done
 
-The operator continued to Phase 3 after this machine booted to Hyprland and showed Waybar. Confirm the key table above on the session if that has not been done. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, and RealSense are not part of this install. AgenticROS is not installed by the desktop profile. Super+Space offers it after `corebrum install ros`.
+The operator continued to Phase 3 after an earlier Hyprland session showed Waybar. This branch starts Sway after `corebrum install desktop`. Confirm the key table above on that session. Workstation services are documented in `docs/installation/services.md`. Quickshell, ROS 2, Zenoh, RViz, Gazebo, and RealSense are not part of this install. AgenticROS is not installed by the desktop profile. Super+Space offers it after `corebrum install ros`.

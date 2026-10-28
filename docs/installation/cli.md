@@ -20,7 +20,7 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | `corebrum config` | List `/etc/corebrum`, logs, and backups |
 | `corebrum install base` | Headless Ubuntu foundation |
 | `corebrum install headless` | Same as `base` |
-| `corebrum install desktop` | Base, Hyprland, workstation services, and Node.js 26.x with npm and pnpm |
+| `corebrum install desktop` | Base, Sway, workstation services, and Node.js 26.x with npm and pnpm |
 | `corebrum install desktop --enable-ssh` | Also install OpenSSH |
 | `corebrum install ros` | Base profile, ROS 2, and the Zenoh router |
 | `corebrum ros status` | Distro, selected RMW, and router state |
@@ -67,7 +67,7 @@ If an install stops, read that log and run `corebrum doctor`.
 3. Run `sudo ./scripts/corebrum.sh install desktop`.
 4. Reboot, log in on VT 7, and run `corebrum doctor`.
 5. Run `sudo ./scripts/corebrum.sh install desktop` again. `corebrum doctor` should still pass, and `/etc/corebrum/desktop.state` should not gain a second copy of an existing key.
-6. Confirm `corebrum config` lists `/etc/corebrum` and that the user home has no Corebrum Hyprland config.
+6. Confirm `corebrum config` lists `/etc/corebrum` and that the user home has no Corebrum Sway config.
 
 ## Removal
 

@@ -8,6 +8,17 @@ window#waybar {
     color: #e8e6e3;
 }
 
+#workspaces button {
+    padding: 0 8px;
+    color: #e8e6e3;
+    background: transparent;
+}
+
+#workspaces button.empty {
+    color: rgba(232, 230, 227, 0.45);
+}
+
+#workspaces button.focused,
 #workspaces button.active {
     background: #3d9a8b;
     color: #1c1c1c;

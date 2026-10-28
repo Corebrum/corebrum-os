@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Lock the Hyprland session. The config stays under /etc/corebrum.
+# Lock the Sway session. The config stays under /etc/corebrum.
 set -euo pipefail
 
-if ! command -v hyprlock >/dev/null 2>&1; then
-  printf 'corebrum-lock: hyprlock is not installed\n' >&2
+if ! command -v gtklock >/dev/null 2>&1; then
+  printf 'corebrum-lock: gtklock is not installed\n' >&2
   exit 1
 fi
 
@@ -19,4 +19,9 @@ if declare -F corebrum_export_vc4_devices >/dev/null 2>&1; then
   corebrum_export_vc4_devices
 fi
 
-exec hyprlock --config /etc/corebrum/hypr/hyprlock.conf
+if [[ ! -f /etc/corebrum/gtklock/config.ini ]]; then
+  printf 'corebrum-lock: missing /etc/corebrum/gtklock/config.ini\n' >&2
+  exit 1
+fi
+
+exec gtklock --config /etc/corebrum/gtklock/config.ini

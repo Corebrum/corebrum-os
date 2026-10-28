@@ -74,23 +74,21 @@ if ! grep -Eq 'quickshell is not in the Ubuntu archive|quickshell candidate ' <<
   echo "FAIL: desktop dry-run did not record the Quickshell decision" >&2
   exit 1
 fi
-if ! grep -Eq 'hyprland is not in the Ubuntu archive|hyprland candidate ' <<<"$desktop_output"; then
-  echo "FAIL: desktop dry-run did not record the Hyprland decision" >&2
+if ! grep -Eq 'sway is not in the Ubuntu archive|sway candidate ' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the Sway decision" >&2
   exit 1
 fi
-if ! grep -Eq 'hyprland-backgrounds candidate |hyprland-backgrounds is not in the archive' <<<"$desktop_output"; then
-  echo "FAIL: desktop dry-run did not record the wallpaper asset decision" >&2
+if ! grep -Eq 'swaybg candidate |swaybg is not in the archive' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the swaybg install" >&2
   exit 1
 fi
-if ! grep -Eq 'hyprpaper candidate |installing hyprpaper from ppa:cppiber/hyprland' <<<"$desktop_output"; then
-  echo "FAIL: desktop dry-run did not record the hyprpaper install" >&2
+if ! grep -Eq 'gtklock candidate |gtklock is not in the archive' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run did not record the gtklock install" >&2
   exit 1
 fi
-if grep -q 'hyprland is not in the Ubuntu archive' <<<"$desktop_output"; then
-  if ! grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then
-    echo "FAIL: desktop dry-run did not name the Hyprland PPA" >&2
-    exit 1
-  fi
+if grep -q 'ppa:cppiber/hyprland' <<<"$desktop_output"; then
+  echo "FAIL: desktop dry-run still adds the Hyprland PPA" >&2
+  exit 1
 fi
 if ! grep -q 'not changing existing Netplan files or running netplan apply' <<<"$desktop_output"; then
   echo "FAIL: desktop dry-run did not promise to leave existing Netplan files unchanged" >&2
