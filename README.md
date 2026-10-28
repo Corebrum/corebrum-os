@@ -16,7 +16,7 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 ## Current status
 
-Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. The desktop, ROS 2, RealSense, AgenticROS, and the AI agents run on both, including a Raspberry Pi. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. The phase record is in `COREBRUM_BUILD_PLAN.md`. Other Ubuntu releases are rejected before any package is installed. See `docs/decisions/0088-ubuntu-2404.md`.
+Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. On 2026-10-28 the install and the running system were confirmed on both releases. The desktop, ROS 2, RealSense, AgenticROS, and the AI agents run on both, including a Raspberry Pi. Ubuntu 24.04 installs ROS 2 Jazzy and locks with swaylock. Ubuntu 26.04 installs ROS 2 Lyrical and locks with gtklock. The phase record is in `COREBRUM_BUILD_PLAN.md`. Other Ubuntu releases are rejected before any package is installed. See `docs/decisions/0088-ubuntu-2404.md`.
 
 ## Install
 
@@ -59,7 +59,7 @@ hostname -I
 
 ## Preview the base install
 
-On Ubuntu 26.04 x86-64 or ARM64:
+On Ubuntu Server 24.04 or 26.04, x86-64 or ARM64:
 
 ```bash
 ./scripts/install.sh --profile base --dry-run
@@ -86,7 +86,7 @@ sudo ./scripts/install.sh --profile base --enable-ssh
 ./scripts/install.sh --profile desktop --dry-run
 ```
 
-`--dry-run` prints the desktop actions and the Hyprland source it will use. It does not install packages or write configuration. The install command is in [Install](#install) above.
+`--dry-run` prints the desktop actions. It does not install packages or write configuration. The install command is in [Install](#install) above.
 
 ## Checks
 

@@ -2,7 +2,7 @@
 
 ## Preflight failures
 
-Ubuntu 26.04 is required. `/etc/os-release` must contain `VERSION_CODENAME=resolute`. Ubuntu 24.04 (`noble`), jammy, and every other release stop before any package is installed.
+Ubuntu Server 24.04 and 26.04 are accepted. `/etc/os-release` must contain `VERSION_CODENAME=noble` with `VERSION_ID=24.04`, or `VERSION_CODENAME=resolute` with `VERSION_ID=26.04`. Every other release, including jammy, stops before any package is installed.
 
 `x86_64` and `aarch64` are accepted, including Raspberry Pi. Other architectures stop before any package is installed.
 

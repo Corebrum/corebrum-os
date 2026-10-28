@@ -1,6 +1,6 @@
 # Sway session and the Hyprland desktop
 
-This note compares the desktop dependencies on `sway-session` with `master`. The session change is commit `0825832`. It is here so a later choice to keep Sway, in order to support Ubuntu 24.04 while NVIDIA drivers are still aimed at that release, starts from the package list rather than from the look of the desktop.
+This note compares the desktop dependencies on `sway-session` with `master`. The session change is commit `0825832`. Ubuntu Server 24.04 and 26.04 both install this Sway session from the Ubuntu archive. On 2026-10-28 the install and the running system were confirmed on both releases.
 
 Preflight accepts Ubuntu Server 24.04 (`noble`) and 26.04 (`resolute`) on `x86_64` and `aarch64`. See `docs/decisions/0088-ubuntu-2404.md`. The Sway desktop does not add the Hyprland personal archive.
 
@@ -26,13 +26,13 @@ Phase 2 on `master` calls `corebrum_install_hyprland_ppa`. Phase 2 on `sway-sess
 
 The Hyprland session files remain under `config/hypr/`. The Sway installer copies `config/sway/config`, the gtklock files, and `config/greetd/sway-config`. It does not copy `hyprland.conf`, `hyprlock.conf`, or `hypridle.conf`.
 
-## Ubuntu 26.04, the release this branch runs on
+## Ubuntu 26.04
 
 On resolute the archive candidates recorded for this session are Sway 1.11-3, swaybg 1.2.1-1build1, swayidle 1.9.0-1, wlgreet 0.5.0-4, and gtklock 4.0.0-1build1. `wtype` is 0.4-3build1. gtklock 4.0.0 locks through `ext-session-lock` and `libgtk-session-lock0`. The same packages are published for amd64 and arm64. arm64 indexes are on `ports.ubuntu.com`. See `docs/decisions/0080-sway-session.md`, `docs/decisions/0082-gtklock-password.md`, and `docs/decisions/0072-ports-ubuntu-archive.md`.
 
 `master` on the same release takes Hyprland 0.53.3+ds-4 from that archive and does not add the PPA. Hyprland 0.53 has window animations and 6 px rounded corners. Sway 1.11 has neither, and the Sway config does not turn any on. See `docs/decisions/0010-ubuntu-2604-packages.md`.
 
-## Ubuntu 24.04, if this stack is kept for it
+## Ubuntu 24.04
 
 Noble publishes the Sway session packages. It does not publish `hyprland`. The Hyprland path on noble is `ppa:cppiber/hyprland`, which is amd64-only and replaces `libinput10` and `libxkbcommon0` with PPA builds. The pin list is `manifests/packages/hyprland-ppa.txt`: `hyprland`, `hyprland-data`, aquamarine, hyprcursor, hyprgraphics, hyprlang, hyprutils, hyprwire, `libdisplay-info3`, `libudis86.1`, `libxcb-errors1`, the libinput and libxkbcommon packages, plus `hyprpaper` and `libhyprtoolkit6`. Waybar, Fuzzel, and PipeWire stay on the Ubuntu archive. See `docs/decisions/0005-desktop-packages-on-noble.md`, `docs/decisions/0006-hyprland-ppa.md`, and `docs/decisions/0060-arm64-desktop.md`.
 
@@ -47,7 +47,7 @@ Sway on noble is 1.9. The config on this branch is written for that syntax. Sway
 | `gtklock` | 2.1.0-1build2 | 4.0.0-1build1 |
 | `wtype` | 0.4-3 | 0.4-3build1 |
 
-Two of those version gaps matter before calling the lock screen and the greeter ready on noble.
+Two of those version gaps are why the 24.04 lock screen does not use the resolute gtklock layout.
 
 `gtklock` 2.1.0 is the noble package. `--layout` and `ext-session-lock` arrived in gtklock 3.0.0. This branch's lock screen is gtklock 4.0.0: `config/gtklock/config.ini` sets `layout` and `style`, and the password field comes from `config/gtklock/layout.ui`. That file has not been run on gtklock 2.1.0.
 
