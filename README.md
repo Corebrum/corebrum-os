@@ -20,6 +20,8 @@ Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. On 2026-1
 
 ## Install
 
+[Ubuntu Server installation](docs/installation/ubuntu-server-install.md) walks through installing Ubuntu Server 24.04 or 26.04, opening SSH from a Mac, adding a GitHub key on the server, and cloning this repository. After that, return here for the Corebrum OS install.
+
 A fresh server does not have this repository yet:
 
 ```bash
