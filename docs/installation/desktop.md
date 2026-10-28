@@ -2,7 +2,7 @@
 
 Phase 2 adds a keyboard-driven Wayland session on top of the base profile: Sway, Waybar, Kitty, Fuzzel, an app grid, Thunar, Firefox, GNOME Text Editor, Mako, and a greetd login. A new window splits the longer side of the focused tile: beside a wide tile, and below a tall tile. See `docs/decisions/0080-sway-session.md`.
 
-The greeter is `wlgreet` inside a minimal Sway, with `/usr/share/hypr/wall2.png` behind the login card and `/usr/share/corebrum/logo.png` above that card. Super+Escape locks the screen with `gtklock` on the same wallpaper, the same logo, and a password field. The time and date are in the top right. Quickshell is not in Ubuntu 26.04, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The earlier login and lock choices are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`. See `docs/decisions/0082-gtklock-password.md` and `docs/decisions/0083-login-lock-logo.md`.
+The greeter is a minimal Sway. `corebrum-login` draws `/usr/share/corebrum/logo.png` above a centered username and password card, with `/usr/share/hypr/wall2.png` behind it. There is no Login title. If that client cannot start, the greeter falls back to `wlgreet` and the separate logo. Super+Escape locks the screen with `gtklock` on the same wallpaper and the same logo. The password field and Unlock sit centered under the logo. The time and date are in the top right. Quickshell is not in Ubuntu 26.04, so the bar and launcher are Waybar and Fuzzel, and the app grid is `corebrum-grid`. The earlier login and lock choices are `docs/decisions/0015-hyprlock-gtkgreet.md` and `docs/decisions/0037-login-lock-logo.md`. See `docs/decisions/0082-gtklock-password.md`, `docs/decisions/0083-login-lock-logo.md`, and `docs/decisions/0087-centered-login-lock.md`.
 
 ## Sway source
 
@@ -138,7 +138,7 @@ sudo systemctl set-default multi-user.target
 sudo reboot
 ```
 
-A broken Sway config sends you back to the greeter, because greetd starts it again when the session exits. That greeter is wlgreet inside a minimal Sway when `wlgreet` is installed, and agreety otherwise. Edit `/etc/corebrum/sway/config` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
+A broken Sway config sends you back to the greeter, because greetd starts it again when the session exits. That greeter is `corebrum-login` inside a minimal Sway, `wlgreet` if that client cannot start, and agreety when neither is installed. Edit `/etc/corebrum/sway/config` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
 
 ## Removal
 

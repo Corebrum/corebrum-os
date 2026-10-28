@@ -197,8 +197,32 @@ if ! grep -q '/usr/share/hypr/wall2.png' "${ROOT}/config/greetd/sway-config"; th
   echo "FAIL: the login screen does not use the Corebrum wallpaper" >&2
   exit 1
 fi
-if ! grep -q 'exec /usr/local/bin/corebrum-login-logo' "${ROOT}/config/greetd/sway-config"; then
-  echo "FAIL: the login screen does not show the Corebrum logo" >&2
+if grep -q 'corebrum-login-logo' "${ROOT}/config/greetd/sway-config"; then
+  echo "FAIL: the greeter Sway starts a second logo over the login card" >&2
+  exit 1
+fi
+if ! grep -q 'logo.png' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login card does not draw the Corebrum logo" >&2
+  exit 1
+fi
+if ! grep -q 'placeholder_text("Username")' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login card has no username field" >&2
+  exit 1
+fi
+if ! grep -q 'placeholder_text("Password")' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login card has no password field" >&2
+  exit 1
+fi
+if ! python3 "${ROOT}/scripts/desktop/corebrum-login.py" self-check; then
+  echo "FAIL: the login card self-check failed" >&2
+  exit 1
+fi
+if ! grep -q '/usr/local/bin/corebrum-login' "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
+  echo "FAIL: the greeter does not start the centered login card" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum-login-logo' "${ROOT}/scripts/desktop/corebrum-greeter.sh"; then
+  echo "FAIL: the wlgreet fallback does not show the logo" >&2
   exit 1
 fi
 logo_margin="$(python3 "${ROOT}/scripts/desktop/corebrum-login-logo.py" margin 1080)"
@@ -269,6 +293,22 @@ if ! grep -q 'font-size: 90pt' "${ROOT}/config/gtklock/style.css"; then
 fi
 if ! grep -q 'halign">end' "${ROOT}/config/gtklock/layout.ui"; then
   echo "FAIL: the lock clock is not in the top right" >&2
+  exit 1
+fi
+if ! grep -q 'id="body-revealer"' "${ROOT}/config/gtklock/layout.ui" || ! grep -q 'halign">center' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock password card is not centered" >&2
+  exit 1
+fi
+if grep -q 'left-attach">1' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock password field is still beside its label" >&2
+  exit 1
+fi
+if ! grep -q 'placeholder-text">Password' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock password field has no placeholder" >&2
+  exit 1
+fi
+if ! grep -A8 'id="input-label"' "${ROOT}/config/gtklock/layout.ui" | grep -q 'no-show-all">1'; then
+  echo "FAIL: the lock screen still shows the Password label" >&2
   exit 1
 fi
 if ! grep -q 'valign">start' "${ROOT}/config/gtklock/layout.ui"; then

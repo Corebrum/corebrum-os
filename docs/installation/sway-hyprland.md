@@ -14,7 +14,7 @@ Both branches still refuse Ubuntu 24.04 in preflight. `scripts/lib/preflight.sh`
 | Wallpaper | `hyprpaper`, and `hyprland-backgrounds` when the archive has it | `swaybg`. Wallpapers are still copied to `/usr/share/hypr` |
 | Idle timer | `hypridle`, and only when `hyprlock` is also installable | `swayidle` |
 | Lock screen | `hyprlock` | `gtklock` |
-| Login | `gtkgreet` inside `cage` | `wlgreet` inside a minimal Sway |
+| Login | `gtkgreet` inside `cage` | `corebrum-login` inside a minimal Sway. `wlgreet` is the fallback |
 | Hyprland dialogs | `hyprland-qtutils` from the Ubuntu archive | omitted |
 | Copy, cut, and paste | `hyprctl dispatch sendshortcut` | `wtype` |
 | Screen capture | `xdg-desktop-portal-wlr`, file `hyprland-portals.conf` | the same portal, also installed as `sway-portals.conf` because the session sets `XDG_CURRENT_DESKTOP=sway` |

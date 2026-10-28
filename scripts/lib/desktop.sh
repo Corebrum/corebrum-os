@@ -163,6 +163,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/gtklock/layout.ui" /etc/corebrum/gtklock/layout.ui 644
   corebrum_install_file "${root}/config/sway/idle.conf" /etc/corebrum/sway/idle.conf 644
   corebrum_install_file "${root}/config/greetd/wlgreet.toml" /etc/corebrum/greetd/wlgreet.toml 644
+  corebrum_install_file "${root}/config/greetd/login.css" /etc/corebrum/greetd/login.css 644
   corebrum_install_file "${root}/config/greetd/sway-config" /etc/corebrum/greetd/sway-config 644
   corebrum_install_file "${root}/config/waybar/config.json" /etc/corebrum/waybar/config.json 644
   corebrum_install_file "${root}/config/waybar/style.css" /etc/corebrum/waybar/style.css 644
@@ -182,6 +183,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-setup.sh" /usr/local/bin/corebrum-setup 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greetd.sh" /usr/local/bin/corebrum-greetd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-greeter.sh" /usr/local/bin/corebrum-greeter 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-login.py" /usr/local/bin/corebrum-login 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-login-logo.py" /usr/local/bin/corebrum-login-logo 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
@@ -300,6 +302,7 @@ corebrum_desktop_managed_paths() {
 /etc/corebrum/gtklock/layout.ui
 /etc/corebrum/sway/idle.conf
 /etc/corebrum/greetd/wlgreet.toml
+/etc/corebrum/greetd/login.css
 /etc/corebrum/greetd/sway-config
 /usr/local/bin/corebrum-autotile
 /usr/local/bin/corebrum-tile
@@ -319,6 +322,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-setup
 /usr/local/bin/corebrum-greetd
 /usr/local/bin/corebrum-greeter
+/usr/local/bin/corebrum-login
 /usr/local/bin/corebrum-login-logo
 /usr/local/bin/corebrum-lock
 /usr/local/bin/corebrum-terminal

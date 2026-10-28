@@ -1,0 +1,32 @@
+/* Centered login card. The wallpaper is the Sway background behind this window. */
+window {
+  background-color: transparent;
+}
+
+box#login-card {
+  background-color: rgba(28, 28, 28, 0.92);
+  border-radius: 12px;
+  padding: 28px 32px;
+}
+
+entry#login-username,
+entry#login-password {
+  color: #ffffff;
+  background-image: none;
+  background-color: #111111;
+  border: 2px solid #3d9a8b;
+  border-radius: 6px;
+  padding: 8px 10px;
+  min-height: 36px;
+  min-width: 380px;
+  caret-color: #3d9a8b;
+}
+
+entry#login-username placeholder,
+entry#login-password placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+label#login-error {
+  color: #ff8866;
+}

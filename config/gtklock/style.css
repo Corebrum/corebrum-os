@@ -1,4 +1,4 @@
-/* Password card on the login wallpaper. gtklock owns the Password label and the entry. */
+/* Password card on the login wallpaper. The field is centered under the logo. */
 window {
   background-color: #1c1c1c;
   background-image: url("file:///usr/share/hypr/wall2.png");
@@ -39,9 +39,13 @@ box#lock-center {
   padding: 28px 32px;
 }
 
+/* gtklock requires this label. The entry placeholder says Password, and a
+   side label was pulling the field off the center of the logo. */
 #input-label {
-  color: #ffffff;
-  font-size: 18px;
+  font-size: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
 }
 
 entry#input-field {
@@ -53,6 +57,10 @@ entry#input-field {
   padding: 8px 10px;
   min-height: 36px;
   caret-color: #3d9a8b;
+}
+
+entry#input-field placeholder {
+  color: rgba(255, 255, 255, 0.55);
 }
 
 button#unlock-button {

@@ -1,7 +1,6 @@
-# Login compositor for wlgreet. wlgreet exits after a successful login, then
-# this Sway exits so greetd can start the user session. The logo is a separate
-# client because wlgreet cannot draw an image.
-exec /usr/local/bin/corebrum-login-logo
+# Login compositor. corebrum-greeter draws the centered login card and exits
+# after a successful login, then this Sway exits so greetd can start the
+# user session.
 exec "/usr/local/bin/corebrum-greeter; swaymsg exit"
 
 output * bg /usr/share/hypr/wall2.png fill

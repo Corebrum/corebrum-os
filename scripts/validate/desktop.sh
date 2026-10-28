@@ -37,6 +37,7 @@ for path in \
   /etc/corebrum/gtklock/layout.ui \
   /etc/corebrum/sway/idle.conf \
   /etc/corebrum/greetd/wlgreet.toml \
+  /etc/corebrum/greetd/login.css \
   /etc/corebrum/greetd/sway-config \
   /usr/share/corebrum/logo.png \
   /usr/share/corebrum/agenticros.png \
@@ -54,6 +55,7 @@ for path in \
   /usr/share/corebrum/agents/openclaw.png \
   /usr/local/bin/corebrum-greetd \
   /usr/local/bin/corebrum-greeter \
+  /usr/local/bin/corebrum-login \
   /usr/local/bin/corebrum-login-logo \
   /usr/local/lib/corebrum/vc4.sh \
   /usr/local/lib/corebrum/drm.sh \
