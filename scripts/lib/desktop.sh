@@ -284,8 +284,82 @@ corebrum_install_greetd_config() {
   fi
 }
 
+# NVIDIA L4T images leave GDM as display-manager.service. greetd aliases that
+# same name, so enable fails until the symlink is recorded and removed.
+# This matches every Jetson Linux board: AGX Orin, Orin Nano, Orin NX, Thor,
+# and the older Nano and Xavier modules. x86-64 and Raspberry Pi have none of
+# these markers, so their greetd enable path stays the same.
+# COREBRUM_TEGRA_RELEASE, COREBRUM_DEVICE_TREE_MODEL, and
+# COREBRUM_DEVICE_TREE_COMPATIBLE override the host paths in tests.
+corebrum_is_jetson() {
+  local release model compatible text
+  release="${COREBRUM_TEGRA_RELEASE:-/etc/nv_tegra_release}"
+  model="${COREBRUM_DEVICE_TREE_MODEL:-/proc/device-tree/model}"
+  compatible="${COREBRUM_DEVICE_TREE_COMPATIBLE:-/proc/device-tree/compatible}"
+  if [[ -f "$release" ]]; then
+    return 0
+  fi
+  if [[ -r "$model" ]]; then
+    text="$(tr -d '\0' <"$model")"
+    if [[ "$text" == *Jetson* ]]; then
+      return 0
+    fi
+  fi
+  if [[ ! -r "$compatible" ]]; then
+    return 1
+  fi
+  text="$(tr '\0' '\n' <"$compatible")"
+  grep -q 'nvidia,tegra' <<<"$text"
+}
+
+COREBRUM_DISPLAY_MANAGER_LINK="${COREBRUM_DISPLAY_MANAGER_LINK:-/etc/systemd/system/display-manager.service}"
+
+corebrum_release_other_display_manager() {
+  local link="$COREBRUM_DISPLAY_MANAGER_LINK"
+  local target unit
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: record and remove ${link} when it does not point at greetd"
+    return 0
+  fi
+  if [[ ! -L "$link" && ! -e "$link" ]]; then
+    return 0
+  fi
+  if [[ ! -L "$link" ]]; then
+    corebrum_die "${link} is not a symlink; not replacing it"
+  fi
+  target="$(readlink "$link")"
+  unit="$(basename "$target")"
+  if [[ "$unit" == "greetd.service" ]]; then
+    return 0
+  fi
+  corebrum_state_set_once previous_display_manager "$target"
+  corebrum_log "removing ${link} (${unit}) so greetd can become the display manager"
+  rm -f -- "$link"
+}
+
+corebrum_restore_display_manager() {
+  local link="$COREBRUM_DISPLAY_MANAGER_LINK"
+  local previous
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: restore ${link} from the recorded target when that link is absent"
+    return 0
+  fi
+  if ! previous="$(corebrum_state_get previous_display_manager)"; then
+    return 0
+  fi
+  if [[ -L "$link" || -e "$link" ]]; then
+    corebrum_log "leaving ${link} in place"
+    return 0
+  fi
+  ln -s -- "$previous" "$link"
+  corebrum_log "restored ${link} -> ${previous}"
+}
+
 corebrum_enable_desktop_login() {
   local current
+  if corebrum_is_jetson; then
+    corebrum_release_other_display_manager
+  fi
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: systemctl enable greetd.service"
     corebrum_log "dry-run: set default target to graphical.target when it is not already"
@@ -428,6 +502,9 @@ corebrum_uninstall_desktop() {
     corebrum_uninstall_node
     realsense_remove_repo
     corebrum_log "dry-run: disable greetd.service when the unit exists"
+    if corebrum_is_jetson; then
+      corebrum_restore_display_manager
+    fi
     corebrum_log "dry-run: restore /etc/greetd/config.toml from the recorded backup when present"
     corebrum_log "dry-run: restore the previous default target when one was recorded"
     corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
@@ -483,6 +560,9 @@ corebrum_uninstall_desktop() {
     systemctl disable greetd.service
   else
     corebrum_log "greetd.service is not installed"
+  fi
+  if corebrum_is_jetson; then
+    corebrum_restore_display_manager
   fi
   rm -f "$COREBRUM_STATE_FILE"
   rmdir \

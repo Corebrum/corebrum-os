@@ -65,6 +65,17 @@ The second install is successful when validation still passes, no duplicate loca
 
 `./scripts/uninstall.sh` exits with an error. Phase 1 does not have a product package to remove, and it will not uninstall Ubuntu packages such as `ca-certificates` or `git`.
 
+## NVIDIA Jetson
+
+NVIDIA's desktop interface has to be turned off before the Corebrum OS desktop is installed. This applies to every Jetson, including AGX Orin, Orin Nano, and Thor:
+
+```bash
+sudo systemctl set-default multi-user.target
+sudo reboot
+```
+
+Log in on the text console after the reboot. Ubuntu Server 24.04 and 26.04 on x86-64 and on other ARM machines keep their existing boot target.
+
 ## What remains
 
 The procedure above is the one to repeat on a fresh Ubuntu Server 24.04 or 26.04 machine, x86-64 or ARM64.

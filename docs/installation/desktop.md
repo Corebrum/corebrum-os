@@ -34,7 +34,7 @@ sudo ./scripts/install.sh --profile desktop
 
 The same install from the checkout is `sudo ./scripts/corebrum.sh install desktop`. After the command is linked, that is `sudo corebrum install desktop`. See `docs/installation/cli.md`.
 
-That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. It does not start the greeter until the next boot. Sway comes from the Ubuntu archive. This command does not add a PPA.
+That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. Ubuntu 24.04 and 26.04 on x86-64, and on other ARM machines, use that sequence alone. Every NVIDIA Jetson, including AGX Orin, Orin Nano, and Thor, also records and removes `/etc/systemd/system/display-manager.service` when that symlink points at another greeter, such as GDM, so greetd can take the alias. The running greeter stays up. greetd starts on the next boot. Sway comes from the Ubuntu archive. This command does not add a PPA. See `docs/decisions/0090-display-manager.md`.
 
 The same command copies `wall0.png` through `wall3.png` from `config/hypr/wallpapers` to `/usr/share/hypr`. Login and lock use `wall2.png`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`. The same install copies `config/brand/logo.png` to `/usr/share/corebrum/logo.png`. Login and lock draw that file above the prompt. See `docs/decisions/0037-login-lock-logo.md` and `docs/decisions/0083-login-lock-logo.md`.
 
@@ -146,7 +146,7 @@ A broken Sway config sends you back to the greeter, because greetd starts it aga
 sudo ./scripts/uninstall.sh --profile desktop
 ```
 
-This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes a Hyprland PPA source, pin, and key left by an earlier install. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. It does not remove Sway, Hyprland, Waybar, Firefox, or other packages. Reboot afterward.
+This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes a Hyprland PPA source, pin, and key left by an earlier install. On any NVIDIA Jetson, including AGX Orin, Orin Nano, and Thor, it also puts back the recorded `display-manager.service` symlink. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. It does not remove Sway, Hyprland, Waybar, Firefox, or other packages. Reboot afterward.
 
 `./scripts/uninstall.sh --profile base` still refuses to remove the base packages.
 
