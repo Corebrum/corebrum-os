@@ -120,9 +120,36 @@ Type=Application
 Name=Network Configuration
 Exec=nm-connection-editor
 EOF
+menu="${tmp}/menu"
+mkdir -p "${menu}/applications"
+cat >"${menu}/applications/thunar.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Files
+Exec=thunar
+EOF
+cat >"${menu}/applications/org.gnome.Nautilus.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Files
+NoDisplay=true
+EOF
+cat >"${share}/applications/org.gnome.Nautilus.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Files
+Exec=nautilus --new-window
+Icon=org.gnome.Nautilus
+EOF
+cat >"${share}/applications/thunar.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Thunar File Manager
+Exec=thunar
+EOF
 
 export XDG_DATA_HOME="$home"
-export XDG_DATA_DIRS="$share"
+export XDG_DATA_DIRS="${menu}:${share}"
 export COREBRUM_LAUNCHER_LIST=1
 export XDG_CURRENT_DESKTOP=Hyprland
 
@@ -144,6 +171,15 @@ fi
 if ! grep -qx 'Network Configuration' <<<"$idle"; then
   echo "FAIL: the idle menu dropped Network Configuration" >&2
   printf '%s\n' "$idle" >&2
+  exit 1
+fi
+if [[ "$(grep -cx 'Files' <<<"$idle")" -ne 1 ]]; then
+  echo "FAIL: the idle menu does not list one Files row" >&2
+  printf '%s\n' "$idle" >&2
+  exit 1
+fi
+if grep -qx 'Thunar File Manager' <<<"$idle"; then
+  echo "FAIL: the idle menu still lists Thunar File Manager" >&2
   exit 1
 fi
 sorted="$(printf '%s\n' "$idle" | LC_ALL=C sort -f)"

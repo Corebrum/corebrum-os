@@ -60,6 +60,15 @@ Terminal=false
 Categories=System;FileManager;
 StartupNotify=true
 EOF
+# Ubuntu Desktop names its file manager Files. A Jetson starts from that
+# desktop, so Nautilus and Thunar would both show as Files. This copy claims
+# the Nautilus desktop ID and stays hidden. Thunar remains the Files row.
+cat >"${data_dir}/applications/org.gnome.Nautilus.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Files
+NoDisplay=true
+EOF
 # nm-connection-editor names its desktop entry "Advanced Network Configuration".
 # The same desktop ID here is listed as Network Configuration and sorts with N.
 cat >"${data_dir}/applications/nm-connection-editor.desktop" <<'EOF'

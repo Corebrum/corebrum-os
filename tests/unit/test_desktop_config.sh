@@ -53,6 +53,14 @@ if ! grep -q 'applications/thunar.desktop' "${ROOT}/scripts/desktop/corebrum-lau
   echo "FAIL: Super+Space does not override the Thunar desktop entry" >&2
   exit 1
 fi
+if ! grep -q 'applications/org.gnome.Nautilus.desktop' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not hide the Ubuntu Desktop Files entry" >&2
+  exit 1
+fi
+if ! grep -A6 'applications/org.gnome.Nautilus.desktop' "${ROOT}/scripts/desktop/corebrum-launcher.sh" | grep -q '^NoDisplay=true$'; then
+  echo "FAIL: the Nautilus desktop override is still listed" >&2
+  exit 1
+fi
 if ! grep -q 'Name=Network Configuration' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
   echo "FAIL: Super+Space does not rename Advanced Network Configuration" >&2
   exit 1
