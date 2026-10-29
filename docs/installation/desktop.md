@@ -86,7 +86,7 @@ Control+Space transcribes the default microphone. The first press listens for up
 
 Super+Space includes Keybindings. That entry lists the Super shortcuts in the table above. Choosing a row closes the list and does not run the shortcut.
 
-Super+Space also lists Autolock. The screen locks after 10 minutes idle unless that menu, or Super+Shift+Escape, turns on Stay awake. The other rows are 5 minutes, 30 minutes, and 1 hour. Stay awake lasts until it is turned off or the session ends. See `docs/decisions/0022-autolock.md`.
+Super+Space also lists Autolock. The screen locks after 10 minutes idle unless that menu, or Super+Shift+Escape, turns on Stay awake. The other rows are 5 minutes, 30 minutes, and 1 hour. The current row is marked on. Choosing a time leaves Stay awake on and shows the list again. Escape closes it. Stay awake lasts until it is turned off or the session ends. See `docs/decisions/0022-autolock.md` and `docs/decisions/0080-sway-session.md`.
 
 Super+Space lists Power. The rows are Log out, Reboot, and Power off. Choosing a row asks for that action again, and Cancel leaves the session running. Log out is the same exit as Super+Shift+E: Sway exits and the greeter returns. Reboot runs `systemctl reboot`. Power off runs `systemctl poweroff`. Typing reboot, shutdown, or log out finds Power and opens that list. See `docs/decisions/0044-power-menu.md`.
 

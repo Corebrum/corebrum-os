@@ -201,10 +201,14 @@ corebrum_autolock_set_minutes() {
   printf '%s\n' "$minutes" >"${dir}/autolock-minutes"
   corebrum_autolock_render "$minutes" >"${cfg}.tmp"
   mv "${cfg}.tmp" "$cfg"
-  corebrum_autolock_stay_awake_stop
+  # A new timer restarts swayidle. Stay awake is a separate inhibitor and stays up.
   corebrum_autolock_start
   label="$(corebrum_autolock_label "$minutes")"
-  corebrum_autolock_notify "Autolock" "The screen locks after ${label} idle."
+  if corebrum_autolock_awake; then
+    corebrum_autolock_notify "Autolock" "Stay awake is still on. The screen locks after ${label} idle once it is off."
+  else
+    corebrum_autolock_notify "Autolock" "The screen locks after ${label} idle."
+  fi
 }
 
 corebrum_autolock_stay_awake_stop() {
@@ -342,16 +346,21 @@ corebrum_autolock_open() {
   fi
   if [[ "${COREBRUM_AUTOLOCK_STUB:-0}" == 1 ]]; then
     choice="$COREBRUM_AUTOLOCK_CHOICE"
-  else
+    [[ -n "$choice" ]] || return 0
+    corebrum_autolock_apply_choice "$choice"
+    return 0
+  fi
+  # The list is drawn before the choice is saved. Open it again so "on" follows that choice.
+  while true; do
     choice="$(corebrum_autolock_lines | fuzzel \
       --config /etc/corebrum/fuzzel/fuzzel.ini \
       --dmenu \
       --prompt 'Autolock  ' \
       --width 32 \
       --lines "$lines")" || return 0
-  fi
-  [[ -n "$choice" ]] || return 0
-  corebrum_autolock_apply_choice "$choice"
+    [[ -n "$choice" ]] || return 0
+    corebrum_autolock_apply_choice "$choice"
+  done
 }
 
 usage() {

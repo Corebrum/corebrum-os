@@ -78,6 +78,30 @@ if ! grep -q 'timeout=3600' "${state}/corebrum/idle.conf"; then
   echo "FAIL: saved idle config is not one hour" >&2
   fail=1
 fi
+output="$(COREBRUM_AUTOLOCK_READY=1 COREBRUM_AUTOLOCK_AWAKE=1 bash "$menu" lines)"
+if [[ "$output" != $'Stay awake   on\n5 minutes\n10 minutes\n30 minutes\n1 hour   on' ]]; then
+  echo "FAIL: the saved timer did not take the on mark (got ${output})" >&2
+  fail=1
+fi
+set_minutes="$(awk '
+  /^corebrum_autolock_set_minutes\(\)/ { capture = 1 }
+  capture { body = body $0 "\n" }
+  capture && /^}/ { exit }
+  END { printf "%s", body }
+' "$menu")"
+if [[ "$set_minutes" == *stay_awake_stop* ]]; then
+  echo "FAIL: choosing a timer turns Stay awake off" >&2
+  fail=1
+fi
+if ! awk '
+  /^corebrum_autolock_open\(\)/ { capture = 1 }
+  capture { body = body $0 "\n" }
+  capture && /^}/ { exit }
+  END { exit index(body, "while true") ? 0 : 1 }
+' "$menu"; then
+  echo "FAIL: the autolock list does not redraw the on mark" >&2
+  fail=1
+fi
 output="$(COREBRUM_AUTOLOCK_AWAKE=0 bash "$menu" toggle)"
 if [[ "$output" != "awake on" ]]; then
   echo "FAIL: stay awake did not turn on (got ${output})" >&2
