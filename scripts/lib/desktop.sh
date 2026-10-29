@@ -355,8 +355,37 @@ corebrum_restore_display_manager() {
   corebrum_log "restored ${link} -> ${previous}"
 }
 
+# /dev/dri and the Jetson NVIDIA nodes (nvmap, nvhost) are group video or
+# render, and the NVIDIA nodes have no logind uaccess tag. _greetd is created
+# with only its own group, so Sway cannot open the GPU. A later login picks
+# up the new groups; the running greeter does not.
+corebrum_greetd_gpu_groups() {
+  local user="${COREBRUM_GREETD_USER:-_greetd}"
+  local group groups
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: add ${user} to video and render when those groups exist and the user does not"
+    return 0
+  fi
+  if ! id "$user" >/dev/null 2>&1; then
+    corebrum_log "greetd user ${user} is not present; skipping GPU groups"
+    return 0
+  fi
+  groups="$(id -nG "$user")"
+  for group in video render; do
+    if ! getent group "$group" >/dev/null 2>&1; then
+      continue
+    fi
+    if [[ " $groups " == *" $group "* ]]; then
+      continue
+    fi
+    corebrum_log "run: usermod -aG ${group} ${user}"
+    usermod -aG "$group" "$user"
+  done
+}
+
 corebrum_enable_desktop_login() {
   local current
+  corebrum_greetd_gpu_groups
   if corebrum_is_jetson; then
     corebrum_release_other_display_manager
   fi

@@ -26,6 +26,13 @@ systemctl() {
   fi
 }
 
+id() {
+  if [[ "${1:-}" == "-nG" ]]; then
+    printf '%s\n' "_greetd video render"
+  fi
+  return 0
+}
+
 mkdir -p "${tmp}/units"
 printf '[Unit]\nDescription=GDM\n' >"${tmp}/units/gdm3.service"
 
@@ -114,7 +121,7 @@ corebrum_enable_desktop_login
 assert_jetson_path "Thor"
 
 printf 'Custom carrier\n' >"$COREBRUM_DEVICE_TREE_MODEL"
-printf '%s' $'nvidia,p4071-0080+p3834-0008\0nvidia,tegra264\0' >"${tmp}/compatible"
+printf '%s\0%s\0' 'nvidia,p4071-0080+p3834-0008' 'nvidia,tegra264' >"${tmp}/compatible"
 COREBRUM_DEVICE_TREE_COMPATIBLE="${tmp}/compatible"
 export COREBRUM_DEVICE_TREE_COMPATIBLE
 reset_link

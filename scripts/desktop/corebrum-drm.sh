@@ -36,6 +36,19 @@ corebrum_export_vc4_devices() {
   export WLR_NO_HARDWARE_CURSORS=1
 }
 
+# Sway 1.9 exits when /proc/modules has a line starting with "nvidia ".
+# --unsupported-gpu is the switch that main.c documents. nvidia_drm and
+# nouveau do not match. COREBRUM_PROC_MODULES overrides the file in tests.
+# Hardware cursors on that driver fail to pick a format.
+corebrum_prepare_nvidia_sway() {
+  local modules="${COREBRUM_PROC_MODULES:-/proc/modules}"
+  if [[ -r "$modules" ]] && grep -q '^nvidia ' "$modules"; then
+    export WLR_NO_HARDWARE_CURSORS=1
+    return 0
+  fi
+  return 1
+}
+
 # Copy the system Hyprland config and add the Pi scanout device. The system
 # file stays unchanged so an x86_64 install keeps the same config bytes.
 corebrum_hyprland_config() {

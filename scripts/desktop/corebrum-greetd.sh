@@ -20,4 +20,8 @@ fi
 export XCURSOR_THEME=DMZ-White
 export XCURSOR_SIZE=24
 corebrum_export_vc4_devices
+if corebrum_prepare_nvidia_sway; then
+  printf '%s\n' "corebrum-greetd: proprietary NVIDIA driver; starting Sway with --unsupported-gpu" >&2
+  exec sway --unsupported-gpu --config /etc/corebrum/greetd/sway-config
+fi
 exec sway --config /etc/corebrum/greetd/sway-config

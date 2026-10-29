@@ -40,4 +40,8 @@ if ! command -v sway >/dev/null 2>&1; then
   echo "corebrum-session: sway is not installed" >&2
   exit 1
 fi
+if corebrum_prepare_nvidia_sway; then
+  echo "corebrum-session: proprietary NVIDIA driver; starting Sway with --unsupported-gpu" >&2
+  exec sway --unsupported-gpu --config "$config"
+fi
 exec sway --config "$config"

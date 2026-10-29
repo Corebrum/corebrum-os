@@ -24,4 +24,4 @@ Preflight still requires Ubuntu resolute. Installing this session on Ubuntu 24.0
 
 ## Consequences
 
-A desktop install from this branch starts Sway on the next login. The session is stricter than the Hyprland session: no window animations and no rounded corners. Decision 0083 draws the logo on login and lock. `corebrum doctor` still passes on a machine whose installed session is the previous Hyprland config, and it tells the operator to run `sudo corebrum install desktop`. A broken Sway config returns to the greeter. Ctrl+Alt+F1 is the text console.
+A desktop install from this branch starts Sway on the next login. Decision 0091 adds `--unsupported-gpu` when `/proc/modules` lists the proprietary `nvidia` driver. The session is stricter than the Hyprland session: no window animations and no rounded corners. Decision 0083 draws the logo on login and lock. `corebrum doctor` still passes on a machine whose installed session is the previous Hyprland config, and it tells the operator to run `sudo corebrum install desktop`. A broken Sway config returns to the greeter. Ctrl+Alt+F1 is the text console.

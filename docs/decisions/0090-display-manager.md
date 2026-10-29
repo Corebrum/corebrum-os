@@ -23,4 +23,4 @@ The device-tree model on this machine is `NVIDIA Jetson AGX Orin Developer Kit`,
 
 ## Consequences
 
-The desktop install was finished on this AGX Orin. The same Jetson steps apply to Orin Nano and Thor. Uninstall puts the GDM symlink back and does not remove the GDM package. An x86-64 or Raspberry Pi install uses the same greetd enable and uninstall sequence it used before this decision. This decision does not change how the Sway session or the greeter starts. Jetson GPU support remains outside this decision.
+The desktop install was finished on this AGX Orin. The same Jetson steps apply to Orin Nano and Thor. Uninstall puts the GDM symlink back and does not remove the GDM package. An x86-64 or Raspberry Pi install uses the same greetd enable and uninstall sequence it used before this decision. This decision does not change how the Sway session or the greeter starts. Decision 0091 starts that Sway on the proprietary NVIDIA driver.

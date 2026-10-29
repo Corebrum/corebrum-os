@@ -161,6 +161,10 @@ if ! grep -q 'exec sway --config' "${ROOT}/scripts/desktop/corebrum-session.sh";
   echo "FAIL: the session does not start Sway" >&2
   exit 1
 fi
+if ! grep -q 'exec sway --unsupported-gpu --config' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
+  echo "FAIL: the session does not start Sway on a proprietary NVIDIA driver" >&2
+  exit 1
+fi
 if ! grep -q 'XDG_CURRENT_DESKTOP=sway' "${ROOT}/scripts/desktop/corebrum-session.sh"; then
   echo "FAIL: the session does not name the desktop sway" >&2
   exit 1
@@ -191,6 +195,10 @@ if ! grep -q "corebrum-greetd" "${ROOT}/config/greetd/gtkgreet.toml"; then
 fi
 if ! grep -q 'exec sway --config /etc/corebrum/greetd/sway-config' "${ROOT}/scripts/desktop/corebrum-greetd.sh"; then
   echo "FAIL: the greeter wrapper does not start the greeter Sway" >&2
+  exit 1
+fi
+if ! grep -q 'exec sway --unsupported-gpu --config /etc/corebrum/greetd/sway-config' "${ROOT}/scripts/desktop/corebrum-greetd.sh"; then
+  echo "FAIL: the greeter does not start Sway on a proprietary NVIDIA driver" >&2
   exit 1
 fi
 if ! grep -q 'corebrum-greeter; swaymsg exit' "${ROOT}/config/greetd/sway-config"; then

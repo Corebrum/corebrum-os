@@ -181,6 +181,22 @@ if command -v wlgreet >/dev/null 2>&1 && command -v sway >/dev/null 2>&1; then
     corebrum_log "missing: wlgreet login"
     failed=1
   fi
+  if grep -q 'sway --unsupported-gpu --config /etc/corebrum/greetd/sway-config' /usr/local/bin/corebrum-greetd \
+    && grep -q 'sway --unsupported-gpu --config' /usr/local/bin/corebrum-session; then
+    corebrum_log "ok: NVIDIA Sway"
+  else
+    corebrum_log "missing: NVIDIA Sway"
+    failed=1
+  fi
+  if id _greetd >/dev/null 2>&1; then
+    greetd_groups="$(id -nG _greetd)"
+    if [[ " $greetd_groups " == *" video "* && " $greetd_groups " == *" render "* ]]; then
+      corebrum_log "ok: greetd GPU groups"
+    else
+      corebrum_log "missing: greetd GPU groups"
+      failed=1
+    fi
+  fi
 elif grep -q 'agreety --cmd /usr/local/bin/corebrum-session' /etc/greetd/config.toml; then
   corebrum_log "ok: agreety login"
 else
