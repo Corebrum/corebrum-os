@@ -50,6 +50,25 @@ corebrum_desktop_plan() {
   fi
 }
 
+# The Ubuntu firefox package is a transitional deb. Its preinst runs
+# `snap install firefox` only while that deb is being unpacked and
+# /run/snapd.socket already exists. The NVIDIA Jetson image ships the
+# deb without the snap. Installing the same version again does not
+# unpack it, so the browser stays missing. See docs/decisions/0092-firefox-snap.md.
+corebrum_install_firefox_snap() {
+  local bin="${COREBRUM_FIREFOX_BIN:-/snap/bin/firefox}"
+  if [[ -x "$bin" ]]; then
+    corebrum_log "firefox snap is already installed"
+    return 0
+  fi
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: snap install firefox"
+    return 0
+  fi
+  corebrum_log "run: snap install firefox"
+  snap install firefox
+}
+
 # Replace packaged Hyprland walls with the images in this repo. A diversion keeps
 # a later hyprland-backgrounds upgrade from writing the upstream files back.
 corebrum_install_wallpapers() {

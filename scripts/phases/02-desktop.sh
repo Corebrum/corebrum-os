@@ -37,6 +37,7 @@ corebrum_phase_desktop() {
     fi
   done
   corebrum_apt_install --no-install-recommends "${packages[@]}"
+  corebrum_install_firefox_snap
   corebrum_install_desktop_files
   corebrum_build_gtklock
   corebrum_install_node

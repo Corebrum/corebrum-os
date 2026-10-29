@@ -143,6 +143,13 @@ for cmd in waybar kitty fuzzel wofi agreety; do
   fi
 done
 
+if [[ -x /snap/bin/firefox ]]; then
+  corebrum_log "ok: /snap/bin/firefox"
+else
+  corebrum_log "missing: /snap/bin/firefox"
+  failed=1
+fi
+
 codename="$(corebrum_read_os_release_field /etc/os-release VERSION_CODENAME || true)"
 locker="$(corebrum_lock_package "$codename" || true)"
 [[ -n "$locker" ]] || locker=gtklock
