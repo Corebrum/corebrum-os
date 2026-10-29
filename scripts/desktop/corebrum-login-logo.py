@@ -62,6 +62,7 @@ def place_logo(window, monitor):
 def show():
     import gi
 
+    gi.require_version("Gdk", "3.0")
     gi.require_version("GdkPixbuf", "2.0")
     gi.require_version("Gtk", "3.0")
     from gi.repository import Gdk, GdkPixbuf, Gtk

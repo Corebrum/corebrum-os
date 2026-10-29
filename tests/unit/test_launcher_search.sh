@@ -18,6 +18,14 @@ if ! grep -q 'corebrum-launcher.py' "$launcher"; then
   echo "FAIL: Super+Space does not open the search window" >&2
   exit 1
 fi
+python3 - "$ui" <<'PY'
+import pathlib, sys
+text = pathlib.Path(sys.argv[1]).read_text()
+req = text.find('gi.require_version("Gdk", "3.0")')
+imp = text.find("from gi.repository import Gdk, GLib, Gtk")
+if req < 0 or imp < 0 or req > imp:
+    raise SystemExit("the menu does not request Gdk 3 before importing it")
+PY
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$launcher"; then
   echo "FAIL: Super+Space has no Fuzzel fallback with a blank prompt" >&2
   exit 1

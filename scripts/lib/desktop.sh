@@ -256,6 +256,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
   corebrum_install_file "${root}/config/brand/logo.png" /usr/share/corebrum/logo.png 644
+  corebrum_install_file "${root}/config/brand/icon.png" /usr/share/corebrum/icon.png 644
   corebrum_install_file "${root}/config/brand/agenticros.png" /usr/share/corebrum/agenticros.png 644
   corebrum_install_file "${root}/config/brand/ollama.png" /usr/share/corebrum/ollama.png 644
   corebrum_install_file "${root}/config/brand/ros.png" /usr/share/corebrum/ros.png 644
@@ -501,6 +502,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-ros-shell
 /usr/local/share/applications/corebrum-grid.desktop
 /usr/share/corebrum/logo.png
+/usr/share/corebrum/icon.png
 /usr/share/corebrum/agenticros.png
 /usr/share/corebrum/ollama.png
 /usr/share/corebrum/ros.png
@@ -557,6 +559,7 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: restore the previous default target when one was recorded"
     corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
     corebrum_log "dry-run: remove /usr/share/corebrum/logo.png"
+    corebrum_log "dry-run: remove /usr/share/corebrum/icon.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/agenticros.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/ollama.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/ros.png"

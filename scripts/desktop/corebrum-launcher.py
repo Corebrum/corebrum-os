@@ -295,6 +295,10 @@ def use_layer_shell(window):
 def run_window():
     try:
         import gi
+        # The Jetson image ships Gdk 4 beside Gdk 3. An unversioned import
+        # loads Gdk 4, Gtk 3 then fails, and Super+Space falls back to Fuzzel.
+        # Fuzzel skips the hidden submenu files, so search cannot find them.
+        gi.require_version("Gdk", "3.0")
         gi.require_version("Gtk", "3.0")
         from gi.repository import Gdk, GLib, Gtk
     except Exception:

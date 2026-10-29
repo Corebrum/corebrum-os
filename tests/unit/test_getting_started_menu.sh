@@ -34,8 +34,8 @@ if ! grep -q '^Name=Getting Started$' "$desktop"; then
   echo "FAIL: Getting Started row is missing" >&2
   fail=1
 fi
-if ! grep -q '^Icon=/usr/share/corebrum/logo.png$' "$desktop"; then
-  echo "FAIL: the Getting Started row does not use the Corebrum logo" >&2
+if ! grep -q '^Icon=/usr/share/corebrum/icon.png$' "$desktop"; then
+  echo "FAIL: the Getting Started row does not use the Corebrum icon" >&2
   fail=1
 fi
 if ! grep -q '^Exec=/usr/local/bin/corebrum-docs-menu open$' "$desktop"; then

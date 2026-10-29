@@ -42,6 +42,7 @@ for path in \
   /etc/corebrum/greetd/login.css \
   /etc/corebrum/greetd/sway-config \
   /usr/share/corebrum/logo.png \
+  /usr/share/corebrum/icon.png \
   /usr/share/corebrum/agenticros.png \
   /usr/share/corebrum/ollama.png \
   /usr/share/corebrum/ros.png \

@@ -237,6 +237,10 @@ if ! grep -q 'corebrum-login-logo' "${ROOT}/scripts/desktop/corebrum-greeter.sh"
   echo "FAIL: the wlgreet fallback does not show the logo" >&2
   exit 1
 fi
+if ! grep -q 'gi.require_version("Gdk", "3.0")' "${ROOT}/scripts/desktop/corebrum-login-logo.py"; then
+  echo "FAIL: the login logo does not request Gdk 3" >&2
+  exit 1
+fi
 logo_margin="$(python3 "${ROOT}/scripts/desktop/corebrum-login-logo.py" margin 1080)"
 if [[ "$logo_margin" != "232" ]]; then
   echo "FAIL: the login logo is not above the card on a 1080p screen (got ${logo_margin})" >&2
@@ -329,6 +333,15 @@ if ! grep -q 'valign">start' "${ROOT}/config/gtklock/layout.ui"; then
 fi
 if ! grep -q 'config/brand/logo.png' "${ROOT}/scripts/lib/desktop.sh"; then
   echo "FAIL: the desktop install does not copy the Corebrum logo" >&2
+  exit 1
+fi
+if ! grep -q 'config/brand/icon.png' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: the desktop install does not copy the Corebrum icon" >&2
+  exit 1
+fi
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/icon.png" | tr -d ' \n')"
+if [[ "$magic" != "89504e470d0a1a0a" ]]; then
+  echo "FAIL: config/brand/icon.png is not a PNG" >&2
   exit 1
 fi
 if ! grep -q 'config/brand/agenticros.png' "${ROOT}/scripts/lib/desktop.sh"; then
