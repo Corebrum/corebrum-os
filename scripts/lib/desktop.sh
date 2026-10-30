@@ -216,11 +216,11 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.py" /usr/local/lib/corebrum/corebrum-launcher.py 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
-  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-menu.sh" /usr/local/bin/corebrum-agenticros-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-menu.sh" /usr/local/bin/corebrum-synapse-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-skills-menu.sh" /usr/local/bin/corebrum-skills-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-arc-menu.sh" /usr/local/bin/corebrum-arc-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-skills-approve.sh" /usr/local/bin/corebrum-skills-approve 755
-  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-status.sh" /usr/local/bin/corebrum-agenticros-status 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-status.sh" /usr/local/bin/corebrum-synapse-status 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-chromium-menu.sh" /usr/local/bin/corebrum-chromium-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-ollama-menu.sh" /usr/local/bin/corebrum-ollama-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-zenoh-fleet-menu.sh" /usr/local/bin/corebrum-zenoh-fleet-menu 755
@@ -250,14 +250,13 @@ corebrum_install_desktop_files() {
   fi
   corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
-  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-install.sh" /usr/local/lib/corebrum/agenticros-install.sh 755
-  corebrum_install_file "${root}/scripts/desktop/corebrum-agenticros-with-ros.sh" /usr/local/lib/corebrum/agenticros-with-ros.sh 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-install.sh" /usr/local/lib/corebrum/synapse-install.sh 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-with-ros.sh" /usr/local/lib/corebrum/synapse-with-ros.sh 755
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
   corebrum_install_file "${root}/config/brand/logo.png" /usr/share/corebrum/logo.png 644
   corebrum_install_file "${root}/config/brand/icon.png" /usr/share/corebrum/icon.png 644
-  corebrum_install_file "${root}/config/brand/agenticros.png" /usr/share/corebrum/agenticros.png 644
   corebrum_install_file "${root}/config/brand/ollama.png" /usr/share/corebrum/ollama.png 644
   corebrum_install_file "${root}/config/brand/ros.png" /usr/share/corebrum/ros.png 644
   corebrum_install_file "${root}/config/brand/zenoh.png" /usr/share/corebrum/zenoh.png 644
@@ -450,11 +449,11 @@ corebrum_desktop_managed_paths() {
 /usr/local/lib/corebrum/corebrum-launcher.py
 /usr/local/bin/corebrum-ros-menu
 /usr/local/bin/corebrum-realsense-menu
-/usr/local/bin/corebrum-agenticros-menu
+/usr/local/bin/corebrum-synapse-menu
 /usr/local/bin/corebrum-skills-menu
 /usr/local/bin/corebrum-arc-menu
 /usr/local/bin/corebrum-skills-approve
-/usr/local/bin/corebrum-agenticros-status
+/usr/local/bin/corebrum-synapse-status
 /usr/local/bin/corebrum-chromium-menu
 /usr/local/bin/corebrum-ollama-menu
 /usr/local/bin/corebrum-zenoh-fleet-menu
@@ -476,14 +475,13 @@ corebrum_desktop_managed_paths() {
 /etc/systemd/user/hypridle.service.d/corebrum.conf
 /etc/corebrum/agents.conf
 /usr/local/lib/corebrum/realsense-install.sh
-/usr/local/lib/corebrum/agenticros-install.sh
-/usr/local/lib/corebrum/agenticros-with-ros.sh
+/usr/local/lib/corebrum/synapse-install.sh
+/usr/local/lib/corebrum/synapse-with-ros.sh
 /etc/corebrum/ros-tools.conf
 /usr/local/bin/corebrum-ros-shell
 /usr/local/share/applications/corebrum-grid.desktop
 /usr/share/corebrum/logo.png
 /usr/share/corebrum/icon.png
-/usr/share/corebrum/agenticros.png
 /usr/share/corebrum/ollama.png
 /usr/share/corebrum/ros.png
 /usr/share/corebrum/zenoh.png
@@ -502,12 +500,12 @@ corebrum_desktop_managed_paths() {
 /usr/share/corebrum/getting-started/ros.html
 /usr/share/corebrum/getting-started/zenoh.html
 /usr/share/corebrum/getting-started/realsense.html
-/usr/share/corebrum/getting-started/agenticros.html
+/usr/share/corebrum/getting-started/synapse.html
 /usr/share/corebrum/getting-started/agents.html
 /usr/share/corebrum/getting-started/mission.html
 /usr/share/corebrum/getting-started/keybindings.html
 /usr/share/corebrum/getting-started/corebrum-cli.html
-/usr/share/corebrum/getting-started/agenticros-cli.html
+/usr/share/corebrum/getting-started/synapse-cli.html
 /usr/share/corebrum/getting-started/nav.html
 /usr/share/corebrum/getting-started/style.css
 /usr/local/lib/corebrum/getting-started-server.js
@@ -538,7 +536,6 @@ corebrum_uninstall_desktop() {
     corebrum_log "dry-run: remove Corebrum desktop files under /etc/corebrum, /usr/local/bin, /usr/local/lib/corebrum, and /usr/local/share/applications; leave /usr/local/bin/corebrum"
     corebrum_log "dry-run: remove /usr/share/corebrum/logo.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/icon.png"
-    corebrum_log "dry-run: remove /usr/share/corebrum/agenticros.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/ollama.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/ros.png"
     corebrum_log "dry-run: remove /usr/share/corebrum/zenoh.png"

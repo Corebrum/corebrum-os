@@ -85,10 +85,10 @@ corebrum_cmd_status() {
   else
     printf 'realsense: not installed\n'
   fi
-  if corebrum_agenticros_installed; then
-    printf 'agenticros: installed\n'
+  if corebrum_synapse_installed; then
+    printf 'synapse: installed\n'
   else
-    printf 'agenticros: not installed\n'
+    printf 'synapse: not installed\n'
   fi
   if [[ -x /usr/local/bin/corebrum-skills-approve ]]; then
     printf 'skills helper: installed\n'
@@ -190,11 +190,11 @@ corebrum_cmd_doctor() {
     corebrum_log "doctor: realsense is not installed"
     corebrum_log "optional: Super+Space RealSense"
   fi
-  if corebrum_agenticros_installed; then
-    corebrum_log "doctor: agenticros is installed"
+  if corebrum_synapse_installed; then
+    corebrum_log "doctor: synapse is installed"
   else
-    corebrum_log "doctor: agenticros is not installed"
-    corebrum_log "optional: Super+Space AgenticROS"
+    corebrum_log "doctor: synapse is not installed"
+    corebrum_log "optional: Super+Space Corebrum Synapse"
   fi
   if [[ -x /usr/local/bin/corebrum-skills-approve ]]; then
     corebrum_log "doctor: skills helper is installed"
@@ -340,8 +340,8 @@ corebrum_realsense_installed() {
   corebrum_pkg_installed librealsense2-utils && command -v rs-enumerate-devices >/dev/null 2>&1
 }
 
-corebrum_agenticros_installed() {
-  [[ -x /usr/local/bin/agenticros && -f "${HOME}/.agenticros/config.json" ]]
+corebrum_synapse_installed() {
+  [[ -x /usr/local/bin/synapse && -f "${HOME}/.synapse/config.json" ]]
 }
 
 corebrum_agents_catalog() {
@@ -459,7 +459,7 @@ Updates stay in Super+Space. This command does not upgrade anything.
   Corebrum
   ROS 2
   Zenoh
-  AgenticROS
+  Corebrum Synapse
   AI Agents
 EOF
       ;;

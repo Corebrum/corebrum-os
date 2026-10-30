@@ -23,7 +23,7 @@ zenoh subscribe -k 'rt/**'</code></pre>
       <h2>A second machine</h2>
       <p>Install the same ROS profile on the other machine. On the machine whose router will carry the messages, run <code>corebrum zenoh peers</code> and choose an address. Point both shells at that router as Zenoh clients, on <code>tcp/&lt;router-address&gt;:7447</code>, and keep both on the same <code>ROS_DOMAIN_ID</code>. A publisher left on the default peer session listens on <code>127.0.0.1</code>, which the other machine can see and cannot open.</p>
       <h2>Zenoh fleet</h2>
-      <p>Zenoh fleet is a separate Super+Space row. It says install until <code>zenoh-fleet</code> is present. Choosing it installs <code>@agenticros/zenoh-fleet</code> 0.1.4 and runs the wizard. The wizard writes files in the home directory, under <code>~/local-fleet/</code> by default, and does not change the running router.</p>
+      <p>Zenoh fleet is a separate Super+Space row. It says install until <code>zenoh-fleet</code> is present. Choosing it installs <code>@corebrum/zenoh-fleet</code> 0.1.4 and runs the wizard. The wizard writes files in the home directory, under <code>~/local-fleet/</code> by default, and does not change the running router.</p>
     </main>
   </div>
 </body>

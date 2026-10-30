@@ -46,7 +46,7 @@ corebrum_agents_couple_async() {
     corebrum_agents_couple
     return 0
   fi
-  if [[ ! -x /usr/local/bin/agenticros || ! -f "${HOME}/.agenticros/config.json" ]]; then
+  if [[ ! -x /usr/local/bin/synapse || ! -f "${HOME}/.synapse/config.json" ]]; then
     return 0
   fi
   if ! command -v setsid >/dev/null 2>&1 || ! command -v flock >/dev/null 2>&1; then
@@ -56,7 +56,7 @@ corebrum_agents_couple_async() {
   lock_dir="${XDG_RUNTIME_DIR:-/tmp}/corebrum"
   mkdir -p "$lock_dir"
   lock="${lock_dir}/agents-couple.lock"
-  setsid --fork flock -n "$lock" /usr/local/bin/agenticros mcp setup --installed --quiet \
+  setsid --fork flock -n "$lock" /usr/local/bin/synapse mcp setup --installed --quiet \
     </dev/null >/dev/null 2>&1 || true
 }
 
@@ -163,27 +163,27 @@ corebrum_agents_mcp_flag() {
   esac
 }
 
-# Write AgenticROS into an agent's config. Idempotent. Order of install does not matter.
+# Write Corebrum Synapse into an agent's config. Idempotent. Order of install does not matter.
 corebrum_agents_couple() {
   local flag="${1:-}"
   if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
-    if [[ "${COREBRUM_AGENTICROS_READY:-0}" != 1 ]]; then
+    if [[ "${COREBRUM_SYNAPSE_READY:-0}" != 1 ]]; then
       return 0
     fi
     if [[ -n "$flag" ]]; then
-      printf 'agenticros mcp setup --%s --quiet\n' "$flag"
+      printf 'synapse mcp setup --%s --quiet\n' "$flag"
     else
-      printf 'agenticros mcp setup --installed --quiet\n'
+      printf 'synapse mcp setup --installed --quiet\n'
     fi
     return 0
   fi
-  if [[ ! -x /usr/local/bin/agenticros || ! -f "${HOME}/.agenticros/config.json" ]]; then
+  if [[ ! -x /usr/local/bin/synapse || ! -f "${HOME}/.synapse/config.json" ]]; then
     return 0
   fi
   if [[ -n "$flag" ]]; then
-    /usr/local/bin/agenticros mcp setup "--${flag}" --quiet || true
+    /usr/local/bin/synapse mcp setup "--${flag}" --quiet || true
   else
-    /usr/local/bin/agenticros mcp setup --installed --quiet || true
+    /usr/local/bin/synapse mcp setup --installed --quiet || true
   fi
 }
 
@@ -314,7 +314,7 @@ corebrum_agents_install() {
   local i="$1" action couple_flag
   if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 && "${AGENTS_KINDS[$i]}" == "npm" ]]; then
     corebrum_agents_install_action "$i"
-    if [[ "${COREBRUM_AGENTICROS_READY:-0}" == 1 ]]; then
+    if [[ "${COREBRUM_SYNAPSE_READY:-0}" == 1 ]]; then
       corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
     fi
     return 0
@@ -329,8 +329,8 @@ ec=\$?
 set -e
 printf '\\n'
 if [ "\$ec" -eq 0 ]; then
-  if [ -x /usr/local/bin/agenticros ] && [ -f "\$HOME/.agenticros/config.json" ]; then
-    /usr/local/bin/agenticros mcp setup --${couple_flag} || true
+  if [ -x /usr/local/bin/synapse ] && [ -f "\$HOME/.synapse/config.json" ]; then
+    /usr/local/bin/synapse mcp setup --${couple_flag} || true
   fi
   printf '%s\\n' "${AGENTS_LABELS[$i]} is installed. Press Super+Space, choose AI Agents, and select it again to launch."
 else
@@ -353,7 +353,7 @@ corebrum_agents_launch() {
     fi
   fi
   if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
-    if [[ "${COREBRUM_AGENTICROS_READY:-0}" == 1 ]]; then
+    if [[ "${COREBRUM_SYNAPSE_READY:-0}" == 1 ]]; then
       corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
     fi
     printf '%s\n' "$run"
@@ -362,7 +362,7 @@ corebrum_agents_launch() {
   local flag
   flag="$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
   if [[ "$flag" == "openclaw" ]]; then
-    exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; /usr/local/bin/agenticros mcp setup --openclaw || true; exec $(printf '%q' "$run")"
+    exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; /usr/local/bin/synapse mcp setup --openclaw || true; exec $(printf '%q' "$run")"
   fi
   corebrum_agents_couple "$flag"
   exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; exec $(printf '%q' "$run")"
@@ -428,7 +428,7 @@ corebrum_agents_open() {
   corebrum_agents_run "$choice"
 }
 
-# Reinstall CLIs that are already on PATH, then couple each one when AgenticROS is configured.
+# Reinstall CLIs that are already on PATH, then couple each one when Corebrum Synapse is configured.
 corebrum_agents_update_installed() {
   local i action found=0
   corebrum_agents_prepare_path

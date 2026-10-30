@@ -9,12 +9,12 @@ Phases 6, 7, and 10 through 13 shipped as Super+Space menus. `corebrum status` a
 
 ## Decision
 
-- `corebrum status` and `corebrum doctor` also report RealSense, AgenticROS, and the Skills helper. A missing optional piece is reported and does not fail `doctor`.
+- `corebrum status` and `corebrum doctor` also report RealSense, Corebrum Synapse, and the Skills helper. A missing optional piece is reported and does not fail `doctor`.
 - `corebrum camera list` prints RealSense devices when `librealsense2-utils` and `rs-enumerate-devices` are present. Otherwise it points at Super+Space RealSense and exits 0.
 - `corebrum agents list` reads the agent catalog and says which CLIs are on `PATH`. It does not install one.
-- `corebrum update status` lists Ubuntu, Corebrum, ROS 2, Zenoh, AgenticROS, and AI Agents. It does not run apt or git. Super+Space Updates remains the way to upgrade.
+- `corebrum update status` lists Ubuntu, Corebrum, ROS 2, Zenoh, Corebrum Synapse, and AI Agents. It does not run apt or git. Super+Space Updates remains the way to upgrade.
 - Corebrum Mesh is removed from the living build plan, the current boundary, and the install overviews. Historical decisions stay as written.
 
 ## Consequences
 
-`docs/decisions/0008-corebrum-command.md` still describes the Phase 4 command. This decision is the later catch-up. The two-machine Zenoh topic check is `docs/decisions/0049-two-machine-zenoh.md`. The RealSense check is `docs/decisions/0050-realsense-acceptance.md`. The AgenticROS skill check is `docs/decisions/0051-agenticros-acceptance.md`. None of those start from these report commands.
+`docs/decisions/0008-corebrum-command.md` still describes the Phase 4 command. This decision is the later catch-up. The two-machine Zenoh topic check is `docs/decisions/0049-two-machine-zenoh.md`. The RealSense check is `docs/decisions/0050-realsense-acceptance.md`. The Corebrum Synapse skill check is `docs/decisions/0051-synapse-acceptance.md`. None of those start from these report commands.

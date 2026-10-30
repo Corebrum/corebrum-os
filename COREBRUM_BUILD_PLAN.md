@@ -2,7 +2,7 @@ Corebrum OS — Engineering Build Plan
 The OS for Physical AI
 Version: 0.1 Date: October 21, 2026 Status: Initial Engineering Plan Author: Chris Matthieu Website: corebrum.com
 Progress — October 26, 2026
-Phases 0–4 are shipped: the base profile, the Hyprland desktop, workstation services, and the corebrum command. Phase 5 is shipped for topics: on 2026-10-26 this machine at 192.168.8.100 and a ThinkPad at 192.168.8.193 exchanged a ROS 2 string through one Zenoh router. Both shells used client mode. The default peer session was not reachable from the other machine. See docs/decisions/0049-two-machine-zenoh.md. Phase 6 acceptance passed on the connected D435, serial 213622076118, firmware 5.17.3.10. Color and depth published at about 30 Hz, RViz showed the depth point cloud, and unplugging the camera left that same node streaming after it was plugged back in. Infrared, IMU, and a camera stream to the second machine were not part of this run. See docs/decisions/0050-realsense-acceptance.md. Phase 7 acceptance passed on 2026-10-26. AgenticROS 0.7.38 is in local mode on rmw_zenoh_cpp. Creep or Treat (@agenticros/halloween 0.2.2) ran against the D435, greeted one visitor from depth, and did not drive. Movement skills were not run. See docs/decisions/0051-agenticros-acceptance.md. AgenticROS, Skills, AI agents, RViz, Gazebo, Nav2, MoveIt, remote desktop, and Updates are Super+Space menus. corebrum status, camera list, agents list, and update status report those pieces and do not install them. Phase 9 speaks locally with espeak-ng. `corebrum voice hear` transcribes the default microphone with Ubuntu pocketsphinx after `corebrum voice hear --install`. The desktop profile does not install that recognizer. Control+Space starts that transcription and the next press copies the words. If transcription is missing, Control+Space asks before it installs. See docs/decisions/0071-transcribe-control-space.md. Wake word and ElevenLabs are not installed. See docs/decisions/0052-local-speech.md and docs/decisions/0054-local-speech-recognition.md. Phase 10 acceptance passed on 2026-10-26. The menu catalog is the supported agent list. `corebrum agents list` shows PATH and a version when the CLI prints one. `corebrum agents update` does not run the publisher installers. Cursor listed the approved Creep or Treat capability and called `list_topics` on rmw_zenoh_cpp. The camera node was not running, so that list was empty. mise, the Gemini CLI, and OpenCode are not installed. See docs/decisions/0056-agent-acceptance.md. Phase 11 acceptance passed on 2026-10-26. Headless Gazebo published /clock through ros_gz_bridge on rmw_zenoh_cpp. The operator opened Gazebo, Nav2, and MoveIt from Super+Space and each window came up. RViz, Gazebo, Nav2, and MoveIt stay on the ROS menu. See docs/decisions/0057-simulation-acceptance.md. Phase 12 acceptance passed the same day. OpenSSH is optional with --enable-ssh, the base profile installs tmux, and Remote desktop is wayvnc with a password. WebRTC and NAT traversal are not installed. See docs/decisions/0058-remote-access.md. Phase 13 is the Updates menu. corebrum update status lists the rows and does not upgrade. There is no signed package repository. See docs/decisions/0059-updates-acceptance.md. Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64, including Raspberry Pi. On 2026-10-28 the install and the running system were confirmed on both releases. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. Both lock with gtklock. Ubuntu 24.04 builds gtklock 4.0.0. See docs/decisions/0089-noble-gtklock.md. See docs/decisions/0088-ubuntu-2404.md. On 2026-10-26 a Raspberry Pi ran the desktop, ROS 2 Lyrical, RealSense, AgenticROS, and the AI agents. Jetson and a headless ARM profile are still open. Phase 15 is still future work. See docs/decisions/0060-arm64-desktop.md and docs/decisions/0063-ubuntu-2604-arm.md. Corebrum Mesh is not part of this plan. Later phase numbers are unchanged. See docs/decisions/0048-cli-catch-up.md.
+Phases 0–4 are shipped: the base profile, the Hyprland desktop, workstation services, and the corebrum command. Phase 5 is shipped for topics: on 2026-10-26 this machine at 192.168.8.100 and a ThinkPad at 192.168.8.193 exchanged a ROS 2 string through one Zenoh router. Both shells used client mode. The default peer session was not reachable from the other machine. See docs/decisions/0049-two-machine-zenoh.md. Phase 6 acceptance passed on the connected D435, serial 213622076118, firmware 5.17.3.10. Color and depth published at about 30 Hz, RViz showed the depth point cloud, and unplugging the camera left that same node streaming after it was plugged back in. Infrared, IMU, and a camera stream to the second machine were not part of this run. See docs/decisions/0050-realsense-acceptance.md. Phase 7 acceptance passed on 2026-10-26. Corebrum Synapse 0.7.38 is in local mode on rmw_zenoh_cpp. Creep or Treat (@corebrum/halloween 0.2.2) ran against the D435, greeted one visitor from depth, and did not drive. Movement skills were not run. See docs/decisions/0051-synapse-acceptance.md. Corebrum Synapse, Skills, AI agents, RViz, Gazebo, Nav2, MoveIt, remote desktop, and Updates are Super+Space menus. corebrum status, camera list, agents list, and update status report those pieces and do not install them. Phase 9 speaks locally with espeak-ng. `corebrum voice hear` transcribes the default microphone with Ubuntu pocketsphinx after `corebrum voice hear --install`. The desktop profile does not install that recognizer. Control+Space starts that transcription and the next press copies the words. If transcription is missing, Control+Space asks before it installs. See docs/decisions/0071-transcribe-control-space.md. Wake word and ElevenLabs are not installed. See docs/decisions/0052-local-speech.md and docs/decisions/0054-local-speech-recognition.md. Phase 10 acceptance passed on 2026-10-26. The menu catalog is the supported agent list. `corebrum agents list` shows PATH and a version when the CLI prints one. `corebrum agents update` does not run the publisher installers. Cursor listed the approved Creep or Treat capability and called `list_topics` on rmw_zenoh_cpp. The camera node was not running, so that list was empty. mise, the Gemini CLI, and OpenCode are not installed. See docs/decisions/0056-agent-acceptance.md. Phase 11 acceptance passed on 2026-10-26. Headless Gazebo published /clock through ros_gz_bridge on rmw_zenoh_cpp. The operator opened Gazebo, Nav2, and MoveIt from Super+Space and each window came up. RViz, Gazebo, Nav2, and MoveIt stay on the ROS menu. See docs/decisions/0057-simulation-acceptance.md. Phase 12 acceptance passed the same day. OpenSSH is optional with --enable-ssh, the base profile installs tmux, and Remote desktop is wayvnc with a password. WebRTC and NAT traversal are not installed. See docs/decisions/0058-remote-access.md. Phase 13 is the Updates menu. corebrum update status lists the rows and does not upgrade. There is no signed package repository. See docs/decisions/0059-updates-acceptance.md. Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64, including Raspberry Pi. On 2026-10-28 the install and the running system were confirmed on both releases. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. Both lock with gtklock. Ubuntu 24.04 builds gtklock 4.0.0. See docs/decisions/0089-noble-gtklock.md. See docs/decisions/0088-ubuntu-2404.md. On 2026-10-26 a Raspberry Pi ran the desktop, ROS 2 Lyrical, RealSense, Corebrum Synapse, and the AI agents. Jetson and a headless ARM profile are still open. Phase 15 is still future work. See docs/decisions/0060-arm64-desktop.md and docs/decisions/0063-ubuntu-2604-arm.md. Corebrum Mesh is not part of this plan. Later phase numbers are unchanged. See docs/decisions/0048-cli-catch-up.md.
 1. Purpose
 This document provides an actionable, phased engineering plan for building Corebrum OS using AI coding agents such as OpenAI Codex and Cursor.
 Corebrum is an open-source, developer-first Linux environment for Physical AI, inspired by Omarchy's polished tiling desktop and opinionated developer experience.
@@ -10,7 +10,7 @@ Corebrum runs on Ubuntu Server 24.04 LTS and 26.04 LTS, on x86-64 and on ARM64. 
 * Sway, Waybar, terminal tools, and essential desktop utilities
 * ROS 2 Jazzy on Ubuntu 24.04 and ROS 2 Lyrical on Ubuntu 26.04, with Zenoh as the default RMW
 * RealSense SDK and ROS 2 camera integration
-* AgenticROS
+* Corebrum Synapse
 * eSpeak NG and optional speech recognition
 * Optional AI agents and development tools
 * RViz, Gazebo, SSH, screen sharing, and WebRTC
@@ -67,7 +67,7 @@ ROS	ROS 2 Jazzy on 24.04 and ROS 2 Lyrical on 26.04
 ROS middleware	rmw_zenoh_cpp
 Communication fabric	Zenoh
 Perception	RealSense SDK
-Agent integration	AgenticROS
+Agent integration	Corebrum Synapse
 Default TTS	eSpeak NG
 Optional STT	faster-whisper
 AI tool manager	mise
@@ -349,24 +349,24 @@ Acceptance Criteria
 Milestone B: Corebrum Physical AI Alpha
 Corebrum now provides a working ROS 2, Zenoh, and perception environment.
 
-Phase 7 — AgenticROS Integration
+Phase 7 — Corebrum Synapse Integration
 Priority: High Dependencies: Phases 5–6
 Objective
-Make AgenticROS a native robotics capability.
+Make Corebrum Synapse a native robotics capability.
 Tasks
-* Inspect the actual AgenticROS CLI, installation process, and APIs.
+* Inspect the actual Corebrum Synapse CLI, installation process, and APIs.
 * Implement a compatible installation module.
-* Configure the AgenticROS runtime.
-* Connect AgenticROS to local ROS 2.
+* Configure the Corebrum Synapse runtime.
+* Connect Corebrum Synapse to local ROS 2.
 * Verify Zenoh integration.
 * Implement optional cloud authentication.
 * Add application launcher integration.
-* Support installation of AgenticROS skills.
+* Support installation of Corebrum Synapse skills.
 * Test agent-driven camera perception.
 * Establish explicit permissions for robot actions.
 * Provide diagnostics for disconnected or unavailable services.
 Acceptance Criteria
-* AgenticROS can discover the configured ROS environment.
+* Corebrum Synapse can discover the configured ROS environment.
 * A supported skill executes successfully.
 * Camera data is accessible through the supported integration.
 * Cloud features are optional.
@@ -429,7 +429,7 @@ Tasks
 * Implement version display.
 * Add authentication instructions.
 * Add application launcher entries.
-* Integrate supported agents with AgenticROS.
+* Integrate supported agents with Corebrum Synapse.
 * Add safe execution boundaries for robot commands.
 Proposed commands
 corebrum app install claude
@@ -442,7 +442,7 @@ Acceptance Criteria
 * Agent installation does not alter ROS 2 middleware versions.
 * Updates use supported vendor mechanisms.
 * Credentials are not stored in plaintext project files.
-* An agent can invoke an approved AgenticROS capability.
+* An agent can invoke an approved Corebrum Synapse capability.
 Milestone C: Corebrum AI Developer Preview
 A developer can connect a camera, inspect ROS data, and use an AI agent to interact with supported robotics capabilities.
 
@@ -482,7 +482,7 @@ Tasks
 * Evaluate Wayland-compatible remote desktop tools.
 * Configure portal-based screen sharing.
 * Test remote graphical access.
-* Integrate AgenticROS WebRTC connectivity.
+* Integrate Corebrum Synapse WebRTC connectivity.
 * Test NAT traversal where supported.
 * Define user consent and remote control policies.
 * Add connection diagnostics.
@@ -491,7 +491,7 @@ Acceptance Criteria
 * Remote SSH access works securely.
 * tmux sessions survive disconnects.
 * Supported desktop screen sharing works.
-* AgenticROS remote connectivity functions.
+* Corebrum Synapse remote connectivity functions.
 * Unauthorized remote control is prevented.
 
 Phase 13 — Independent Software Update System
@@ -540,7 +540,7 @@ Tasks
 * Preserve JetPack-managed drivers and libraries.
 * Test ARM64 ROS 2 and Zenoh packages.
 * Validate RealSense camera connectivity.
-* Test AgenticROS runtime.
+* Test Corebrum Synapse runtime.
 * Benchmark resource usage.
 * Create headless profiles.
 * Build supported hardware installation documentation.
@@ -558,7 +558,7 @@ Create a curated software and robotics skills catalog.
 Potential Features
 * Application discovery
 * One-click installation
-* AgenticROS skills marketplace
+* Corebrum Synapse skills marketplace
 * Hardware integration packages
 * Community-maintained apps
 * Commercial applications
@@ -571,7 +571,7 @@ The marketplace must not delay the initial operating system release.
 Milestone	Required phases	Deliverable
 A — Desktop Alpha	0–4	Functional Ubuntu + Hyprland Corebrum desktop
 B — Physical AI Alpha	5–6	ROS 2 + Zenoh + RealSense
-C — AI Developer Preview	7, 9–10	AgenticROS, speech, optional AI agents
+C — AI Developer Preview	7, 9–10	Corebrum Synapse, speech, optional AI agents
 E — Public Beta	11–13	Simulation, remote access, independent updates
 F — Hardware Expansion	14	Jetson and Raspberry Pi support
 G — Ecosystem	15	App and skills catalog
@@ -627,7 +627,7 @@ manifests/packages/base.txt
 docs/installation/ubuntu-server.md
 Definition of Done
 The repository passes CI, and the base installer succeeds twice on a clean Ubuntu Server 24.04 VM without breaking networking or changing unrelated user configuration.
-Do not begin installing Hyprland, ROS 2, Zenoh, RealSense, or AgenticROS during Sprint 1.
+Do not begin installing Hyprland, ROS 2, Zenoh, RealSense, or Corebrum Synapse during Sprint 1.
 10. Initial Prompt for Codex or Cursor
 Use the following as the first engineering instruction:
 You are the lead engineer for Corebrum OS, an open-source Ubuntu-based operating environment for Physical AI.

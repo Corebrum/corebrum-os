@@ -6,7 +6,7 @@
   "spacing": 8,
   "modules-left": ["sway/workspaces"],
   "modules-center": ["sway/window"],
-  "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "custom/agenticros", "tray", "clock"],
+  "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "custom/cloud", "tray", "clock"],
   "sway/workspaces": {
     "format": "{name}",
     "all-outputs": true,
@@ -53,11 +53,11 @@
   "tray": {
     "spacing": 8
   },
-  "custom/agenticros": {
-    "exec": "/usr/local/bin/corebrum-agenticros-status",
+  "custom/cloud": {
+    "exec": "/usr/local/bin/corebrum-synapse-status",
     "return-type": "json",
     "interval": 5,
-    "on-click": "/usr/local/bin/corebrum-agenticros-status click",
+    "on-click": "/usr/local/bin/corebrum-synapse-status click",
     "format": "{text}",
     "tooltip": true
   }

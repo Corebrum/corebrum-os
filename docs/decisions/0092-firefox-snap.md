@@ -7,7 +7,7 @@ Status: Accepted
 
 The desktop profile lists Ubuntu's `firefox` package. On noble that package is `1:1snap1-0ubuntu5`, a transitional deb. Its preinst runs `snap install firefox` while the deb is unpacked, and it skips that step when `/run/snapd.socket` is absent. After the deb is configured, installing the same version again does not unpack it, so the preinst does not run.
 
-This NVIDIA Jetson AGX Orin (Ubuntu 24.04, aarch64, kernel `6.8.12-1021-tegra`) already had that deb. `dpkg` reports it installed, `/usr/bin/firefox` is the wrapper that asks for the snap, and `snap list` has no Firefox. `/var/lib/snapd/snaps` has been empty since the image was built. The desktop install on 2026-10-29 included `firefox` in `apt-get install`. Apt left the package as it was. Super+Shift+Return, Getting Started, and AgenticROS Cloud all run `firefox`.
+This NVIDIA Jetson AGX Orin (Ubuntu 24.04, aarch64, kernel `6.8.12-1021-tegra`) already had that deb. `dpkg` reports it installed, `/usr/bin/firefox` is the wrapper that asks for the snap, and `snap list` has no Firefox. `/var/lib/snapd/snaps` has been empty since the image was built. The desktop install on 2026-10-29 included `firefox` in `apt-get install`. Apt left the package as it was. Super+Shift+Return, Getting Started, and Corebrum Cloud all run `firefox`.
 
 `snap find` on this machine lists `firefox` 159.0-1 from Mozilla. The kernel has `squashfs` and `overlay` built in. Decision 0005 keeps Firefox as this Ubuntu package. Decision 0014 leaves Chromium as a separate Super+Space install.
 

@@ -56,18 +56,18 @@ corebrum_updates_corebrum_root() {
   dirname "$(dirname "$resolved")"
 }
 
-corebrum_updates_agenticros_root() {
+corebrum_updates_synapse_root() {
   local root
-  if [[ -n "${COREBRUM_UPDATES_AGENTICROS_ROOT:-}" ]]; then
-    printf '%s\n' "$COREBRUM_UPDATES_AGENTICROS_ROOT"
+  if [[ -n "${COREBRUM_UPDATES_SYNAPSE_ROOT:-}" ]]; then
+    printf '%s\n' "$COREBRUM_UPDATES_SYNAPSE_ROOT"
     return 0
   fi
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
-    printf 'agenticros\n'
+    printf 'synapse\n'
     return 0
   fi
-  [[ -s /etc/corebrum/agenticros.root ]] || return 1
-  root="$(tr -d '[:space:]' </etc/corebrum/agenticros.root)"
+  [[ -s /etc/corebrum/synapse.root ]] || return 1
+  root="$(tr -d '[:space:]' </etc/corebrum/synapse.root)"
   [[ -n "$root" ]] || return 1
   printf '%s\n' "$root"
 }
@@ -99,12 +99,12 @@ corebrum_updates_ros_ready() {
   [[ "$status" == "install ok installed" ]]
 }
 
-corebrum_updates_agenticros_ready() {
+corebrum_updates_synapse_ready() {
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
     [[ "${COREBRUM_UPDATES_AGENTICROS:-0}" == 1 ]]
     return
   fi
-  [[ -s /etc/corebrum/agenticros.root && -x /usr/local/bin/agenticros ]]
+  [[ -s /etc/corebrum/synapse.root && -x /usr/local/bin/synapse ]]
 }
 
 corebrum_updates_fleet_ready() {
@@ -115,12 +115,12 @@ corebrum_updates_fleet_ready() {
   command -v zenoh-fleet >/dev/null 2>&1
 }
 
-# .mcp.json is tracked with a relative command. agenticros mcp setup, which
+# .mcp.json is tracked with a relative command. synapse mcp setup, which
 # init runs, rewrites it with this machine's ROS wrapper. That is not an edit
 # the operator made.
 corebrum_updates_generated_path() {
   local name="$1" line="$2" path
-  [[ "$name" == agenticros ]] || return 1
+  [[ "$name" == synapse ]] || return 1
   path="${line:3}"
   [[ "$path" == ".mcp.json" ]]
 }
@@ -140,7 +140,7 @@ corebrum_updates_git_dirty() {
   return 1
 }
 
-corebrum_updates_restore_agenticros_mcp() {
+corebrum_updates_restore_synapse_mcp() {
   local root="$1"
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
     printf 'run: git -C %s checkout -- .mcp.json\n' "$root"
@@ -173,7 +173,7 @@ corebrum_updates_labels() {
     Corebrum \
     "ROS 2" \
     Zenoh \
-    AgenticROS \
+    Corebrum Synapse \
     "AI Agents" \
     All
 }
@@ -187,8 +187,8 @@ corebrum_updates_refresh() {
 Type=Application
 Name=Updates
 GenericName=Updates
-Comment=Upgrade Ubuntu, Corebrum, ROS 2, Zenoh, AgenticROS, and installed AI agents
-Keywords=update;upgrade;apt;ubuntu;ros;zenoh;agenticros
+Comment=Upgrade Ubuntu, Corebrum, ROS 2, Zenoh, Corebrum Synapse, and installed AI agents
+Keywords=update;upgrade;apt;ubuntu;ros;zenoh;synapse
 Exec=/usr/local/bin/corebrum-updates-menu open
 Icon=system-software-update
 Terminal=false
@@ -268,36 +268,36 @@ corebrum_updates_apply_zenoh() {
   fi
 }
 
-corebrum_updates_apply_agenticros() {
+corebrum_updates_apply_synapse() {
   local root script
-  printf '== AgenticROS ==\n'
-  if ! corebrum_updates_agenticros_ready; then
-    printf 'AgenticROS is not installed. Skipped.\n'
+  printf '== Corebrum Synapse ==\n'
+  if ! corebrum_updates_synapse_ready; then
+    printf 'Corebrum Synapse is not installed. Skipped.\n'
     return 0
   fi
-  root="$(corebrum_updates_agenticros_root)" || corebrum_updates_die "AgenticROS checkout is not recorded"
-  if corebrum_updates_git_dirty agenticros "$root"; then
-    corebrum_updates_die "AgenticROS checkout has local changes (${root}). Update stopped."
+  root="$(corebrum_updates_synapse_root)" || corebrum_updates_die "Corebrum Synapse checkout is not recorded"
+  if corebrum_updates_git_dirty synapse "$root"; then
+    corebrum_updates_die "Corebrum Synapse checkout has local changes (${root}). Update stopped."
   fi
-  corebrum_updates_restore_agenticros_mcp "$root"
+  corebrum_updates_restore_synapse_mcp "$root"
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
     printf 'run: git -C %s fetch --depth 1 origin main\n' "$root"
     printf 'run: git -C %s merge --ff-only FETCH_HEAD\n' "$root"
-    printf 'run: agenticros-install.sh\n'
-    printf 'run: agenticros init --yes\n'
+    printf 'run: synapse-install.sh\n'
+    printf 'run: synapse init --yes\n'
     return 0
   fi
   git -C "$root" fetch --depth 1 origin main
   git -C "$root" merge --ff-only FETCH_HEAD
-  if [[ -n "${COREBRUM_UPDATES_AGENTICROS_INSTALL:-}" ]]; then
-    script="$COREBRUM_UPDATES_AGENTICROS_INSTALL"
-  elif [[ -x /usr/local/lib/corebrum/agenticros-install.sh ]]; then
-    script=/usr/local/lib/corebrum/agenticros-install.sh
+  if [[ -n "${COREBRUM_UPDATES_SYNAPSE_INSTALL:-}" ]]; then
+    script="$COREBRUM_UPDATES_SYNAPSE_INSTALL"
+  elif [[ -x /usr/local/lib/corebrum/synapse-install.sh ]]; then
+    script=/usr/local/lib/corebrum/synapse-install.sh
   else
-    script="$(corebrum_updates_repo)/scripts/desktop/corebrum-agenticros-install.sh"
+    script="$(corebrum_updates_repo)/scripts/desktop/corebrum-synapse-install.sh"
   fi
   "$script"
-  /usr/local/bin/agenticros init --yes
+  /usr/local/bin/synapse init --yes
 }
 
 corebrum_updates_apply_agents() {
@@ -306,7 +306,7 @@ corebrum_updates_apply_agents() {
   menu="$(corebrum_updates_tool "${COREBRUM_UPDATES_AGENTS_MENU:-}" corebrum-agents-menu.sh /usr/local/bin/corebrum-agents-menu)"
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
     COREBRUM_AGENTS_STUB=1 \
-      COREBRUM_AGENTICROS_READY="${COREBRUM_UPDATES_AGENTICROS:-0}" \
+      COREBRUM_SYNAPSE_READY="${COREBRUM_UPDATES_AGENTICROS:-0}" \
       "$menu" update-installed
     return 0
   fi
@@ -318,7 +318,7 @@ corebrum_updates_apply_all() {
   corebrum_updates_apply_corebrum
   corebrum_updates_apply_ros
   corebrum_updates_apply_zenoh
-  corebrum_updates_apply_agenticros
+  corebrum_updates_apply_synapse
   corebrum_updates_apply_agents
 }
 
@@ -339,7 +339,7 @@ corebrum_updates_apply() {
     corebrum | Corebrum) corebrum_updates_apply_corebrum ;;
     ros | ROS | "ROS 2") corebrum_updates_apply_ros ;;
     zenoh | Zenoh) corebrum_updates_apply_zenoh ;;
-    agenticros | AgenticROS) corebrum_updates_apply_agenticros ;;
+    synapse | Corebrum Synapse) corebrum_updates_apply_synapse ;;
     agents | "AI Agents") corebrum_updates_apply_agents ;;
     all | All) corebrum_updates_apply_all ;;
     *)

@@ -59,4 +59,4 @@ The 24.04 desktop builds gtklock 4.0.0 and gtk-session-lock 0.2.0 instead of ins
 
 ## ROS 2
 
-`corebrum install ros` installs Jazzy on noble and Lyrical on resolute, from the official ROS repository. RealSense, AgenticROS, the AI agent CLIs, Node.js under `/usr/local/nvm`, NetworkManager, and PipeWire use the same installers on both releases. The compositor package itself is already in the Ubuntu 24.04 archive for amd64 and arm64.
+`corebrum install ros` installs Jazzy on noble and Lyrical on resolute, from the official ROS repository. RealSense, Corebrum Synapse, the AI agent CLIs, Node.js under `/usr/local/nvm`, NetworkManager, and PipeWire use the same installers on both releases. The compositor package itself is already in the Ubuntu 24.04 archive for amd64 and arm64.

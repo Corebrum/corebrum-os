@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-Super+Space lists Ollama with the generic `applications-science` icon. A square white Ollama mark is published at `https://agenticros.com/ollama-white.png`. Fuzzel already draws desktop icons.
+Super+Space lists Ollama with the generic `applications-science` icon. A square white Ollama mark is published at `https://corebrum.com/synapse/ollama-white.png`. Fuzzel already draws desktop icons.
 
 ## Decision
 

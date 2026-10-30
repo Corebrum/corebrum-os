@@ -33,7 +33,7 @@ tool_pin="$(sed -n 's/^COREBRUM_ZENOH_CLI_TOOL="\(.*\)"/\1/p' "$ros_lib")"
 [[ -n "$lib_pin" && -n "$tool_pin" ]] || fail "Zenoh client pins are missing from ros.sh"
 
 labels="$(run_menu labels)"
-for row in Ubuntu Corebrum "ROS 2" Zenoh AgenticROS "AI Agents" All; do
+for row in Ubuntu Corebrum "ROS 2" Zenoh Corebrum Synapse "AI Agents" All; do
   printf '%s\n' "$labels" | grep -F -x -- "$row" >/dev/null || fail "missing row ${row}"
 done
 
@@ -59,15 +59,15 @@ skipped="$(run_menu apply All)"
 printf '%s\n' "$skipped" | grep -F 'ROS 2 is not installed. Skipped.' >/dev/null || fail "missing ROS was not skipped"
 printf '%s\n' "$skipped" | grep -F 'Zenoh client stays as it is' >/dev/null || fail "Zenoh client was not skipped"
 printf '%s\n' "$skipped" | grep -F 'Zenoh fleet is not installed. Skipped.' >/dev/null || fail "Zenoh fleet was not skipped"
-printf '%s\n' "$skipped" | grep -F 'AgenticROS is not installed. Skipped.' >/dev/null || fail "AgenticROS was not skipped"
+printf '%s\n' "$skipped" | grep -F 'Corebrum Synapse is not installed. Skipped.' >/dev/null || fail "Corebrum Synapse was not skipped"
 printf '%s\n' "$skipped" | grep -F 'No AI agents are installed.' >/dev/null || fail "missing agents were not reported"
 printf '%s\n' "$skipped" | grep -F "$lib_pin" >/dev/null && fail "Zenoh client was reinstalled without ROS"
-printf '%s\n' "$skipped" | grep -F '@agenticros/zenoh-fleet@' >/dev/null && fail "Zenoh fleet was reinstalled when it is absent"
+printf '%s\n' "$skipped" | grep -F '@corebrum/zenoh-fleet@' >/dev/null && fail "Zenoh fleet was reinstalled when it is absent"
 ubuntu_at="$(line_of '== Ubuntu ==' <(printf '%s\n' "$skipped"))"
 core_at="$(line_of '== Corebrum ==' <(printf '%s\n' "$skipped"))"
 ros_at="$(line_of '== ROS 2 ==' <(printf '%s\n' "$skipped"))"
 zenoh_at="$(line_of '== Zenoh ==' <(printf '%s\n' "$skipped"))"
-agentic_at="$(line_of '== AgenticROS ==' <(printf '%s\n' "$skipped"))"
+agentic_at="$(line_of '== Corebrum Synapse ==' <(printf '%s\n' "$skipped"))"
 agents_at="$(line_of '== AI Agents ==' <(printf '%s\n' "$skipped"))"
 [[ "$ubuntu_at" -lt "$core_at" && "$core_at" -lt "$ros_at" && "$ros_at" -lt "$zenoh_at" && "$zenoh_at" -lt "$agentic_at" && "$agentic_at" -lt "$agents_at" ]] \
   || fail "All did not run the six steps in order"
@@ -78,24 +78,24 @@ printf '%s\n' "$full" | grep -F -- '--only-upgrade ros-<distro>-*' >/dev/null ||
 printf '%s\n' "$full" | grep -F "$lib_pin" >/dev/null || fail "Zenoh client library pin was not reinstalled"
 printf '%s\n' "$full" | grep -F "$tool_pin" >/dev/null || fail "Zenoh client tool pin was not reinstalled"
 printf '%s\n' "$full" | grep -F 'scripts/ros/zenoh-cli.sh' >/dev/null || fail "Zenoh client wrapper was not copied"
-printf '%s\n' "$full" | grep -F '@agenticros/zenoh-fleet@0.1.4' >/dev/null || fail "installed Zenoh fleet was not reinstalled"
-printf '%s\n' "$full" | grep -F 'git -C agenticros checkout -- .mcp.json' >/dev/null || fail "AgenticROS did not restore .mcp.json"
-printf '%s\n' "$full" | grep -F 'git -C agenticros fetch --depth 1 origin main' >/dev/null || fail "AgenticROS was not fetched"
+printf '%s\n' "$full" | grep -F '@corebrum/zenoh-fleet@0.1.4' >/dev/null || fail "installed Zenoh fleet was not reinstalled"
+printf '%s\n' "$full" | grep -F 'git -C synapse checkout -- .mcp.json' >/dev/null || fail "Corebrum Synapse did not restore .mcp.json"
+printf '%s\n' "$full" | grep -F 'git -C synapse fetch --depth 1 origin main' >/dev/null || fail "Corebrum Synapse was not fetched"
 mcp_at="$(line_of 'checkout -- .mcp.json' <(printf '%s\n' "$full"))"
 fetch_at="$(line_of 'fetch --depth 1 origin main' <(printf '%s\n' "$full"))"
 [[ "$mcp_at" -lt "$fetch_at" ]] || fail ".mcp.json was restored after the fetch"
-printf '%s\n' "$full" | grep -F 'merge --ff-only FETCH_HEAD' >/dev/null || fail "AgenticROS was not fast-forwarded"
-printf '%s\n' "$full" | grep -F 'agenticros init --yes' >/dev/null || fail "AgenticROS init did not run"
+printf '%s\n' "$full" | grep -F 'merge --ff-only FETCH_HEAD' >/dev/null || fail "Corebrum Synapse was not fast-forwarded"
+printf '%s\n' "$full" | grep -F 'synapse init --yes' >/dev/null || fail "Corebrum Synapse init did not run"
 printf '%s\n' "$full" | grep -F 'https://claude.ai/install.sh' >/dev/null || fail "installed Claude was not updated"
-printf '%s\n' "$full" | grep -F 'agenticros mcp setup --claude' >/dev/null || fail "Claude was not coupled to AgenticROS"
+printf '%s\n' "$full" | grep -F 'synapse mcp setup --claude' >/dev/null || fail "Claude was not coupled to Corebrum Synapse"
 printf '%s\n' "$full" | grep -F '@xai-official/grok' >/dev/null && fail "Grok was updated without being installed"
 
 set +e
-agentic_dirty="$(COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_UPDATES_DIRTY=agenticros run_menu apply AgenticROS 2>&1)"
+agentic_dirty="$(COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_UPDATES_DIRTY=synapse run_menu apply Corebrum Synapse 2>&1)"
 agentic_ec=$?
 set -e
-[[ "$agentic_ec" -ne 0 ]] || fail "a dirty AgenticROS checkout continued"
-printf '%s\n' "$agentic_dirty" | grep -F 'fetch --depth 1' >/dev/null && fail "a dirty AgenticROS checkout still fetched"
+[[ "$agentic_ec" -ne 0 ]] || fail "a dirty Corebrum Synapse checkout continued"
+printf '%s\n' "$agentic_dirty" | grep -F 'fetch --depth 1' >/dev/null && fail "a dirty Corebrum Synapse checkout still fetched"
 
 reboot="$(COREBRUM_UPDATES_REBOOT=1 run_menu apply Ubuntu)"
 printf '%s\n' "$reboot" | grep -F 'A reboot is required before the new packages are fully in use.' >/dev/null \
@@ -130,12 +130,12 @@ GIT_AUTHOR_NAME=Corebrum GIT_AUTHOR_EMAIL=test@example.com \
 printf '{"wrapper":true}\n' >"${repo}/.mcp.json"
 # shellcheck disable=SC1090
 source "$menu"
-if COREBRUM_UPDATES_STUB=0 corebrum_updates_git_dirty agenticros "$repo"; then
-  fail "a rewritten .mcp.json stopped the AgenticROS update"
+if COREBRUM_UPDATES_STUB=0 corebrum_updates_git_dirty synapse "$repo"; then
+  fail "a rewritten .mcp.json stopped the Corebrum Synapse update"
 fi
 printf 'edited\n' >"${repo}/keep.txt"
-if ! COREBRUM_UPDATES_STUB=0 corebrum_updates_git_dirty agenticros "$repo"; then
-  fail "a real AgenticROS edit was ignored"
+if ! COREBRUM_UPDATES_STUB=0 corebrum_updates_git_dirty synapse "$repo"; then
+  fail "a real Corebrum Synapse edit was ignored"
 fi
 rm -rf "$repo"
 

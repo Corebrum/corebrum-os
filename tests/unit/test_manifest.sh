@@ -68,7 +68,7 @@ if [[ "$found_waybar" -ne 1 || "$found_greetd" -ne 1 || "$found_mako" -ne 1 || "
   exit 1
 fi
 if [[ "$found_gst" -ne 1 || "$found_gst_ugly" -ne 1 || "$found_gst_pipewire" -ne 1 || "$found_gst_gir" -ne 1 || "$found_gst_base_gir" -ne 1 ]]; then
-  echo "FAIL: desktop manifest is missing the GStreamer packages AgenticROS desktop uses" >&2
+  echo "FAIL: desktop manifest is missing the GStreamer packages Corebrum Synapse desktop uses" >&2
   exit 1
 fi
 

@@ -113,8 +113,8 @@ if ! grep -q '/usr/local/bin/corebrum-realsense-menu refresh' "${ROOT}/scripts/d
   echo "FAIL: Super+Space does not refresh the RealSense entry" >&2
   exit 1
 fi
-if ! grep -q '/usr/local/bin/corebrum-agenticros-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
-  echo "FAIL: Super+Space does not refresh the AgenticROS entry" >&2
+if ! grep -q '/usr/local/bin/corebrum-synapse-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
+  echo "FAIL: Super+Space does not refresh the Corebrum Synapse entry" >&2
   exit 1
 fi
 if ! grep -q '/usr/local/bin/corebrum-skills-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -122,7 +122,7 @@ if ! grep -q '/usr/local/bin/corebrum-skills-menu refresh' "${ROOT}/scripts/desk
   exit 1
 fi
 if ! grep -q '/usr/local/bin/corebrum-arc-menu refresh' "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
-  echo "FAIL: Super+Space does not refresh the AgenticROS Cloud entry" >&2
+  echo "FAIL: Super+Space does not refresh the Corebrum Cloud entry" >&2
   exit 1
 fi
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "${ROOT}/scripts/desktop/corebrum-launcher.sh"; then
@@ -401,15 +401,6 @@ if ! grep -q 'config/brand/icon.png' "${ROOT}/scripts/lib/desktop.sh"; then
   echo "FAIL: the desktop install does not copy the Corebrum icon" >&2
   exit 1
 fi
-magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/icon.png" | tr -d ' \n')"
-if [[ "$magic" != "89504e470d0a1a0a" ]]; then
-  echo "FAIL: config/brand/icon.png is not a PNG" >&2
-  exit 1
-fi
-if ! grep -q 'config/brand/agenticros.png' "${ROOT}/scripts/lib/desktop.sh"; then
-  echo "FAIL: the desktop install does not copy the AgenticROS mark" >&2
-  exit 1
-fi
 if ! grep -q 'config/brand/ollama.png' "${ROOT}/scripts/lib/desktop.sh"; then
   echo "FAIL: the desktop install does not copy the Ollama mark" >&2
   exit 1
@@ -439,9 +430,9 @@ if [[ "$magic" != "89504e470d0a1a0a" ]]; then
   echo "FAIL: config/brand/logo.png is not a PNG" >&2
   exit 1
 fi
-magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/agenticros.png" | tr -d ' \n')"
+magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/icon.png" | tr -d ' \n')"
 if [[ "$magic" != "89504e470d0a1a0a" ]]; then
-  echo "FAIL: config/brand/agenticros.png is not a PNG" >&2
+  echo "FAIL: config/brand/icon.png is not a PNG" >&2
   exit 1
 fi
 magic="$(od -An -t x1 -N 8 "${ROOT}/config/brand/ollama.png" | tr -d ' \n')"

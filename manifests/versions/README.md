@@ -1,5 +1,7 @@
 # Version pinning
 
+
+
 Each installable component has two files:
 
 - `manifests/packages/<name>.txt` lists Ubuntu package names, one per line.

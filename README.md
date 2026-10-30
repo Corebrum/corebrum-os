@@ -1,10 +1,12 @@
 # Corebrum OS
 
+
+
 The operating environment for Physical AI. Corebrum OS runs on Ubuntu Server 24.04 LTS and 26.04 LTS, on x86-64 and on ARM64 (aarch64), including Raspberry Pi. It is not a new kernel or a new package manager. Other Ubuntu releases are not supported.
 
-The desktop design was inspired by Omarchy: a keyboard-first tiling session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, Gazebo, and AgenticROS are tiles in that grid. Quickshell is not in these Ubuntu archives, so the session uses Sway, Waybar, Fuzzel, and `corebrum-grid`. Sway comes from the Ubuntu archive. ROS 2 is Jazzy on Ubuntu 24.04 and Lyrical Luth on Ubuntu 26.04. Both releases lock with gtklock: the Corebrum logo, a password field, and Unlock. Ubuntu 24.04 builds gtklock 4 because the archive package cannot lock Sway.
+The desktop design was inspired by Omarchy: a keyboard-first tiling session and an app grid. Robotics tools such as ROS 2 (Zenoh RMW), RViz, Gazebo, and Corebrum Synapse are tiles in that grid. Quickshell is not in these Ubuntu archives, so the session uses Sway, Waybar, Fuzzel, and `corebrum-grid`. Sway comes from the Ubuntu archive. ROS 2 is Jazzy on Ubuntu 24.04 and Lyrical Luth on Ubuntu 26.04. Both releases lock with gtklock: the Corebrum logo, a password field, and Unlock. Ubuntu 24.04 builds gtklock 4 because the archive package cannot lock Sway.
 
-AI Agents are built into the OS. [AgenticROS](https://agenticros.com) gives those agents full control over their own ROS-powered bodies, including eyes, wheels, legs, arms, propellers, and more.
+AI Agents are built into the OS. [Corebrum Synapse](https://corebrum.com/synapse) gives those agents full control over their own ROS-powered bodies, including eyes, wheels, legs, arms, propellers, and more.
 
 Original Corebrum code in this repository is under the MIT license in `LICENSE`. Third-party components keep their own licenses. The MIT choice is subject to license review.
 
@@ -16,7 +18,7 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 ## Current status
 
-Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. On 2026-10-28 the install and the running system were confirmed on both releases. The desktop, ROS 2, RealSense, AgenticROS, and the AI agents run on both, including a Raspberry Pi. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. Both lock with gtklock. See `docs/decisions/0089-noble-gtklock.md`. The phase record is in `COREBRUM_BUILD_PLAN.md`. Other Ubuntu releases are rejected before any package is installed. See `docs/decisions/0088-ubuntu-2404.md`.
+Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. On 2026-10-28 the install and the running system were confirmed on both releases. The desktop, ROS 2, RealSense, Corebrum Synapse, and the AI agents run on both, including a Raspberry Pi. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. Both lock with gtklock. See `docs/decisions/0089-noble-gtklock.md`. The phase record is in `COREBRUM_BUILD_PLAN.md`. Other Ubuntu releases are rejected before any package is installed. See `docs/decisions/0088-ubuntu-2404.md`.
 
 ## Install
 
@@ -57,7 +59,7 @@ The Cursor agent install, `agent login`, and a `PATH` line in `~/.bashrc` stay o
 
 ### Updates
 
-Super+Space **Updates** upgrades Ubuntu, this checkout, ROS 2, Zenoh, AgenticROS, and the AI agents already installed. **All** runs those six steps in order. A login reminder once a week points at that menu and does not apply upgrades. The row-by-row commands are in `docs/installation/desktop.md` and `docs/decisions/0045-software-updates.md`.
+Super+Space **Updates** upgrades Ubuntu, this checkout, ROS 2, Zenoh, Corebrum Synapse, and the AI agents already installed. **All** runs those six steps in order. A login reminder once a week points at that menu and does not apply upgrades. The row-by-row commands are in `docs/installation/desktop.md` and `docs/decisions/0045-software-updates.md`.
 
 ### Headless server
 

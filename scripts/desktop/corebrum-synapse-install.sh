@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Clone AgenticROS when this machine has no checkout, build it, and link
-# /usr/local/bin/agenticros.
+# Clone Corebrum Synapse when this machine has no checkout, build it, and link
+# /usr/local/bin/synapse.
 set -euo pipefail
 
 # Missing checkouts are cloned from this URL. An existing workspace is left in place.
-COREBRUM_AGENTICROS_URL="${COREBRUM_AGENTICROS_URL:-https://github.com/agenticros/agenticros.git}"
+COREBRUM_SYNAPSE_URL="${COREBRUM_SYNAPSE_URL:-https://github.com/Corebrum/corebrum-synapse.git}"
 
-corebrum_agenticros_install_die() {
-  printf 'corebrum-agenticros-install: %s\n' "$1" >&2
+corebrum_synapse_install_die() {
+  printf 'corebrum-synapse-install: %s\n' "$1" >&2
   exit 1
 }
 
-corebrum_agenticros_checkout() {
+corebrum_synapse_checkout() {
   local bin resolved
   if [[ -n "${COREBRUM_ROOT:-}" && -f "${COREBRUM_ROOT}/scripts/corebrum.sh" ]]; then
     printf '%s\n' "$COREBRUM_ROOT"
@@ -36,65 +36,65 @@ corebrum_agenticros_checkout() {
   cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd
 }
 
-corebrum_agenticros_clone() {
+corebrum_synapse_clone() {
   local checkout parent
-  if [[ -n "${COREBRUM_AGENTICROS_ROOT:-}" ]]; then
-    printf '%s\n' "$COREBRUM_AGENTICROS_ROOT"
+  if [[ -n "${COREBRUM_SYNAPSE_ROOT:-}" ]]; then
+    printf '%s\n' "$COREBRUM_SYNAPSE_ROOT"
     return 0
   fi
-  checkout="$(corebrum_agenticros_checkout)"
+  checkout="$(corebrum_synapse_checkout)"
   parent="$(dirname "$checkout")"
   if [[ -d "$parent" && -w "$parent" ]]; then
-    printf '%s\n' "$(cd "$parent" && pwd)/agenticros"
+    printf '%s\n' "$(cd "$parent" && pwd)/synapse"
     return 0
   fi
   # The installed corebrum command can point at a checkout the desktop user
-  # cannot write beside, which otherwise becomes /usr/agenticros.
+  # cannot write beside, which otherwise becomes /usr/synapse.
   if [[ -n "${HOME:-}" && -d "$HOME" && -w "$HOME" ]]; then
-    printf '%s\n' "$(cd "$HOME" && pwd)/agenticros"
+    printf '%s\n' "$(cd "$HOME" && pwd)/synapse"
     return 0
   fi
-  printf '%s\n' "${parent}/agenticros"
+  printf '%s\n' "${parent}/synapse"
 }
 
-corebrum_agenticros_ensure_git() {
+corebrum_synapse_ensure_git() {
   if command -v git >/dev/null 2>&1; then
     return 0
   fi
   printf 'Installing git\n'
   sudo DEBIAN_FRONTEND=noninteractive apt-get update
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git
-  command -v git >/dev/null 2>&1 || corebrum_agenticros_install_die "git is not installed"
+  command -v git >/dev/null 2>&1 || corebrum_synapse_install_die "git is not installed"
 }
 
 # Print the checkout path. An existing workspace is left in place. A missing
 # directory is cloned. A path that exists without the workspace file is left
 # untouched and the install stops.
-corebrum_agenticros_prepare_clone() {
+corebrum_synapse_prepare_clone() {
   local root parent
-  root="$(corebrum_agenticros_clone)"
+  root="$(corebrum_synapse_clone)"
   if [[ -f "${root}/pnpm-workspace.yaml" ]]; then
     printf '%s\n' "$root"
     return 0
   fi
   if [[ -e "$root" ]]; then
-    corebrum_agenticros_install_die "AgenticROS path exists but is not a clone: ${root}"
+    corebrum_synapse_install_die "Corebrum Synapse path exists but is not a clone: ${root}"
   fi
   parent="$(dirname "$root")"
   if [[ ! -d "$parent" || ! -w "$parent" ]]; then
-    corebrum_agenticros_install_die "cannot clone AgenticROS into ${root}"
+    corebrum_synapse_install_die "cannot clone Corebrum Synapse into ${root}"
   fi
-  corebrum_agenticros_ensure_git
-  printf 'Cloning AgenticROS into %s\n' "$root" >&2
-  GIT_TERMINAL_PROMPT=0 git clone --depth 1 "$COREBRUM_AGENTICROS_URL" "$root" \
-    || corebrum_agenticros_install_die "could not clone ${COREBRUM_AGENTICROS_URL}"
+  corebrum_synapse_ensure_git
+  printf 'Cloning Corebrum Synapse into %s\n' "$root" >&2
+  GIT_TERMINAL_PROMPT=0 git clone --depth 1 "$COREBRUM_SYNAPSE_URL" "$root" \
+    || corebrum_synapse_install_die "could not clone ${COREBRUM_SYNAPSE_URL}"
   if [[ ! -f "${root}/pnpm-workspace.yaml" ]]; then
-    corebrum_agenticros_install_die "cloned AgenticROS has no pnpm-workspace.yaml at ${root}"
+    corebrum_synapse_install_die "cloned Corebrum Synapse has no pnpm-workspace.yaml at ${root}"
   fi
   printf '%s\n' "$root"
 }
 
-corebrum_agenticros_pkg_installed() {
+corebrum_synapse_pkg_installed() {
   local status
   status="$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null || true)"
   [[ "$status" == "install ok installed" ]]
@@ -102,10 +102,10 @@ corebrum_agenticros_pkg_installed() {
 
 # rclnodejs compiles from source on Lyrical. A fresh Ubuntu install has Python
 # from the ROS packages, and it does not have g++ or make until this step.
-corebrum_agenticros_ensure_toolchain() {
+corebrum_synapse_ensure_toolchain() {
   local missing=() pkg
   for pkg in build-essential python3; do
-    if ! corebrum_agenticros_pkg_installed "$pkg"; then
+    if ! corebrum_synapse_pkg_installed "$pkg"; then
       missing+=("$pkg")
     fi
   done
@@ -115,7 +115,7 @@ corebrum_agenticros_ensure_toolchain() {
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
 }
 
-corebrum_agenticros_node_gyp() {
+corebrum_synapse_node_gyp() {
   local node_bin prefix
   node_bin="$(readlink -f "$(command -v node)")"
   prefix="$(dirname "$(dirname "$node_bin")")"
@@ -125,7 +125,7 @@ corebrum_agenticros_node_gyp() {
 # rclnodejs has no Lyrical prebuilt. Its own install script uses a node-gyp
 # that does not finish on this Node, so the native build runs after ROS is
 # sourced and with the node-gyp shipped beside npm.
-corebrum_agenticros_build_rclnodejs() {
+corebrum_synapse_build_rclnodejs() {
   local ros_setup="" distro gyp rcl
   if [[ -f /etc/corebrum/ros/distro ]]; then
     distro="$(tr -d '[:space:]' < /etc/corebrum/ros/distro)"
@@ -146,8 +146,8 @@ corebrum_agenticros_build_rclnodejs() {
     rcl="$(find "$root/node_modules/.pnpm" -path '*/node_modules/rclnodejs/package.json' -print -quit)"
   fi
   [[ -n "$rcl" ]] || return 0
-  gyp="$(corebrum_agenticros_node_gyp)"
-  [[ -f "$gyp" ]] || corebrum_agenticros_install_die "node-gyp not found at ${gyp}"
+  gyp="$(corebrum_synapse_node_gyp)"
+  [[ -f "$gyp" ]] || corebrum_synapse_install_die "node-gyp not found at ${gyp}"
   printf 'Building rclnodejs against %s\n' "$ros_setup"
   (
     set +u
@@ -162,51 +162,51 @@ corebrum_agenticros_build_rclnodejs() {
 
 # pnpm install --ignore-scripts skips the node-datachannel prebuild. connect
 # loads that native module before it opens the ARC socket.
-corebrum_agenticros_install_node_datachannel() {
+corebrum_synapse_install_node_datachannel() {
   local pkg bin native
   pkg="$(find "$root/node_modules/.pnpm" -path '*/node_modules/node-datachannel/package.json' -print -quit)"
-  [[ -n "$pkg" ]] || corebrum_agenticros_install_die "node-datachannel is not installed"
+  [[ -n "$pkg" ]] || corebrum_synapse_install_die "node-datachannel is not installed"
   pkg="$(dirname "$pkg")"
   native="${pkg}/build/Release/node_datachannel.node"
   if [[ -f "$native" ]] && (cd "$pkg" && node -e "require('node-datachannel')"); then
     return 0
   fi
   bin="$(find "$root/node_modules/.pnpm" -path '*/prebuild-install/bin.js' -print -quit)"
-  [[ -n "$bin" ]] || corebrum_agenticros_install_die "prebuild-install is not installed"
+  [[ -n "$bin" ]] || corebrum_synapse_install_die "prebuild-install is not installed"
   printf 'Installing the node-datachannel prebuild\n'
   (
     cd "$pkg"
     node "$bin" -r napi
-  ) || corebrum_agenticros_install_die "node-datachannel prebuild failed"
-  [[ -f "$native" ]] || corebrum_agenticros_install_die "node-datachannel binary is missing"
+  ) || corebrum_synapse_install_die "node-datachannel prebuild failed"
+  [[ -f "$native" ]] || corebrum_synapse_install_die "node-datachannel binary is missing"
 }
 
-corebrum_agenticros_install_main() {
-root="$(corebrum_agenticros_prepare_clone)"
+corebrum_synapse_install_main() {
+root="$(corebrum_synapse_prepare_clone)"
 
 if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
   # shellcheck disable=SC1091
   source /etc/profile.d/corebrum-node.sh
 fi
-command -v pnpm >/dev/null 2>&1 || corebrum_agenticros_install_die "pnpm is not installed"
-command -v node >/dev/null 2>&1 || corebrum_agenticros_install_die "node is not installed"
+command -v pnpm >/dev/null 2>&1 || corebrum_synapse_install_die "pnpm is not installed"
+command -v node >/dev/null 2>&1 || corebrum_synapse_install_die "node is not installed"
 
-corebrum_agenticros_ensure_toolchain
+corebrum_synapse_ensure_toolchain
 
-printf 'Building AgenticROS at %s\n' "$root"
+printf 'Building Corebrum Synapse at %s\n' "$root"
 (
   cd "$root"
   pnpm install --ignore-scripts
   pnpm -r build
 )
-corebrum_agenticros_install_node_datachannel
-corebrum_agenticros_build_rclnodejs
+corebrum_synapse_install_node_datachannel
+corebrum_synapse_build_rclnodejs
 
-helper_src="$(corebrum_agenticros_checkout)/scripts/desktop/corebrum-agenticros-with-ros.sh"
-if [[ ! -x /usr/local/lib/corebrum/agenticros-with-ros.sh ]]; then
-  [[ -f "$helper_src" ]] || corebrum_agenticros_install_die "missing ${helper_src}"
+helper_src="$(corebrum_synapse_checkout)/scripts/desktop/corebrum-synapse-with-ros.sh"
+if [[ ! -x /usr/local/lib/corebrum/synapse-with-ros.sh ]]; then
+  [[ -f "$helper_src" ]] || corebrum_synapse_install_die "missing ${helper_src}"
   sudo install -d /usr/local/lib/corebrum
-  sudo install -m 755 "$helper_src" /usr/local/lib/corebrum/agenticros-with-ros.sh
+  sudo install -m 755 "$helper_src" /usr/local/lib/corebrum/synapse-with-ros.sh
 fi
 
 wrapper="$(mktemp)"
@@ -217,16 +217,16 @@ if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
   # shellcheck disable=SC1091
   source /etc/profile.d/corebrum-node.sh || true
 fi
-root="$(tr -d '[:space:]' < /etc/corebrum/agenticros.root)"
-exec /usr/local/lib/corebrum/agenticros-with-ros.sh node "$root/packages/agenticros-cli/dist/index.js" "$@"
+root="$(tr -d '[:space:]' < /etc/corebrum/synapse.root)"
+exec /usr/local/lib/corebrum/synapse-with-ros.sh node "$root/packages/synapse-cli/dist/index.js" "$@"
 EOF
 sudo install -d /etc/corebrum /usr/local/bin
-printf '%s\n' "$root" | sudo tee /etc/corebrum/agenticros.root >/dev/null
-sudo install -m 755 "$wrapper" /usr/local/bin/agenticros
+printf '%s\n' "$root" | sudo tee /etc/corebrum/synapse.root >/dev/null
+sudo install -m 755 "$wrapper" /usr/local/bin/synapse
 rm -f "$wrapper"
-printf 'AgenticROS CLI is linked at /usr/local/bin/agenticros\n'
+printf 'Corebrum Synapse CLI is linked at /usr/local/bin/synapse\n'
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-  corebrum_agenticros_install_main
+  corebrum_synapse_install_main
 fi

@@ -9,7 +9,7 @@ Status: Accepted
 
 ## Decision
 
-- The idle Super+Space list is the parent entries and the normal applications. AI Agents, ROS, RealSense, and AgenticROS still open their submenus.
+- The idle Super+Space list is the parent entries and the normal applications. AI Agents, ROS, RealSense, and Corebrum Synapse still open their submenus.
 - Each submenu item is still a desktop file, with `NoDisplay=true`, so the idle list and the app grid omit it. The file is removed when that item leaves the submenu.
 - The Super+Space window reads those files itself. An empty search box does not show them. Typing `grok`, `gazebo`, or another submenu name adds the matching row. Choosing it installs or launches that item, the same command the submenu runs.
 - The window uses GTK and the layer shell. `python3-gi`, `gir1.2-gtk-3.0`, and `libgtk-layer-shell0` are desktop packages. Both noble and resolute publish them. If GTK cannot start, Super+Space falls back to Fuzzel with a blank prompt.

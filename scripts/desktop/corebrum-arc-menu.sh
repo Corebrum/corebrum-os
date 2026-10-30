@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Super+Space AgenticROS Cloud entry. Opens the site in Firefox.
+# Super+Space Corebrum Cloud entry. Opens the site in Firefox.
 # Refresh only writes the desktop row. It does not install a browser.
 set -euo pipefail
 
-COREBRUM_ARC_URL='https://cloud.agenticros.com'
+COREBRUM_ARC_URL='https://cloud.corebrum.com'
 
 corebrum_arc_data_dir() {
   local root="${XDG_RUNTIME_DIR:-/tmp/corebrum-launcher-${UID}}"
@@ -18,12 +18,12 @@ corebrum_arc_refresh() {
   cat >"$dest" <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=AgenticROS Cloud (ARC)
-GenericName=AgenticROS Cloud (ARC)
-Comment=AgenticROS Cloud
-Keywords=arc;cloud;agenticros
+Name=Corebrum Cloud
+GenericName=Corebrum Cloud
+Comment=Corebrum Cloud
+Keywords=arc;cloud;synapse
 Exec=/usr/local/bin/corebrum-arc-menu open
-Icon=/usr/share/corebrum/agenticros.png
+Icon=/usr/share/corebrum/icon.png
 Terminal=false
 Categories=Network;
 StartupNotify=false

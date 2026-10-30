@@ -24,7 +24,7 @@ The apt name is `ros-jazzy-<suffix>` on noble and `ros-lyrical-<suffix>` on reso
 - Super+Space still opens Fuzzel. Before Fuzzel starts, the session writes a desktop entry under the user runtime directory, not under `~/.config`. The entry is `ROS 2   install` until `ros-<distro>-ros-base` is installed, then `ROS`.
 - Choosing that entry before ROS 2 is installed opens a terminal and runs `sudo corebrum install ros`.
 - Choosing `ROS` after that opens a Fuzzel submenu. Each missing tool is labeled with `install`. Choosing it installs only that package with apt, after the ROS apt source from the ros profile is already present. Choosing an installed tool launches it directly. `with-ros.sh` sources the ROS environment, so no terminal window is opened beside the GUI. Installing still opens a terminal, because that is where apt runs and where the password prompt appears. RViz, Gazebo, and Nav2 set `QT_QPA_PLATFORM=xcb`. RViz and Gazebo render with GLX. Under the Wayland session, Qt otherwise creates a Wayland window and Ogre aborts with `Invalid parentWindowHandle` after the splash screen. XWayland is already part of the desktop profile.
-- The tool list is `manifests/packages/ros-tools.conf`, installed to `/etc/corebrum/ros-tools.conf`. RealSense is a separate Super+Space entry. AgenticROS and Corebrum Mesh are not on the ROS list.
+- The tool list is `manifests/packages/ros-tools.conf`, installed to `/etc/corebrum/ros-tools.conf`. RealSense is a separate Super+Space entry. Corebrum Synapse and Corebrum Mesh are not on the ROS list.
 
 ## Consequences
 

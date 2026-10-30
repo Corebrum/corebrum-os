@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-Corebrum OS started on Ubuntu Server 24.04 x86-64. Decision 0010 added Ubuntu 26.04 x86-64. Decision 0060 added an Ubuntu 26.04 aarch64 desktop beside that, and left Ubuntu 24.04 x86-64 in place. On 2026-10-26 a Raspberry Pi 5 on Ubuntu 26.04 ran the desktop, ROS 2 Lyrical, RealSense, AgenticROS, and the AI agents.
+Corebrum OS started on Ubuntu Server 24.04 x86-64. Decision 0010 added Ubuntu 26.04 x86-64. Decision 0060 added an Ubuntu 26.04 aarch64 desktop beside that, and left Ubuntu 24.04 x86-64 in place. On 2026-10-26 a Raspberry Pi 5 on Ubuntu 26.04 ran the desktop, ROS 2 Lyrical, RealSense, Corebrum Synapse, and the AI agents.
 
 Keeping two Ubuntu releases means two Hyprland sources, two ROS distros, and a greeter that exists only on 26.04. The Hyprland personal archive used on 24.04 publishes amd64 packages.
 

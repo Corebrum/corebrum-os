@@ -31,12 +31,12 @@ pages=(
   ros.html
   zenoh.html
   realsense.html
-  agenticros.html
+  synapse.html
   agents.html
   mission.html
   keybindings.html
   corebrum-cli.html
-  agenticros-cli.html
+  synapse-cli.html
 )
 
 for page in "${pages[@]}"; do
@@ -55,7 +55,7 @@ fi
 if ! grep -q 'The Physical AI Operating System' "$nav"; then
   fail "sidebar does not show the tagline"
 fi
-for icon in /ros.png /zenoh.png /realsense.png /agenticros.png /agents.png /ollama.png; do
+for icon in /ros.png /zenoh.png /realsense.png /icon.png /agents.png /ollama.png; do
   if ! grep -q "src=\"${icon}\"" "${docs}/index.html"; then
     fail "welcome page does not reference ${icon}"
   fi
@@ -118,12 +118,12 @@ if ! grep -qF 'https://realsenseai.com' "${docs}/realsense.html"; then
   fail "RealSense page is missing https://realsenseai.com"
 fi
 for site in \
-  "https://agenticros.com" \
-  "https://skills.agenticros.com" \
-  "https://cloud.agenticros.com"
+  "https://corebrum.com/synapse" \
+  "https://skills.corebrum.com" \
+  "https://cloud.corebrum.com"
 do
-  if ! grep -qF "$site" "${docs}/agenticros.html"; then
-    fail "AgenticROS page is missing ${site}"
+  if ! grep -qF "$site" "${docs}/synapse.html"; then
+    fail "Corebrum Synapse page is missing ${site}"
   fi
 done
 
@@ -187,35 +187,35 @@ do
 done
 
 for command in \
-  "agenticros init" \
-  "agenticros status" \
-  "agenticros doctor" \
-  "agenticros connect" \
-  "agenticros disconnect" \
-  "agenticros login" \
-  "agenticros start realsense" \
-  "agenticros stop realsense" \
-  "agenticros start camera" \
-  "agenticros stop camera" \
-  "agenticros start motors" \
-  "agenticros stop motors" \
-  "agenticros eyes" \
-  "agenticros stop eyes" \
-  "agenticros up real" \
-  "agenticros up sim-amr" \
-  "agenticros up sim-arm" \
-  "agenticros down" \
-  "agenticros mode real" \
-  "agenticros mode sim" \
-  "agenticros mcp setup" \
-  "agenticros skills list" \
-  "agenticros skills search" \
-  "agenticros skills install" \
-  "agenticros skills remove" \
-  "agenticros desktop"
+  "synapse init" \
+  "synapse status" \
+  "synapse doctor" \
+  "synapse connect" \
+  "synapse disconnect" \
+  "synapse login" \
+  "synapse start realsense" \
+  "synapse stop realsense" \
+  "synapse start camera" \
+  "synapse stop camera" \
+  "synapse start motors" \
+  "synapse stop motors" \
+  "synapse eyes" \
+  "synapse stop eyes" \
+  "synapse up real" \
+  "synapse up sim-amr" \
+  "synapse up sim-arm" \
+  "synapse down" \
+  "synapse mode real" \
+  "synapse mode sim" \
+  "synapse mcp setup" \
+  "synapse skills list" \
+  "synapse skills search" \
+  "synapse skills install" \
+  "synapse skills remove" \
+  "synapse desktop"
 do
-  if ! grep -qF "$command" "${docs}/agenticros-cli.html"; then
-    fail "AgenticROS commands page is missing ${command}"
+  if ! grep -qF "$command" "${docs}/synapse-cli.html"; then
+    fail "Corebrum Synapse commands page is missing ${command}"
   fi
 done
 

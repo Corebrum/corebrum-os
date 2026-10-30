@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corebrum Synapse commands — Corebrum</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- corebrum-nav -->
+    <main>
+      <h1><img src="/icon.png" alt="">Corebrum Synapse commands</h1>
+      <p>These are the <code>synapse</code> commands this desktop runs. Super+Space Corebrum Synapse installs the CLI and runs <code>synapse init --yes</code>. The same menu can run the rows below.</p>
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>synapse init --yes</code></td><td>Write the local ROS config and register agents already on <code>PATH</code></td></tr>
+          <tr><td><code>synapse status</code></td><td>Show Corebrum Synapse status</td></tr>
+          <tr><td><code>synapse doctor</code></td><td>Check the install. It warns when the RMW file is not <code>rmw_zenoh_cpp</code></td></tr>
+          <tr><td><code>synapse connect</code></td><td>Connect to Corebrum Cloud</td></tr>
+          <tr><td><code>synapse disconnect</code></td><td>Disconnect from Corebrum Cloud</td></tr>
+          <tr><td><code>synapse login</code></td><td>Sign in to Corebrum Cloud</td></tr>
+          <tr><td><code>synapse start realsense</code></td><td>Start the RealSense camera</td></tr>
+          <tr><td><code>synapse stop realsense</code></td><td>Stop the RealSense camera</td></tr>
+          <tr><td><code>synapse start camera</code></td><td>Start the 2D camera</td></tr>
+          <tr><td><code>synapse stop camera</code></td><td>Stop the 2D camera</td></tr>
+          <tr><td><code>synapse start motors</code></td><td>Start the motors</td></tr>
+          <tr><td><code>synapse stop motors</code></td><td>Stop the motors</td></tr>
+          <tr><td><code>synapse eyes</code></td><td>Start the eyes</td></tr>
+          <tr><td><code>synapse stop eyes</code></td><td>Stop the eyes</td></tr>
+          <tr><td><code>synapse up real</code></td><td>Bring up the real robot stack</td></tr>
+          <tr><td><code>synapse up sim-amr</code></td><td>Bring up the simulated AMR stack</td></tr>
+          <tr><td><code>synapse up sim-arm</code></td><td>Bring up the simulated arm stack</td></tr>
+          <tr><td><code>synapse down</code></td><td>Stop the stack</td></tr>
+          <tr><td><code>synapse mode real</code></td><td>Switch to the real robot</td></tr>
+          <tr><td><code>synapse mode sim</code></td><td>Switch to simulation</td></tr>
+          <tr><td><code>synapse mcp setup</code></td><td>Register installed agent CLIs. The menu runs <code>synapse mcp setup --installed</code></td></tr>
+          <tr><td><code>synapse skills list</code></td><td>List installed skills</td></tr>
+          <tr><td><code>synapse skills search</code></td><td>Search the skill catalog</td></tr>
+          <tr><td><code>synapse skills install</code></td><td>Install a skill after you answer Yes</td></tr>
+          <tr><td><code>synapse skills remove</code></td><td>Remove a skill</td></tr>
+          <tr><td><code>synapse desktop</code></td><td>Send the screen to Corebrum Cloud</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</body>
+</html>

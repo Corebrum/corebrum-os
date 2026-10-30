@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Super+Space Skills entry. Lists, searches, installs, and removes AgenticROS skills.
+# Super+Space Skills entry. Lists, searches, installs, and removes Corebrum Synapse skills.
 # Refresh only writes the desktop row. It does not install a skill.
 set -euo pipefail
 
@@ -8,7 +8,7 @@ corebrum_skills_ready() {
     [[ "${COREBRUM_SKILLS_READY:-0}" == 1 ]]
     return
   fi
-  [[ -x /usr/local/bin/agenticros && -f "${HOME}/.agenticros/config.json" ]]
+  [[ -x /usr/local/bin/synapse && -f "${HOME}/.synapse/config.json" ]]
 }
 
 corebrum_skills_data_dir() {
@@ -28,12 +28,12 @@ corebrum_skills_refresh() {
   cat >"$dest" <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=AgenticROS Skills
-GenericName=AgenticROS Skills
-Comment=AgenticROS skills on this machine
-Keywords=skills;agenticros
+Name=Corebrum Skills
+GenericName=Corebrum Skills
+Comment=Corebrum Synapse skills on this machine
+Keywords=skills;synapse
 Exec=/usr/local/bin/corebrum-skills-menu open
-Icon=/usr/share/corebrum/agenticros.png
+Icon=/usr/share/corebrum/icon.png
 Terminal=false
 Categories=Science;Development;
 StartupNotify=false
@@ -48,34 +48,34 @@ corebrum_skills_command() {
   local choice="$1" ref
   case "$choice" in
     List)
-      printf '%s\n' "agenticros skills list"
+      printf '%s\n' "synapse skills list"
       ;;
     Search)
       if [[ "${COREBRUM_SKILLS_STUB:-0}" == 1 ]]; then
         ref="${COREBRUM_SKILLS_QUERY:-}"
         [[ -n "$ref" ]] || return 0
-        printf 'agenticros skills search %q\n' "$ref"
+        printf 'synapse skills search %q\n' "$ref"
         return 0
       fi
-      printf '%s\n' 'read -r -p "Search skills: " q && agenticros skills search "$q"'
+      printf '%s\n' 'read -r -p "Search skills: " q && synapse skills search "$q"'
       ;;
     Install)
       if [[ "${COREBRUM_SKILLS_STUB:-0}" == 1 ]]; then
         ref="${COREBRUM_SKILLS_QUERY:-}"
         [[ -n "$ref" ]] || return 0
-        printf 'agenticros skills install %q\n' "$ref"
+        printf 'synapse skills install %q\n' "$ref"
         return 0
       fi
-      printf '%s\n' 'read -r -p "Install skill: " ref && agenticros skills install "$ref"'
+      printf '%s\n' 'read -r -p "Install skill: " ref && synapse skills install "$ref"'
       ;;
     Remove)
       if [[ "${COREBRUM_SKILLS_STUB:-0}" == 1 ]]; then
         ref="${COREBRUM_SKILLS_QUERY:-}"
         [[ -n "$ref" ]] || return 0
-        printf 'agenticros skills remove %q\n' "$ref"
+        printf 'synapse skills remove %q\n' "$ref"
         return 0
       fi
-      printf '%s\n' 'read -r -p "Remove skill: " ref && agenticros skills remove "$ref"'
+      printf '%s\n' 'read -r -p "Remove skill: " ref && synapse skills remove "$ref"'
       ;;
     *)
       return 0
@@ -124,7 +124,7 @@ corebrum_skills_open() {
   choice="$(corebrum_skills_labels | fuzzel \
     --config /etc/corebrum/fuzzel/fuzzel.ini \
     --dmenu \
-    --prompt 'AgenticROS Skills  ' \
+    --prompt 'Corebrum Skills  ' \
     --width 48 \
     --lines 8)" || return 0
   [[ -n "$choice" ]] || return 0

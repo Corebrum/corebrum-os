@@ -58,4 +58,4 @@ Desktop uninstall removes the portal config and disables units this installer en
 
 ## What is not done
 
-Phase 3 is not accepted until Wi-Fi and Ethernet can be managed, playback and recording work, a USB drive appears in Thunar, `wdisplays` can change the display, and a browser screen share works where the hardware allows it. The installer does not run `systemctl suspend`. ROS 2, Zenoh, RViz, Gazebo, RealSense, and AgenticROS are not part of this install.
+Phase 3 is not accepted until Wi-Fi and Ethernet can be managed, playback and recording work, a USB drive appears in Thunar, `wdisplays` can change the display, and a browser screen share works where the hardware allows it. The installer does not run `systemctl suspend`. ROS 2, Zenoh, RViz, Gazebo, RealSense, and Corebrum Synapse are not part of this install.

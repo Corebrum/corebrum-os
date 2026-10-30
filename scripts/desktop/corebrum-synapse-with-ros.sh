@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Source Corebrum ROS and force the Zenoh RMW, then exec the remaining arguments.
-# AgenticROS and every agent MCP server start through this wrapper.
+# Corebrum Synapse and every agent MCP server start through this wrapper.
 set -euo pipefail
 if [[ -f /etc/profile.d/corebrum-node.sh ]]; then
   # shellcheck disable=SC1091

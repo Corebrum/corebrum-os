@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Skills is a Super+Space row after AgenticROS is installed. Refresh does not install.
+# Skills is a Super+Space row after Corebrum Synapse is installed. Refresh does not install.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -37,17 +37,17 @@ export COREBRUM_SKILLS_STUB=1
 COREBRUM_SKILLS_READY=0 bash "$menu" refresh
 desktop="${runtime}/corebrum/applications/corebrum-skills.desktop"
 if [[ -f "$desktop" ]]; then
-  echo "FAIL: Skills is listed before AgenticROS is installed" >&2
+  echo "FAIL: Skills is listed before Corebrum Synapse is installed" >&2
   fail=1
 fi
 
 COREBRUM_SKILLS_READY=1 bash "$menu" refresh
-if ! grep -q '^Name=AgenticROS Skills$' "$desktop"; then
-  echo "FAIL: AgenticROS Skills row is missing" >&2
+if ! grep -q '^Name=Corebrum Skills$' "$desktop"; then
+  echo "FAIL: Corebrum Skills row is missing" >&2
   fail=1
 fi
-if ! grep -q '^Icon=/usr/share/corebrum/agenticros.png$' "$desktop"; then
-  echo "FAIL: the Skills menu row does not use the AgenticROS mark" >&2
+if ! grep -q '^Icon=/usr/share/corebrum/icon.png$' "$desktop"; then
+  echo "FAIL: the Skills menu row does not use the Corebrum Synapse mark" >&2
   fail=1
 fi
 if grep -q 'skills install' "$desktop"; then
@@ -62,19 +62,19 @@ if [[ "$output" != *List* || "$output" != *Install* ]]; then
 fi
 
 output="$(COREBRUM_SKILLS_READY=1 COREBRUM_SKILLS_CHOICE=List bash "$menu" open)"
-if [[ "$output" != *'agenticros skills list'* || "$output" != *'Press Enter to close.'* ]]; then
+if [[ "$output" != *'synapse skills list'* || "$output" != *'Press Enter to close.'* ]]; then
   echo "FAIL: List did not keep the terminal open (got ${output})" >&2
   fail=1
 fi
 
-output="$(COREBRUM_SKILLS_READY=1 COREBRUM_SKILLS_CHOICE=Install COREBRUM_SKILLS_QUERY=agenticros/navigate-to bash "$menu" open)"
-if [[ "$output" != *'agenticros skills install agenticros/navigate-to'* || "$output" != *'Press Enter to close.'* ]]; then
+output="$(COREBRUM_SKILLS_READY=1 COREBRUM_SKILLS_CHOICE=Install COREBRUM_SKILLS_QUERY=synapse/navigate-to bash "$menu" open)"
+if [[ "$output" != *'synapse skills install synapse/navigate-to'* || "$output" != *'Press Enter to close.'* ]]; then
   echo "FAIL: Install did not keep the terminal open (got ${output})" >&2
   fail=1
 fi
 
 set +e
-COREBRUM_SKILLS_APPROVE_ANSWER=no bash "$approve" "Navigate" "@agenticros" "Drive to a place." >/dev/null
+COREBRUM_SKILLS_APPROVE_ANSWER=no bash "$approve" "Navigate" "@synapse" "Drive to a place." >/dev/null
 status=$?
 set -e
 if [[ "$status" -eq 0 ]]; then
@@ -83,7 +83,7 @@ if [[ "$status" -eq 0 ]]; then
 fi
 
 set +e
-answer="$(COREBRUM_SKILLS_APPROVE_ANSWER=yes bash "$approve" "Navigate" "@agenticros" "Drive to a place.")"
+answer="$(COREBRUM_SKILLS_APPROVE_ANSWER=yes bash "$approve" "Navigate" "@synapse" "Drive to a place.")"
 status=$?
 set -e
 if [[ "$status" -ne 0 || "$answer" != "Yes" ]]; then

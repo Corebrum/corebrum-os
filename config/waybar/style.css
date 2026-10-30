@@ -29,18 +29,18 @@ window#waybar {
 #network,
 #pulseaudio,
 #battery,
-#custom-agenticros,
+#custom-cloud,
 #tray,
 #clock,
 #window {
     padding: 0 8px;
 }
 
-#custom-agenticros.connected {
+#custom-cloud.connected {
     color: #3d9a8b;
 }
 
-#custom-agenticros.idle {
+#custom-cloud.idle {
     color: rgba(232, 230, 227, 0.55);
 }
 

@@ -3,8 +3,8 @@
 set -euo pipefail
 
 COREBRUM_ZENOH_FLEET_INSTALL_MARK='   install'
-COREBRUM_ZENOH_FLEET_PACKAGE='@agenticros/zenoh-fleet@0.1.4'
-COREBRUM_ZENOH_FLEET_ALLOW='@agenticros/zenoh-fleet'
+COREBRUM_ZENOH_FLEET_PACKAGE='@corebrum/zenoh-fleet@0.1.4'
+COREBRUM_ZENOH_FLEET_ALLOW='@corebrum/zenoh-fleet'
 
 corebrum_zenoh_fleet_prepare_path() {
   local here helper

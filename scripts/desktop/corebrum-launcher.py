@@ -18,7 +18,7 @@ SEARCH_PREFIXES = (
     "corebrum-agent-",
     "corebrum-ros-tool-",
     "corebrum-realsense-tool-",
-    "corebrum-agenticros-action-",
+    "corebrum-synapse-action-",
 )
 FIELD_CODES = {
     "%f", "%F", "%u", "%U", "%i", "%c", "%k", "%d", "%D", "%n", "%N", "%v", "%m",

@@ -7,7 +7,7 @@ set -euo pipefail
 pids=()
 /usr/local/bin/corebrum-ros-menu refresh &
 pids+=("$!")
-/usr/local/bin/corebrum-agenticros-menu refresh &
+/usr/local/bin/corebrum-synapse-menu refresh &
 pids+=("$!")
 /usr/local/bin/corebrum-skills-menu refresh &
 pids+=("$!")

@@ -7,7 +7,7 @@ Status: Accepted
 
 Corebrum OS is inspired by [Omarchy](https://github.com/omacom/omarchy) (`quattro`). That system is keyboard-first: Hyprland dwindle tiling, a Quickshell menu (`Super+Space`), an app grid (`Super+Alt+Space`), a dock, themes, and a scratchpad (`Super+S`). The Corebrum build plan also names Waybar, Fuzzel, and Kitty, which match an earlier Omarchy desktop.
 
-Physical AI tools need a visible place to start: ROS 2, RViz, Gazebo, cameras, Zenoh, and later AgenticROS and Corebrum Mesh.
+Physical AI tools need a visible place to start: ROS 2, RViz, Gazebo, cameras, Zenoh, and later Corebrum Synapse and Corebrum Mesh.
 
 ## Decision
 

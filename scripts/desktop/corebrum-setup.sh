@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# First-login setup. ROS 2, then RealSense, then AgenticROS, then AI agents.
+# First-login setup. ROS 2, then RealSense, then Corebrum Synapse, then AI agents.
 # Skip or exit is available on every step. Exit remembers that choice.
 set -euo pipefail
 
@@ -64,7 +64,7 @@ corebrum_setup_choice() {
 }
 
 corebrum_setup_quit() {
-  corebrum_setup_say "Setup closed. Super+Space can install ROS 2, RealSense, AgenticROS, and AI Agents later."
+  corebrum_setup_say "Setup closed. Super+Space can install ROS 2, RealSense, Corebrum Synapse, and AI Agents later."
   corebrum_setup_mark_done
   exit 0
 }
@@ -144,12 +144,12 @@ corebrum_setup_realsense_ready() {
   [[ -n "$name" && "$name" != *install* ]]
 }
 
-corebrum_setup_agenticros_ready() {
+corebrum_setup_synapse_ready() {
   if [[ "${COREBRUM_SETUP_STUB:-0}" == 1 ]]; then
     [[ "${COREBRUM_SETUP_AGENTICROS:-0}" == 1 ]]
     return
   fi
-  [[ -x /usr/local/bin/agenticros && -f "${HOME}/.agenticros/config.json" ]]
+  [[ -x /usr/local/bin/synapse && -f "${HOME}/.synapse/config.json" ]]
 }
 
 corebrum_setup_agents_ready() {
@@ -164,12 +164,12 @@ corebrum_setup_agents_ready() {
   [[ "$any" == 1 ]]
 }
 
-# ROS 2, RealSense, AgenticROS, and every catalog agent. A missing piece
+# ROS 2, RealSense, Corebrum Synapse, and every catalog agent. A missing piece
 # still opens the wizard. A finished set writes the marker and stays closed.
 corebrum_setup_complete() {
   corebrum_setup_ros_ready || return 1
   corebrum_setup_realsense_ready || return 1
-  corebrum_setup_agenticros_ready || return 1
+  corebrum_setup_synapse_ready || return 1
   corebrum_setup_agents_ready
 }
 
@@ -211,20 +211,20 @@ corebrum_setup_install_realsense() {
   return 1
 }
 
-corebrum_setup_install_agenticros() {
-  local script="/usr/local/lib/corebrum/agenticros-install.sh"
+corebrum_setup_install_synapse() {
+  local script="/usr/local/lib/corebrum/synapse-install.sh"
   if [[ "${COREBRUM_SETUP_STUB:-0}" != 1 && ! -x "$script" ]]; then
-    corebrum_setup_say "The AgenticROS installer is not installed."
+    corebrum_setup_say "The Corebrum Synapse installer is not installed."
     return 1
   fi
   if ! corebrum_setup_run "$script"; then
     return 1
   fi
-  if ! corebrum_setup_run /usr/local/bin/agenticros init --yes; then
+  if ! corebrum_setup_run /usr/local/bin/synapse init --yes; then
     return 1
   fi
   COREBRUM_SETUP_AGENTICROS=1
-  COREBRUM_AGENTICROS_READY=1
+  COREBRUM_SYNAPSE_READY=1
   return 0
 }
 
@@ -241,7 +241,7 @@ corebrum_setup_step_ros() {
   while true; do
     corebrum_setup_ask \
       "Step 1 of 4 — ROS 2" \
-      "ROS 2 is the robot middleware. RealSense and AgenticROS need it." \
+      "ROS 2 is the robot middleware. RealSense and Corebrum Synapse need it." \
       "  i  Install" \
       "  s  Skip" \
       "  x  Exit"
@@ -303,17 +303,17 @@ corebrum_setup_step_realsense() {
   done
 }
 
-corebrum_setup_step_agenticros() {
+corebrum_setup_step_synapse() {
   local choice
-  if corebrum_setup_agenticros_ready; then
-    corebrum_setup_say "AgenticROS is already installed."
+  if corebrum_setup_synapse_ready; then
+    corebrum_setup_say "Corebrum Synapse is already installed."
     return 0
   fi
   while true; do
     if ! corebrum_setup_ros_ready; then
       corebrum_setup_ask \
-        "Step 3 of 4 — AgenticROS" \
-        "AgenticROS needs ROS 2, and ROS 2 is not installed yet." \
+        "Step 3 of 4 — Corebrum Synapse" \
+        "Corebrum Synapse needs ROS 2, and ROS 2 is not installed yet." \
         "  r  Install ROS 2 now" \
         "  s  Skip" \
         "  x  Exit"
@@ -325,20 +325,20 @@ corebrum_setup_step_agenticros() {
           ;;
         s) return 0 ;;
         x) corebrum_setup_quit ;;
-        *) corebrum_setup_say "AgenticROS needs ROS 2. Press r to install ROS 2, s to skip, or x to exit." ;;
+        *) corebrum_setup_say "Corebrum Synapse needs ROS 2. Press r to install ROS 2, s to skip, or x to exit." ;;
       esac
       continue
     fi
     corebrum_setup_ask \
-      "Step 3 of 4 — AgenticROS" \
-      "Builds AgenticROS, connects it to this machine's Zenoh ROS graph, and registers agents that are already installed." \
+      "Step 3 of 4 — Corebrum Synapse" \
+      "Builds Corebrum Synapse, connects it to this machine's Zenoh ROS graph, and registers agents that are already installed." \
       "  i  Install" \
       "  s  Skip" \
       "  x  Exit"
     choice="$(corebrum_setup_choice)"
     case "$choice" in
       i)
-        corebrum_setup_install_agenticros && return 0
+        corebrum_setup_install_synapse && return 0
         corebrum_setup_failed
         ;;
       s) return 0 ;;
@@ -379,7 +379,7 @@ corebrum_setup_install_agent() {
     COREBRUM_AGENTS_INSTALLED="${COREBRUM_AGENTS_INSTALLED:-} ${binary}"
     export COREBRUM_AGENTS_INSTALLED
     if [[ "${COREBRUM_SETUP_AGENTICROS:-0}" == 1 ]]; then
-      COREBRUM_AGENTS_STUB=1 COREBRUM_AGENTICROS_READY=1 "$menu" couple "$id" || true
+      COREBRUM_AGENTS_STUB=1 COREBRUM_SYNAPSE_READY=1 "$menu" couple "$id" || true
     fi
     return 0
   fi
@@ -466,10 +466,10 @@ corebrum_setup_main() {
     exec 3<<<"${COREBRUM_SETUP_ANSWERS:-}"
   fi
   corebrum_setup_say "Corebrum setup"
-  corebrum_setup_say "Four steps, in order. RealSense and AgenticROS need ROS 2. You can skip or exit at any step."
+  corebrum_setup_say "Four steps, in order. RealSense and Corebrum Synapse need ROS 2. You can skip or exit at any step."
   corebrum_setup_step_ros
   corebrum_setup_step_realsense
-  corebrum_setup_step_agenticros
+  corebrum_setup_step_synapse
   corebrum_setup_step_agents
 }
 

@@ -96,8 +96,8 @@ exec sh -c 'sleep 2; exec /usr/local/bin/corebrum-updates-menu remind'
 exec /usr/local/bin/corebrum-autolock start
 exec /usr/local/bin/corebrum-autotile
 exec /usr/local/bin/corebrum-terminal --class corebrum-agent
-# First graphical login. RealSense and AgenticROS need ROS 2, so the wizard
-# offers them in that order. When ROS 2, RealSense, AgenticROS, and every AI
+# First graphical login. RealSense and Corebrum Synapse need ROS 2, so the wizard
+# offers them in that order. When ROS 2, RealSense, Corebrum Synapse, and every AI
 # agent are already installed, login writes
 # ${XDG_STATE_HOME:-~/.local/state}/corebrum/setup-done and stays closed.
 # Skip and Exit are on every step. Exit writes that marker, and later logins

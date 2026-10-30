@@ -127,8 +127,8 @@ if [[ -z "$ros_line" || -z "$rs_line" || "$ros_line" -ge "$rs_line" ]]; then
   printf '%s\n' "$out" >&2
   exit 1
 fi
-if grep -q 'agenticros-install.sh' <<<"$out"; then
-  echo "FAIL: skipping AgenticROS still built it" >&2
+if grep -q 'synapse-install.sh' <<<"$out"; then
+  echo "FAIL: skipping Corebrum Synapse still built it" >&2
   exit 1
 fi
 
@@ -149,13 +149,13 @@ fi
 
 state="$(mktemp -d)"
 out="$(COREBRUM_SETUP_ANSWERS=$'i\ns\ni\n2\ns\n' run_setup "$state")"
-if ! grep -q 'run: /usr/local/lib/corebrum/agenticros-install.sh' <<<"$out"; then
-  echo "FAIL: AgenticROS did not build from the wizard" >&2
+if ! grep -q 'run: /usr/local/lib/corebrum/synapse-install.sh' <<<"$out"; then
+  echo "FAIL: Corebrum Synapse did not build from the wizard" >&2
   printf '%s\n' "$out" >&2
   exit 1
 fi
-if ! grep -q 'run: /usr/local/bin/agenticros init --yes' <<<"$out"; then
-  echo "FAIL: the wizard did not init AgenticROS" >&2
+if ! grep -q 'run: /usr/local/bin/synapse init --yes' <<<"$out"; then
+  echo "FAIL: the wizard did not init Corebrum Synapse" >&2
   exit 1
 fi
 if ! grep -q 'https://claude.ai/install.sh' <<<"$out"; then
@@ -163,8 +163,8 @@ if ! grep -q 'https://claude.ai/install.sh' <<<"$out"; then
   printf '%s\n' "$out" >&2
   exit 1
 fi
-if ! grep -q 'agenticros mcp setup --claude' <<<"$out"; then
-  echo "FAIL: installing Claude after AgenticROS did not register it" >&2
+if ! grep -q 'synapse mcp setup --claude' <<<"$out"; then
+  echo "FAIL: installing Claude after Corebrum Synapse did not register it" >&2
   exit 1
 fi
 agent_line="$(line_of <(printf '%s\n' "$out") 'https://claude.ai/install.sh' || true)"
