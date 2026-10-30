@@ -1,7 +1,7 @@
 # 0090. Jetson desktop install replaces the L4T display manager alias
 
 Date: 2026-10-29
-Status: Accepted
+Status: Accepted. Decision 0096 applies this handoff on every machine, including Ubuntu Desktop, and documents switching back.
 
 ## Context
 

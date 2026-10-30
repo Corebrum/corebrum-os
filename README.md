@@ -22,14 +22,14 @@ Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. On 2026-1
 
 [Ubuntu Server installation](docs/installation/ubuntu-server-install.md) walks through installing Ubuntu Server 24.04 or 26.04, opening SSH from a Mac, adding a GitHub key on the server, and cloning this repository. After that, return here for the Corebrum OS install.
 
-On any NVIDIA Jetson, including AGX Orin, Orin Nano, and Thor, turn off NVIDIA's desktop interface before the Corebrum OS desktop install. Ubuntu Server 24.04 and 26.04 on x86-64 and on other ARM machines keep their existing boot target.
+Ubuntu Desktop and the NVIDIA Jetson image, including AGX Orin, Orin Nano, and Thor, start GNOME. Turn that session off before the Corebrum OS desktop install, then reboot:
 
 ```bash
 sudo systemctl set-default multi-user.target
 sudo reboot
 ```
 
-Log in again after the reboot. The same note is in `docs/installation/ubuntu-server-install.md` and `docs/installation/ubuntu-server.md`.
+Log in on the text console after the reboot. The installer records GNOME's greeter and starts the Corebrum login on the following boot. GNOME stays installed. The same steps, and how to boot the Ubuntu or NVIDIA desktop again, are in `docs/installation/desktop.md`. Ubuntu Server 24.04 and 26.04 on x86-64 and on other ARM machines keep their existing boot target. The same note is in `docs/installation/ubuntu-server-install.md` and `docs/installation/ubuntu-server.md`.
 
 A fresh server does not have this repository yet:
 

@@ -75,4 +75,4 @@ If an install stops, read that log and run `corebrum doctor`.
 sudo corebrum uninstall desktop
 ```
 
-This is the desktop uninstall from `docs/installation/desktop.md`. `corebrum uninstall base` refuses to remove Ubuntu packages.
+This is the desktop uninstall from `docs/installation/desktop.md`. On a machine that had Ubuntu Desktop or the NVIDIA Jetson desktop, uninstall puts that greeter back. Set `graphical.target` afterward, as that page describes, to open it. `corebrum uninstall base` refuses to remove Ubuntu packages.

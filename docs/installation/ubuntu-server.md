@@ -65,16 +65,16 @@ The second install is successful when validation still passes, no duplicate loca
 
 `./scripts/uninstall.sh` exits with an error. Phase 1 does not have a product package to remove, and it will not uninstall Ubuntu packages such as `ca-certificates` or `git`.
 
-## NVIDIA Jetson
+## Ubuntu Desktop and NVIDIA Jetson
 
-NVIDIA's desktop interface has to be turned off before the Corebrum OS desktop is installed. This applies to every Jetson, including AGX Orin, Orin Nano, and Thor:
+Ubuntu Desktop and NVIDIA's Jetson desktop start GNOME. Turn that session off before the Corebrum OS desktop is installed. This applies to Ubuntu Desktop and to every Jetson, including AGX Orin, Orin Nano, and Thor:
 
 ```bash
 sudo systemctl set-default multi-user.target
 sudo reboot
 ```
 
-Log in on the text console after the reboot. Ubuntu Server 24.04 and 26.04 on x86-64 and on other ARM machines keep their existing boot target.
+Log in on the text console after the reboot. The desktop install records that greeter and opens the Corebrum login on the next boot. GNOME stays installed. Switching back is documented in `docs/installation/desktop.md`. Ubuntu Server 24.04 and 26.04 on x86-64 and on other ARM machines keep their existing boot target.
 
 ## What remains
 

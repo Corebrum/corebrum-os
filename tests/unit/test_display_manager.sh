@@ -41,10 +41,10 @@ reset_link() {
   ln -s "${tmp}/units/gdm3.service" "$COREBRUM_DISPLAY_MANAGER_LINK"
 }
 
-assert_existing_path() {
+assert_server_path() {
   local label="$1"
-  if [[ "$(readlink "$COREBRUM_DISPLAY_MANAGER_LINK")" != "${tmp}/units/gdm3.service" ]]; then
-    echo "FAIL: ${label} changed the existing display manager symlink" >&2
+  if [[ -e "$COREBRUM_DISPLAY_MANAGER_LINK" || -L "$COREBRUM_DISPLAY_MANAGER_LINK" ]]; then
+    echo "FAIL: ${label} created a display manager symlink" >&2
     exit 1
   fi
   if [[ -f "$COREBRUM_STATE_FILE" ]] && grep -q '^previous_display_manager=' "$COREBRUM_STATE_FILE"; then
@@ -62,30 +62,40 @@ assert_existing_path() {
 }
 
 printf 'Generic x86-64\n' >"$COREBRUM_DEVICE_TREE_MODEL"
-reset_link
+rm -f "$COREBRUM_DISPLAY_MANAGER_LINK" "$COREBRUM_STATE_FILE" "${tmp}/systemctl.log"
 corebrum_enable_desktop_login
-assert_existing_path "x86-64"
+assert_server_path "Ubuntu Server x86-64"
 
 printf 'Raspberry Pi 5 Model B Rev 1.0\n' >"$COREBRUM_DEVICE_TREE_MODEL"
-reset_link
+rm -f "$COREBRUM_DISPLAY_MANAGER_LINK" "$COREBRUM_STATE_FILE" "${tmp}/systemctl.log"
 corebrum_enable_desktop_login
-assert_existing_path "Raspberry Pi"
+assert_server_path "Ubuntu Server Raspberry Pi"
+
+DRY_RUN=1
+rm -f "$COREBRUM_DISPLAY_MANAGER_LINK" "$COREBRUM_STATE_FILE" "${tmp}/systemctl.log"
+dry_log="$(corebrum_enable_desktop_login 2>&1)"
+DRY_RUN=0
+if grep -q 'display-manager.service' <<<"$dry_log"; then
+  echo "FAIL: Ubuntu Server dry-run mentioned a display manager handoff" >&2
+  printf '%s\n' "$dry_log" >&2
+  exit 1
+fi
 
 DRY_RUN=1
 reset_link
 dry_log="$(corebrum_enable_desktop_login 2>&1)"
 DRY_RUN=0
-if grep -q 'display-manager.service' <<<"$dry_log"; then
-  echo "FAIL: Raspberry Pi dry-run mentioned the Jetson display manager step" >&2
+if ! grep -q 'display-manager.service' <<<"$dry_log"; then
+  echo "FAIL: Ubuntu Desktop dry-run skipped the display manager handoff" >&2
   printf '%s\n' "$dry_log" >&2
   exit 1
 fi
 if [[ "$(readlink "$COREBRUM_DISPLAY_MANAGER_LINK")" != "${tmp}/units/gdm3.service" ]]; then
-  echo "FAIL: Raspberry Pi dry-run changed the display manager symlink" >&2
+  echo "FAIL: Ubuntu Desktop dry-run changed the display manager symlink" >&2
   exit 1
 fi
 
-assert_jetson_path() {
+assert_other_greeter_path() {
   local label="$1"
   if [[ -e "$COREBRUM_DISPLAY_MANAGER_LINK" || -L "$COREBRUM_DISPLAY_MANAGER_LINK" ]]; then
     echo "FAIL: ${label} left the other display manager symlink in place" >&2
@@ -105,20 +115,30 @@ assert_jetson_path() {
   fi
 }
 
+printf 'Generic x86-64\n' >"$COREBRUM_DEVICE_TREE_MODEL"
+reset_link
+corebrum_enable_desktop_login
+assert_other_greeter_path "Ubuntu Desktop x86-64"
+
+printf 'Raspberry Pi 5 Model B Rev 1.0\n' >"$COREBRUM_DEVICE_TREE_MODEL"
+reset_link
+corebrum_enable_desktop_login
+assert_other_greeter_path "Ubuntu Desktop Raspberry Pi"
+
 printf 'NVIDIA Jetson AGX Orin Developer Kit' >"$COREBRUM_DEVICE_TREE_MODEL"
 reset_link
 corebrum_enable_desktop_login
-assert_jetson_path "AGX Orin"
+assert_other_greeter_path "AGX Orin"
 
 printf 'NVIDIA Jetson Orin Nano Developer Kit' >"$COREBRUM_DEVICE_TREE_MODEL"
 reset_link
 corebrum_enable_desktop_login
-assert_jetson_path "Orin Nano"
+assert_other_greeter_path "Orin Nano"
 
 printf 'NVIDIA Jetson AGX Thor Developer Kit' >"$COREBRUM_DEVICE_TREE_MODEL"
 reset_link
 corebrum_enable_desktop_login
-assert_jetson_path "Thor"
+assert_other_greeter_path "Thor"
 
 printf 'Custom carrier\n' >"$COREBRUM_DEVICE_TREE_MODEL"
 printf '%s\0%s\0' 'nvidia,p4071-0080+p3834-0008' 'nvidia,tegra264' >"${tmp}/compatible"
@@ -126,7 +146,7 @@ COREBRUM_DEVICE_TREE_COMPATIBLE="${tmp}/compatible"
 export COREBRUM_DEVICE_TREE_COMPATIBLE
 reset_link
 corebrum_enable_desktop_login
-assert_jetson_path "Thor compatible"
+assert_other_greeter_path "Thor compatible"
 COREBRUM_DEVICE_TREE_COMPATIBLE="${tmp}/no-such-compatible"
 export COREBRUM_DEVICE_TREE_COMPATIBLE
 

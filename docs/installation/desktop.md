@@ -34,7 +34,7 @@ sudo ./scripts/install.sh --profile desktop
 
 The same install from the checkout is `sudo ./scripts/corebrum.sh install desktop`. After the command is linked, that is `sudo corebrum install desktop`. See `docs/installation/cli.md`.
 
-That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. Ubuntu 24.04 and 26.04 on x86-64, and on other ARM machines, use that sequence alone. Every NVIDIA Jetson, including AGX Orin, Orin Nano, and Thor, also records and removes `/etc/systemd/system/display-manager.service` when that symlink points at another greeter, such as GDM, so greetd can take the alias. The running greeter stays up. greetd starts on the next boot. Sway comes from the Ubuntu archive. This command does not add a PPA. See `docs/decisions/0090-display-manager.md`.
+That command also installs the base profile if it is not already present. It needs 12 GiB free on `/`. It enables `greetd` and sets the default target to `graphical.target` when that is not already the default. When `/etc/systemd/system/display-manager.service` is a symlink to another greeter, such as GDM on Ubuntu Desktop or on an NVIDIA Jetson, the install records that target in `/etc/corebrum/desktop.state` and removes the symlink so greetd can take the alias. The running greeter stays up. greetd starts on the next boot. A machine with no other greeter, including Ubuntu Server, keeps the greetd enable sequence. Sway comes from the Ubuntu archive. This command does not add a PPA. See `docs/decisions/0090-display-manager.md` and `docs/decisions/0096-ubuntu-desktop.md`.
 
 The same command copies `wall0.png` through `wall3.png` from `config/hypr/wallpapers` to `/usr/share/hypr`. Login and lock use `wall2.png`. A package upgrade cannot put the upstream images back, because those paths are diverted. See `docs/decisions/0024-corebrum-wallpapers.md`. The same install copies `config/brand/logo.png` to `/usr/share/corebrum/logo.png`. Login and lock draw that file above the prompt. See `docs/decisions/0037-login-lock-logo.md` and `docs/decisions/0083-login-lock-logo.md`.
 
@@ -140,13 +140,72 @@ sudo reboot
 
 A broken Sway config sends you back to the greeter, because greetd starts it again when the session exits. That greeter is `corebrum-login` inside a minimal Sway, `wlgreet` if that client cannot start, and agreety when neither is installed. Edit `/etc/corebrum/sway/config` from VT 1. The previous greetd config, if the installer replaced one, is under `/var/log/corebrum/backups/`.
 
+## Ubuntu Desktop and the NVIDIA Jetson desktop
+
+Ubuntu Desktop and the NVIDIA Jetson image (AGX Orin, Orin Nano, Thor, and the other Jetson boards) start GNOME through GDM. Corebrum can be installed on that same machine. GNOME stays installed. One greeter owns the display after each boot.
+
+Before the Corebrum desktop install, boot to a text console so GNOME releases the display:
+
+```bash
+sudo systemctl set-default multi-user.target
+sudo reboot
+```
+
+Log in on the text console after the reboot. `Ctrl+Alt+F1` is that console when a greeter is still up. Then install the desktop profile from this checkout and reboot:
+
+```bash
+sudo ./scripts/install.sh --profile desktop
+sudo reboot
+```
+
+The same install is `sudo corebrum install desktop` after the `corebrum` command exists. The installer writes the previous greeter in `/etc/corebrum/desktop.state` as `previous_display_manager` and starts Corebrum on the next boot. Ubuntu Server has no GNOME greeter, so that machine skips the `multi-user.target` step.
+
+### Switch to the Ubuntu or NVIDIA desktop
+
+Corebrum stays installed. The next boot opens GNOME. Run this from the text console or from a Corebrum terminal:
+
+```bash
+previous="$(grep '^previous_display_manager=' /etc/corebrum/desktop.state | tail -n 1 | cut -d= -f2-)"
+if [[ -z "$previous" ]]; then
+  printf '%s\n' "No previous greeter is recorded in /etc/corebrum/desktop.state"
+  exit 1
+fi
+sudo systemctl disable greetd.service
+sudo ln -sfn -- "$previous" /etc/systemd/system/display-manager.service
+sudo systemctl set-default graphical.target
+sudo reboot
+```
+
+`previous_display_manager` is present when this machine had another greeter at install time. Leave `/etc/corebrum/desktop.state` in place so the switch back to Corebrum can read that same path.
+
+### Switch to Corebrum
+
+```bash
+sudo rm -f /etc/systemd/system/display-manager.service
+sudo systemctl enable greetd.service
+sudo systemctl set-default graphical.target
+sudo reboot
+```
+
+The Corebrum login is on VT 7. A later `sudo corebrum install desktop`, including Super+Space Updates on the Corebrum row, selects this login again for the next boot.
+
+### Return to the previous desktop
+
+```bash
+sudo corebrum uninstall desktop
+sudo systemctl set-default graphical.target
+sudo reboot
+```
+
+Uninstall disables greetd, puts the recorded greeter back, and restores the boot target recorded at install time. That target is the text console from the prepare step, so the `graphical.target` command is what opens GNOME. Sway, Firefox, GNOME, and the other Ubuntu packages stay installed. Run uninstall first, then set the graphical target. See `docs/decisions/0096-ubuntu-desktop.md`.
+
 ## Removal
 
 ```bash
 sudo ./scripts/uninstall.sh --profile desktop
 ```
 
-This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`, and removes a Hyprland PPA source, pin, and key left by an earlier install. On any NVIDIA Jetson, including AGX Orin, Orin Nano, and Thor, it also puts back the recorded `display-manager.service` symlink. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. It does not remove Sway, Hyprland, Waybar, Firefox, or other packages. Reboot afterward.
+This disables greetd, restores the previous default target when this installer changed it, restores the previous greetd config from the backup it recorded, puts back the recorded `display-manager.service` symlink when one was recorded, and deletes Corebrum files under `/etc/corebrum` and `/usr/local/bin`. It also removes a Hyprland PPA source, pin, and key left by an earlier install. When `/usr/local/nvm/.corebrum-managed` is present it also removes that nvm checkout and the Node.js block in `/etc/bash.bashrc`. Sway, Hyprland, Waybar, Firefox, GNOME, and the other Ubuntu packages stay installed. On a machine that prepared for Corebrum by selecting the text console, follow [Return to the previous desktop](#return-to-the-previous-desktop) so GNOME starts. Reboot afterward.
 
 `./scripts/uninstall.sh --profile base` still refuses to remove the base packages.
 

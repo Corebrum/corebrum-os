@@ -16,6 +16,30 @@
       <p>The desktop uses the same Corebrum wallpaper as the login screen. Super+Space Wallpaper picks a different image for this account.</p>
       <p>Super+Escape locks the screen on the login wallpaper. Login asks for the username and password under the Corebrum logo. The lock screen shows the same logo, a password field in the center, and Unlock. The time and date are in the top right. Type the account password and press Enter, or press Unlock.</p>
       <p>Super+Space Autolock sets the idle timer. The rows are Stay awake, 5 minutes, 10 minutes, 30 minutes, and 1 hour. The current row is marked on. Choosing a time saves it, leaves Stay awake on, and shows the list again with that mark. Escape closes the list. Stay awake, or Super+Shift+Escape, pauses the timer until it is turned off or the session ends.</p>
+      <h2>Ubuntu Desktop and the NVIDIA desktop</h2>
+      <p>Ubuntu Desktop and the NVIDIA Jetson image start GNOME. Corebrum installs on that same machine. Before the install, boot to a text console:</p>
+      <pre><code>sudo systemctl set-default multi-user.target
+sudo reboot</code></pre>
+      <p>Log in after the reboot and install the Corebrum desktop. The installer records the previous login program in <code>/etc/corebrum/desktop.state</code>. The next boot opens Corebrum. GNOME stays installed. One desktop runs at a time. Switching takes a reboot.</p>
+      <p>To open the Ubuntu or NVIDIA desktop on the next boot, leave that state file in place:</p>
+      <pre><code>previous="$(grep '^previous_display_manager=' /etc/corebrum/desktop.state | tail -n 1 | cut -d= -f2-)"
+if [[ -z "$previous" ]]; then
+  printf '%s\n' "No previous greeter is recorded in /etc/corebrum/desktop.state"
+  exit 1
+fi
+sudo systemctl disable greetd.service
+sudo ln -sfn -- "$previous" /etc/systemd/system/display-manager.service
+sudo systemctl set-default graphical.target
+sudo reboot</code></pre>
+      <p>To open Corebrum on the next boot:</p>
+      <pre><code>sudo rm -f /etc/systemd/system/display-manager.service
+sudo systemctl enable greetd.service
+sudo systemctl set-default graphical.target
+sudo reboot</code></pre>
+      <p><code>sudo corebrum install desktop</code>, including Super+Space Updates on the Corebrum row, selects the Corebrum login again. To leave Corebrum and open GNOME, uninstall first. That returns the boot target to the text console, so set the graphical target next:</p>
+      <pre><code>sudo corebrum uninstall desktop
+sudo systemctl set-default graphical.target
+sudo reboot</code></pre>
     </main>
   </div>
 </body>
