@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- gtklock 4.0 layout. The clock stays in the top right. The logo and the
      password field stay centered. The Password label stays in the file because
-     gtklock looks it up, and it is not shown. -->
+     gtklock looks it up, and it is not shown. The glitch overlays pass clicks
+     through to the password field. -->
 <interface>
 	<object class="GtkOverlay" id="window-box">
 		<property name="name">window-box</property>
@@ -17,7 +18,16 @@
 				<property name="halign">center</property>
 				<property name="valign">center</property>
 				<property name="orientation">vertical</property>
-				<property name="spacing">10</property>
+				<property name="spacing">24</property>
+				<child>
+					<object class="GtkBox" id="lock-logo">
+						<property name="name">lock-logo</property>
+						<property name="halign">center</property>
+						<property name="width-request">759</property>
+						<property name="height-request">220</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
 				<child>
 					<object class="GtkRevealer" id="body-revealer">
 						<property name="halign">center</property>
@@ -158,6 +168,106 @@
 					</object>
 				</child>
 			</object>
+		</child>
+		<child type="overlay">
+			<object class="GtkBox" id="glitch-scan">
+				<property name="name">glitch-scan</property>
+				<property name="hexpand">1</property>
+				<property name="vexpand">1</property>
+				<property name="can-focus">0</property>
+			</object>
+			<packing>
+				<property name="pass-through">1</property>
+			</packing>
+		</child>
+		<child type="overlay">
+			<object class="GtkBox" id="glitch-flash">
+				<property name="name">glitch-flash</property>
+				<property name="hexpand">1</property>
+				<property name="vexpand">1</property>
+				<property name="can-focus">0</property>
+			</object>
+			<packing>
+				<property name="pass-through">1</property>
+			</packing>
+		</child>
+		<child type="overlay">
+			<object class="GtkBox" id="glitch-layer">
+				<property name="name">glitch-layer</property>
+				<property name="hexpand">1</property>
+				<property name="vexpand">1</property>
+				<property name="orientation">vertical</property>
+				<property name="can-focus">0</property>
+				<child>
+					<object class="GtkBox">
+						<property name="vexpand">1</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox" id="glitch-bar-a">
+						<property name="name">glitch-bar-a</property>
+						<property name="halign">start</property>
+						<property name="width-request">520</property>
+						<property name="height-request">8</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox">
+						<property name="vexpand">1</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox" id="glitch-bar-b">
+						<property name="name">glitch-bar-b</property>
+						<property name="halign">start</property>
+						<property name="width-request">240</property>
+						<property name="height-request">3</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox">
+						<property name="vexpand">1</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox" id="glitch-bar-c">
+						<property name="name">glitch-bar-c</property>
+						<property name="halign">start</property>
+						<property name="width-request">680</property>
+						<property name="height-request">14</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox">
+						<property name="vexpand">1</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox" id="glitch-bar-d">
+						<property name="name">glitch-bar-d</property>
+						<property name="halign">start</property>
+						<property name="width-request">160</property>
+						<property name="height-request">4</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox">
+						<property name="vexpand">1</property>
+						<property name="can-focus">0</property>
+					</object>
+				</child>
+			</object>
+			<packing>
+				<property name="pass-through">1</property>
+			</packing>
 		</child>
 	</object>
 </interface>

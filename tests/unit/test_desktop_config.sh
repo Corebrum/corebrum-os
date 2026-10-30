@@ -299,8 +299,34 @@ if ! grep -q 'background-size: 759px 220px' "${ROOT}/config/gtklock/style.css"; 
   echo "FAIL: the lock logo does not keep the artwork aspect" >&2
   exit 1
 fi
-if ! grep -q 'box#lock-center' "${ROOT}/config/gtklock/style.css"; then
+if ! grep -q 'box#lock-logo' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock logo is not its own box" >&2
+  exit 1
+fi
+logo_line="$(grep -n 'id="lock-logo"' "${ROOT}/config/gtklock/layout.ui" | head -n 1 | cut -d: -f1)"
+form_line="$(grep -n 'id="body-revealer"' "${ROOT}/config/gtklock/layout.ui" | head -n 1 | cut -d: -f1)"
+if [[ -z "${logo_line}" || -z "${form_line}" || "${logo_line}" -ge "${form_line}" ]]; then
   echo "FAIL: the lock logo is not above the password field" >&2
+  exit 1
+fi
+if ! grep -q 'id="glitch-scan"' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock screen has no glitch overlay" >&2
+  exit 1
+fi
+if ! grep -q 'pass-through">1' "${ROOT}/config/gtklock/layout.ui"; then
+  echo "FAIL: the lock glitch overlay takes clicks" >&2
+  exit 1
+fi
+if ! grep -q 'animation: lock-glitch-logo 40s linear infinite' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock logo does not glitch" >&2
+  exit 1
+fi
+if grep -E '^[[:space:]]*[0-9.]+%,' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: a lock keyframe lists two percentages, which GTK 3 rejects" >&2
+  exit 1
+fi
+if grep -q 'transform:' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock style uses transform, which GTK 3 rejects" >&2
   exit 1
 fi
 if ! grep -q 'layout=/etc/corebrum/gtklock/layout.ui' "${ROOT}/config/gtklock/config.ini"; then
