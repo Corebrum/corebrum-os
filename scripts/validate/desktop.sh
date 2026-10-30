@@ -63,6 +63,7 @@ for path in \
   /usr/local/lib/corebrum/vc4.sh \
   /usr/local/lib/corebrum/drm.sh \
   /usr/local/bin/corebrum-lock \
+  /usr/local/lib/corebrum/libcorebrum-glitch.so \
   /etc/corebrum/waybar/config.json \
   /etc/corebrum/waybar/style.css \
   /etc/corebrum/kitty/kitty.conf \

@@ -8,6 +8,7 @@ import json
 import os
 import struct
 import sys
+import time
 from pathlib import Path
 
 SESSION = os.environ.get("COREBRUM_SESSION", "/usr/local/bin/corebrum-session")
@@ -16,6 +17,11 @@ LOGO_HEIGHT = 220
 LAYER_OVERLAY = 3
 KEYBOARD_EXCLUSIVE = 1
 KEYBOARD_ON_DEMAND = 2
+# Keep these four numbers aligned with corebrum-glitch-module.c.
+GLITCH_PERIOD_MS = 60_000
+GLITCH_BURST_MS = 1200
+GLITCH_GRACE_MS = 200
+GLITCH_CLEAR_MS = 1500
 
 
 def frame(payload):
@@ -47,6 +53,40 @@ def interpret(message):
         if mode == "visible":
             return "need_visible"
     return "fatal"
+
+
+def glitch_wait_ms(second, nanosecond):
+    into = (second % 60) * 1000 + nanosecond // 1_000_000
+    if into <= GLITCH_GRACE_MS:
+        return 0
+    return GLITCH_PERIOD_MS - into
+
+
+def glitch_wait_from_clock(now_ns=None):
+    if now_ns is None:
+        now_ns = time.time_ns()
+    seconds, nanos = divmod(now_ns, 1_000_000_000)
+    return glitch_wait_ms(time.localtime(seconds).tm_sec, nanos)
+
+
+def schedule_glitch(GLib, windows):
+    def clear_glitch():
+        for window in windows:
+            window.get_style_context().remove_class("glitch")
+        arm()
+        return False
+
+    def start_glitch():
+        for window in windows:
+            window.get_style_context().add_class("glitch")
+        GLib.timeout_add(GLITCH_CLEAR_MS, clear_glitch)
+        return False
+
+    def arm():
+        GLib.timeout_add(glitch_wait_from_clock(), start_glitch)
+        return False
+
+    arm()
 
 
 def css_path():
@@ -154,8 +194,40 @@ def self_check():
         return "login card style is missing"
     if "box#login-logo" not in css:
         return "login logo is not its own box"
-    if "animation: login-glitch-logo 40s linear infinite" not in css:
+    if "window.glitch box#login-logo" not in css:
         return "login logo does not glitch"
+    if "animation: login-glitch-logo 1200ms linear 1" not in css:
+        return "login glitch is not the clock burst"
+    if "40s" in css or "infinite" in css:
+        return "login glitch still loops on its own"
+    if GLITCH_CLEAR_MS <= GLITCH_BURST_MS + 140:
+        return "login glitch clear cuts off the bars"
+    if glitch_wait_ms(0, 0) != 0 or glitch_wait_ms(30, 0) != 30000:
+        return "glitch does not start on the minute"
+    if glitch_wait_ms(0, 200_000_000) != 0:
+        return "glitch grace missed the boundary"
+    if glitch_wait_ms(0, 201_000_000) != 59799:
+        return "glitch grace was too wide"
+    if glitch_wait_ms(15, 0) != 45000 or glitch_wait_ms(45, 500_000_000) != 14500:
+        return "glitch wait inside the minute was wrong"
+    if glitch_wait_ms(59, 999_000_000) != 1:
+        return "glitch wait at the end of a minute was wrong"
+    previous_tz = os.environ.get("TZ")
+    os.environ["TZ"] = "UTC"
+    time.tzset()
+    try:
+        if glitch_wait_from_clock(0) != 0 or glitch_wait_from_clock(60 * 1_000_000_000) != 0:
+            return "glitch clock missed UTC minute boundaries"
+        if glitch_wait_from_clock(30 * 1_000_000_000) != 30000:
+            return "glitch clock fired on the half-minute"
+        if glitch_wait_from_clock(15 * 1_000_000_000) != 45000:
+            return "glitch clock midpoint was wrong"
+    finally:
+        if previous_tz is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = previous_tz
+        time.tzset()
     if "transform:" in css:
         return "login style uses transform"
     if "Login" in css:
@@ -375,6 +447,7 @@ def show():
             username.grab_focus()
 
     shown = False
+    windows = []
     for index in range(display.get_n_monitors()):
         monitor = display.get_monitor(index)
         window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
@@ -389,6 +462,7 @@ def show():
         if not place_window(window, monitor, exclusive=(index == 0)):
             continue
         window.show_all()
+        windows.append(window)
         if first_username is None:
             first_username = username
         shown = True
@@ -397,6 +471,7 @@ def show():
         return 1
     if first_username is not None:
         GLib.idle_add(first_username.grab_focus)
+    schedule_glitch(GLib, windows)
     Gtk.main()
     return 1
 

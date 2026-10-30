@@ -444,6 +444,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-login
 /usr/local/bin/corebrum-login-logo
 /usr/local/bin/corebrum-lock
+/usr/local/lib/corebrum/libcorebrum-glitch.so
 /usr/local/bin/corebrum-terminal
 /usr/local/bin/corebrum-grid
 /usr/local/bin/corebrum-launcher

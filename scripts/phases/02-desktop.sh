@@ -40,6 +40,7 @@ corebrum_phase_desktop() {
   corebrum_install_firefox_snap
   corebrum_install_desktop_files
   corebrum_build_gtklock
+  corebrum_build_glitch_module
   corebrum_install_node
   corebrum_enable_getting_started
   corebrum_install_greetd_config

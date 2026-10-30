@@ -84,3 +84,33 @@ corebrum_build_gtklock() {
   fi
   corebrum_log "installed gtklock ${COREBRUM_GTKLOCK_VERSION}"
 }
+
+# The lock screen glitches from this module. Login uses the same clock in
+# corebrum-login.py. Both releases build it. The archive gtklock loads it.
+corebrum_build_glitch_module() {
+  local src dest tmp
+  local -a cflags libs
+  src="${COREBRUM_ROOT}/scripts/desktop/corebrum-glitch-module.c"
+  dest="/usr/local/lib/corebrum/libcorebrum-glitch.so"
+  if [[ ! -f "$src" ]]; then
+    corebrum_die "missing ${src}"
+  fi
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: build ${dest}"
+    return 0
+  fi
+  if ! command -v gcc >/dev/null 2>&1 || ! pkg-config --exists gtk+-3.0; then
+    corebrum_apt_install --no-install-recommends gcc pkg-config libgtk-3-dev
+  fi
+  install -d -m 0755 /usr/local/lib/corebrum
+  read -r -a cflags < <(pkg-config --cflags gtk+-3.0)
+  read -r -a libs < <(pkg-config --libs gtk+-3.0)
+  tmp="${dest}.tmp"
+  corebrum_log "run: gcc -shared -fPIC -o ${dest}"
+  if ! gcc -shared -fPIC -O2 -Wall -Wextra -Werror -o "$tmp" "$src" "${cflags[@]}" "${libs[@]}"; then
+    rm -f "$tmp"
+    corebrum_die "could not build ${dest}"
+  fi
+  mv -f "$tmp" "$dest"
+  chmod 644 "$dest"
+}
