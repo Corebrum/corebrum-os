@@ -237,12 +237,16 @@ if ! grep -q 'gtk_layer_set_anchor' "${ROOT}/scripts/desktop/corebrum-login.py";
   echo "FAIL: the login window does not cover the screen" >&2
   exit 1
 fi
-if ! grep -q 'animation: login-glitch-logo 40s linear infinite' "${ROOT}/config/greetd/login.css"; then
-  echo "FAIL: the login logo does not glitch" >&2
+if ! grep -q 'animation: login-glitch-logo 1200ms linear 1' "${ROOT}/config/greetd/login.css"; then
+  echo "FAIL: the login logo does not glitch on the clock" >&2
   exit 1
 fi
-if ! grep -q 'animation: login-glitch-scan 40s linear infinite' "${ROOT}/config/greetd/login.css"; then
+if ! grep -q 'window.glitch #glitch-scan' "${ROOT}/config/greetd/login.css"; then
   echo "FAIL: the login screen has no glitch overlay" >&2
+  exit 1
+fi
+if grep -q '40s\|infinite' "${ROOT}/config/greetd/login.css"; then
+  echo "FAIL: the login glitch still loops on its own" >&2
   exit 1
 fi
 if grep -E '^[[:space:]]*[0-9.]+%,' "${ROOT}/config/greetd/login.css"; then
@@ -345,8 +349,36 @@ if ! grep -q 'pass-through">1' "${ROOT}/config/gtklock/layout.ui"; then
   echo "FAIL: the lock glitch overlay takes clicks" >&2
   exit 1
 fi
-if ! grep -q 'animation: lock-glitch-logo 40s linear infinite' "${ROOT}/config/gtklock/style.css"; then
-  echo "FAIL: the lock logo does not glitch" >&2
+if ! grep -q 'animation: lock-glitch-logo 1200ms linear 1' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock logo does not glitch on the clock" >&2
+  exit 1
+fi
+if ! grep -q 'window.glitch #clock-label' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock clock does not glitch on the clock" >&2
+  exit 1
+fi
+if grep -q '40s\|infinite' "${ROOT}/config/gtklock/style.css"; then
+  echo "FAIL: the lock glitch still loops on its own" >&2
+  exit 1
+fi
+if ! grep -q 'modules=/usr/local/lib/corebrum/libcorebrum-glitch.so' "${ROOT}/config/gtklock/config.ini"; then
+  echo "FAIL: the lock screen does not load the clock glitch module" >&2
+  exit 1
+fi
+if ! grep -q '#define COREBRUM_GLITCH_PERIOD_MS 60000' "${ROOT}/scripts/desktop/corebrum-glitch-module.c"; then
+  echo "FAIL: the lock glitch is not on the minute" >&2
+  exit 1
+fi
+if ! grep -q 'GLITCH_PERIOD_MS = 60_000' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login glitch is not on the minute" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum_build_glitch_module' "${ROOT}/scripts/phases/02-desktop.sh"; then
+  echo "FAIL: the desktop profile does not build the lock glitch module" >&2
+  exit 1
+fi
+if ! grep -q 'libcorebrum-glitch.so' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: uninstall leaves the lock glitch module" >&2
   exit 1
 fi
 if grep -E '^[[:space:]]*[0-9.]+%,' "${ROOT}/config/gtklock/style.css"; then

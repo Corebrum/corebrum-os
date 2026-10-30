@@ -54,6 +54,13 @@ cat >"${bin}/notify-send" <<'EOF'
 #!/usr/bin/env bash
 printf 'notify %s\n' "$*" >>"$COREBRUM_TEST_LOG"
 EOF
+cat >"${bin}/swaymsg" <<'EOF'
+#!/usr/bin/env bash
+printf 'swaymsg %s\n' "$*" >>"$COREBRUM_TEST_LOG"
+if [[ "${COREBRUM_TEST_CAMERA_WINDOW:-1}" != 1 ]]; then
+  exit 2
+fi
+EOF
 cat >"${bin}/hyprctl" <<'EOF'
 #!/usr/bin/env bash
 printf 'hyprctl %s\n' "$*" >>"$COREBRUM_TEST_LOG"
@@ -84,7 +91,7 @@ fi
 exec sleep 30
 EOF
 chmod +x "${bin}/slurp" "${bin}/wf-recorder" "${bin}/fuzzel" "${bin}/notify-send" \
-  "${bin}/hyprctl" "${bin}/pkill" "${bin}/preview"
+  "${bin}/swaymsg" "${bin}/hyprctl" "${bin}/pkill" "${bin}/preview"
 
 run_record() {
   env \
@@ -196,7 +203,7 @@ fi
 if grep -q -- '--v4l2' "$log"; then
   fail "RealSense opened the webcam device"
 fi
-if ! grep -q 'movewindowpixel exact 474 424,address:0xabc' "$log"; then
+if ! grep -q 'swaymsg \[app_id="corebrum-camera"\] floating enable, border none, sticky enable, move absolute position 474 px 424 px, resize set 320 px 180 px' "$log"; then
   fail "the preview was not moved to the bottom-right"
 fi
 
@@ -238,7 +245,7 @@ env PATH="${bin}:${PATH}" HOME="$home" XDG_RUNTIME_DIR="$runtime" COREBRUM_TEST_
 if ! grep -q '^pkill -INT wf-recorder$' "$log"; then
   fail "stop did not interrupt wf-recorder"
 fi
-if ! grep -q 'closewindow address:0xabc' "$log"; then
+if ! grep -q 'swaymsg \[app_id="corebrum-camera"\] kill' "$log"; then
   fail "stop did not close the camera window"
 fi
 

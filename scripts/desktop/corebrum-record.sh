@@ -151,8 +151,16 @@ corebrum_record_area_fits() {
   [[ "$COREBRUM_RECORD_W" -ge "$need_w" && "$COREBRUM_RECORD_H" -ge "$need_h" ]]
 }
 
+corebrum_record_sway() {
+  command -v swaymsg >/dev/null 2>&1
+}
+
 corebrum_record_close_camera_window() {
   local addr
+  if corebrum_record_sway; then
+    swaymsg '[app_id="corebrum-camera"] kill' >/dev/null 2>&1 || true
+    return 0
+  fi
   command -v hyprctl >/dev/null 2>&1 || return 0
   addr="$(corebrum_record_camera_address || true)"
   [[ -n "$addr" ]] || return 0
@@ -199,11 +207,17 @@ corebrum_record_place_preview() {
     if [[ -n "$pid" ]] && ! kill -0 "$pid" 2>/dev/null; then
       return 1
     fi
-    addr="$(corebrum_record_camera_address || true)"
-    if [[ -n "$addr" ]]; then
-      hyprctl dispatch movewindowpixel exact "$px" "$py",address:"$addr" >/dev/null
-      hyprctl dispatch resizewindowpixel exact "$COREBRUM_RECORD_PREVIEW_W" "$COREBRUM_RECORD_PREVIEW_H",address:"$addr" >/dev/null
-      return 0
+    if corebrum_record_sway; then
+      if swaymsg "[app_id=\"corebrum-camera\"] floating enable, border none, sticky enable, move absolute position ${px} px ${py} px, resize set ${COREBRUM_RECORD_PREVIEW_W} px ${COREBRUM_RECORD_PREVIEW_H} px" >/dev/null 2>&1; then
+        return 0
+      fi
+    else
+      addr="$(corebrum_record_camera_address || true)"
+      if [[ -n "$addr" ]]; then
+        hyprctl dispatch movewindowpixel exact "$px" "$py",address:"$addr" >/dev/null
+        hyprctl dispatch resizewindowpixel exact "$COREBRUM_RECORD_PREVIEW_W" "$COREBRUM_RECORD_PREVIEW_H",address:"$addr" >/dev/null
+        return 0
+      fi
     fi
     sleep "$delay"
   done
