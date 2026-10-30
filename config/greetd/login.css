@@ -1,4 +1,5 @@
-/* Centered login card. The wallpaper is the Sway background behind this window. */
+/* Centered login card. The wallpaper is the Sway background behind this window.
+   The logo sits on its own box. Shifting it does not move the fields. */
 window {
   background-color: transparent;
 }
@@ -7,6 +8,17 @@ box#login-card {
   background-color: rgba(28, 28, 28, 0.92);
   border-radius: 12px;
   padding: 28px 32px;
+}
+
+/* config/brand/logo.png is 1104x320. 759x220 keeps that aspect. */
+box#login-logo {
+  background-image: url("file:///usr/share/corebrum/logo.png");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 759px 220px;
+  min-width: 759px;
+  min-height: 220px;
+  animation: login-glitch-logo 40s linear infinite;
 }
 
 entry#login-username,
@@ -29,4 +41,106 @@ entry#login-password placeholder {
 
 label#login-error {
   color: #ff8866;
+}
+
+/* GTK 3 keyframes. Each percentage is its own block. A burst near the end of
+   the 40 second loop, then the picture sits still again. Same burst as the
+   lock screen. */
+@keyframes login-glitch-logo {
+  0% { background-position: center top; }
+  97% { background-position: center top; }
+  98% { background-position: -14px top; }
+  98.5% { background-position: 18px top; }
+  99% { background-position: -6px top; }
+  100% { background-position: center top; }
+}
+
+@keyframes login-glitch-scan {
+  0% { opacity: 0; background-position: 0px 0px; }
+  97% { opacity: 0; background-position: 0px 0px; }
+  98% { opacity: 0.85; background-position: 0px 6px; }
+  98.5% { opacity: 0.2; background-position: 0px -4px; }
+  99% { opacity: 0.7; background-position: 0px 2px; }
+  100% { opacity: 0; background-position: 0px 0px; }
+}
+
+@keyframes login-glitch-flash {
+  0% { opacity: 0; }
+  97.6% { opacity: 0; }
+  98% { opacity: 0.14; }
+  98.3% { opacity: 0; }
+  98.7% { opacity: 0.08; }
+  100% { opacity: 0; }
+}
+
+@keyframes login-glitch-bar-a {
+  0% { opacity: 0; margin-left: 0px; }
+  97% { opacity: 0; margin-left: 0px; }
+  98% { opacity: 0.95; margin-left: -72px; }
+  98.5% { opacity: 0.15; margin-left: 110px; }
+  99% { opacity: 0.8; margin-left: -28px; }
+  100% { opacity: 0; margin-left: 0px; }
+}
+
+@keyframes login-glitch-bar-b {
+  0% { opacity: 0; margin-left: 360px; }
+  97% { opacity: 0; margin-left: 360px; }
+  98% { opacity: 0.9; margin-left: 80px; }
+  98.5% { opacity: 0.35; margin-left: 520px; }
+  99% { opacity: 0.75; margin-left: 200px; }
+  100% { opacity: 0; margin-left: 360px; }
+}
+
+@keyframes login-glitch-bar-c {
+  0% { opacity: 0; margin-left: 40px; }
+  97% { opacity: 0; margin-left: 40px; }
+  98% { opacity: 0.88; margin-left: 160px; }
+  98.5% { opacity: 0.2; margin-left: -40px; }
+  99% { opacity: 0.7; margin-left: 90px; }
+  100% { opacity: 0; margin-left: 40px; }
+}
+
+@keyframes login-glitch-bar-d {
+  0% { opacity: 0; margin-left: 140px; }
+  97% { opacity: 0; margin-left: 140px; }
+  98% { opacity: 1; margin-left: 420px; }
+  98.5% { opacity: 0.3; margin-left: 20px; }
+  99% { opacity: 0.85; margin-left: 260px; }
+  100% { opacity: 0; margin-left: 140px; }
+}
+
+#glitch-scan {
+  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 3px, rgba(255, 255, 255, 0.28) 4px);
+  opacity: 0;
+  animation: login-glitch-scan 40s linear infinite;
+}
+
+#glitch-flash {
+  background-color: #d7fff6;
+  opacity: 0;
+  animation: login-glitch-flash 40s linear 50ms infinite;
+}
+
+#glitch-bar-a {
+  background-image: linear-gradient(to right, rgba(61, 154, 139, 0), #3d9a8b 16%, #ffffff 46%, #3d9a8b 74%, rgba(61, 154, 139, 0));
+  opacity: 0;
+  animation: login-glitch-bar-a 40s linear infinite;
+}
+
+#glitch-bar-b {
+  background-color: #ffffff;
+  opacity: 0;
+  animation: login-glitch-bar-b 40s linear 70ms infinite;
+}
+
+#glitch-bar-c {
+  background-image: linear-gradient(to right, rgba(255, 102, 204, 0), #ff66cc 22%, #ffffff 52%, #3d9a8b 78%, rgba(61, 154, 139, 0));
+  opacity: 0;
+  animation: login-glitch-bar-c 40s linear 140ms infinite;
+}
+
+#glitch-bar-d {
+  background-color: #3d9a8b;
+  opacity: 0;
+  animation: login-glitch-bar-d 40s linear 40ms infinite;
 }

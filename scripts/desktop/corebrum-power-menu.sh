@@ -22,7 +22,7 @@ corebrum_power_confirm_lines() {
 
 corebrum_power_command() {
   case "$1" in
-    "Log out") printf '%s\n' "hyprctl dispatch exit" ;;
+    "Log out") printf '%s\n' "swaymsg exit" ;;
     "Reboot") printf '%s\n' "systemctl reboot" ;;
     "Power off") printf '%s\n' "systemctl poweroff" ;;
     *) return 1 ;;
@@ -61,11 +61,11 @@ corebrum_power_run() {
   local action="$1"
   case "$action" in
     "Log out")
-      if ! command -v hyprctl >/dev/null 2>&1; then
-        corebrum_power_notify "Log out" "hyprctl is not available."
+      if ! command -v swaymsg >/dev/null 2>&1; then
+        corebrum_power_notify "Log out" "swaymsg is not available."
         return 1
       fi
-      hyprctl dispatch exit || corebrum_power_notify "Log out" "Could not leave the session."
+      swaymsg exit || corebrum_power_notify "Log out" "Could not leave the session."
       ;;
     "Reboot")
       systemctl reboot || corebrum_power_notify "Reboot" "Could not reboot."

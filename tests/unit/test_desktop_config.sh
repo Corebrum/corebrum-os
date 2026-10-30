@@ -221,8 +221,36 @@ if grep -q 'corebrum-login-logo' "${ROOT}/config/greetd/sway-config"; then
   echo "FAIL: the greeter Sway starts a second logo over the login card" >&2
   exit 1
 fi
-if ! grep -q 'logo.png' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+if ! grep -q 'file:///usr/share/corebrum/logo.png' "${ROOT}/config/greetd/login.css"; then
   echo "FAIL: the login card does not draw the Corebrum logo" >&2
+  exit 1
+fi
+if ! grep -q 'set_name("login-logo")' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login logo is not its own box" >&2
+  exit 1
+fi
+if ! grep -q 'set_overlay_pass_through' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login glitch overlay takes clicks" >&2
+  exit 1
+fi
+if ! grep -q 'gtk_layer_set_anchor' "${ROOT}/scripts/desktop/corebrum-login.py"; then
+  echo "FAIL: the login window does not cover the screen" >&2
+  exit 1
+fi
+if ! grep -q 'animation: login-glitch-logo 40s linear infinite' "${ROOT}/config/greetd/login.css"; then
+  echo "FAIL: the login logo does not glitch" >&2
+  exit 1
+fi
+if ! grep -q 'animation: login-glitch-scan 40s linear infinite' "${ROOT}/config/greetd/login.css"; then
+  echo "FAIL: the login screen has no glitch overlay" >&2
+  exit 1
+fi
+if grep -E '^[[:space:]]*[0-9.]+%,' "${ROOT}/config/greetd/login.css"; then
+  echo "FAIL: a login keyframe lists two percentages, which GTK 3 rejects" >&2
+  exit 1
+fi
+if grep -q 'transform:' "${ROOT}/config/greetd/login.css"; then
+  echo "FAIL: the login style uses transform, which GTK 3 rejects" >&2
   exit 1
 fi
 if ! grep -q 'placeholder_text("Username")' "${ROOT}/scripts/desktop/corebrum-login.py"; then

@@ -57,7 +57,7 @@ if [[ -n "$output" ]]; then
 fi
 
 output="$(COREBRUM_POWER_STUB=1 COREBRUM_POWER_CHOICE='Log out' COREBRUM_POWER_CONFIRM='Log out' bash "$menu" open)"
-if [[ "$output" != "hyprctl dispatch exit" ]]; then
+if [[ "$output" != "swaymsg exit" ]]; then
   echo "FAIL: log out command was ${output}" >&2
   fail=1
 fi

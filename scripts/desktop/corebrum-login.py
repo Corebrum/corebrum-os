@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # Centered greetd login card. wlgreet 0.5 draws a 1024x128 bar with a 72px
 # Login word on the left and the prompt at a fixed x, and its config cannot
-# move either one. This client draws the logo and the two fields in one
-# surface so Sway centers them together.
+# move either one. This client fills the screen with one transparent layer.
+# The logo and the two fields stay centered. Scan lines and bars cover the
+# wallpaper and pass clicks through to the fields.
 import json
 import os
 import struct
@@ -52,14 +53,14 @@ def css_path():
     installed = Path("/etc/corebrum/greetd/login.css")
     if installed.is_file():
         return installed
-    return Path(__file__).resolve().parents[2] / "config" / "greetd" / "login.css"
+    return source_css_path()
 
 
-def logo_path():
-    installed = Path("/usr/share/corebrum/logo.png")
-    if installed.is_file():
-        return installed
-    return Path(__file__).resolve().parents[2] / "config" / "brand" / "logo.png"
+def source_css_path():
+    bundled = Path(__file__).resolve().parents[2] / "config" / "greetd" / "login.css"
+    if bundled.is_file():
+        return bundled
+    return Path("/etc/corebrum/greetd/login.css")
 
 
 class Greetd:
@@ -146,11 +147,17 @@ def self_check():
         return "auth error was not recognized"
     if interpret({"type": "success"}) != "success":
         return "success was not recognized"
-    if not css_path().is_file():
-        return f"missing {css_path()}"
-    css = css_path().read_text()
+    if not source_css_path().is_file():
+        return f"missing {source_css_path()}"
+    css = source_css_path().read_text()
     if "min-width: 380px" not in css or "#login-card" not in css:
         return "login card style is missing"
+    if "box#login-logo" not in css:
+        return "login logo is not its own box"
+    if "animation: login-glitch-logo 40s linear infinite" not in css:
+        return "login logo does not glitch"
+    if "transform:" in css:
+        return "login style uses transform"
     if "Login" in css:
         return "login style still names a Login title"
     return ""
@@ -177,6 +184,7 @@ def place_window(window, monitor, exclusive):
     lib.gtk_layer_set_keyboard_mode.argtypes = [ctypes.c_void_p, ctypes.c_int]
     lib.gtk_layer_set_exclusive_zone.argtypes = [ctypes.c_void_p, ctypes.c_int]
     lib.gtk_layer_set_namespace.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.gtk_layer_set_anchor.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_bool]
     lib.gtk_layer_set_monitor.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     window_ptr = gobject_pointer(window)
     if not window_ptr:
@@ -188,6 +196,10 @@ def place_window(window, monitor, exclusive):
     )
     lib.gtk_layer_set_exclusive_zone(window_ptr, 0)
     lib.gtk_layer_set_namespace(window_ptr, b"corebrum-login")
+    # Left, right, top, and bottom. The surface covers the wallpaper so the
+    # glitch bars can cross it. The card stays centered inside the surface.
+    for edge in range(4):
+        lib.gtk_layer_set_anchor(window_ptr, edge, True)
     if monitor is not None:
         monitor_ptr = gobject_pointer(monitor)
         if not monitor_ptr:
@@ -206,18 +218,31 @@ def apply_css(Gtk, Gdk):
     )
 
 
-def build_form(Gtk, GdkPixbuf, on_activate):
-    outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
-    outer.set_halign(Gtk.Align.CENTER)
-    outer.set_valign(Gtk.Align.CENTER)
-    logo = logo_path()
-    if logo.is_file():
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-            str(logo), LOGO_WIDTH, LOGO_HEIGHT, False
-        )
-        image = Gtk.Image.new_from_pixbuf(pixbuf)
-        image.set_halign(Gtk.Align.CENTER)
-        outer.pack_start(image, False, False, 0)
+def pass_overlay(overlay, widget):
+    widget.set_can_focus(False)
+    overlay.add_overlay(widget)
+    overlay.set_overlay_pass_through(widget, True)
+
+
+def build_form(Gtk, on_activate):
+    overlay = Gtk.Overlay()
+    overlay.set_hexpand(True)
+    overlay.set_vexpand(True)
+    # The overlay gives its main child the whole screen. This holder keeps
+    # the column at its natural size and centers it. fill stays off so the
+    # extra space becomes padding instead of stretching the fields.
+    holder = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+    holder.set_hexpand(True)
+    holder.set_vexpand(True)
+    column = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
+    column.set_halign(Gtk.Align.CENTER)
+    column.set_valign(Gtk.Align.CENTER)
+    logo = Gtk.Box()
+    logo.set_name("login-logo")
+    logo.set_halign(Gtk.Align.CENTER)
+    logo.set_size_request(LOGO_WIDTH, LOGO_HEIGHT)
+    logo.set_can_focus(False)
+    column.pack_start(logo, False, False, 0)
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
     card.set_name("login-card")
     card.set_halign(Gtk.Align.CENTER)
@@ -240,7 +265,44 @@ def build_form(Gtk, GdkPixbuf, on_activate):
     card.pack_start(username, False, False, 0)
     card.pack_start(password, False, False, 0)
     card.pack_start(error, False, False, 0)
-    outer.pack_start(card, False, False, 0)
+    column.pack_start(card, False, False, 0)
+    holder.pack_start(column, True, False, 0)
+    overlay.add(holder)
+    scan = Gtk.Box()
+    scan.set_name("glitch-scan")
+    scan.set_hexpand(True)
+    scan.set_vexpand(True)
+    pass_overlay(overlay, scan)
+    flash = Gtk.Box()
+    flash.set_name("glitch-flash")
+    flash.set_hexpand(True)
+    flash.set_vexpand(True)
+    pass_overlay(overlay, flash)
+    layer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+    layer.set_name("glitch-layer")
+    layer.set_hexpand(True)
+    layer.set_vexpand(True)
+    for name, width, height in (
+        ("glitch-bar-a", 520, 8),
+        ("glitch-bar-b", 240, 3),
+        ("glitch-bar-c", 680, 14),
+        ("glitch-bar-d", 160, 4),
+    ):
+        spacer = Gtk.Box()
+        spacer.set_vexpand(True)
+        spacer.set_can_focus(False)
+        layer.pack_start(spacer, True, True, 0)
+        bar = Gtk.Box()
+        bar.set_name(name)
+        bar.set_halign(Gtk.Align.START)
+        bar.set_size_request(width, height)
+        bar.set_can_focus(False)
+        layer.pack_start(bar, False, False, 0)
+    tail = Gtk.Box()
+    tail.set_vexpand(True)
+    tail.set_can_focus(False)
+    layer.pack_start(tail, True, True, 0)
+    pass_overlay(overlay, layer)
 
     def activate(entry):
         if entry is username and not password.get_text():
@@ -251,7 +313,7 @@ def build_form(Gtk, GdkPixbuf, on_activate):
 
     username.connect("activate", activate)
     password.connect("activate", activate)
-    return outer, username
+    return overlay, username
 
 
 def show():
@@ -260,9 +322,8 @@ def show():
     import gi
 
     gi.require_version("Gdk", "3.0")
-    gi.require_version("GdkPixbuf", "2.0")
     gi.require_version("Gtk", "3.0")
-    from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
+    from gi.repository import Gdk, GLib, Gtk
 
     os.environ.setdefault("GDK_BACKEND", "wayland")
     if not Gtk.init_check([]):
@@ -323,7 +384,7 @@ def show():
         visual = window.get_screen().get_rgba_visual()
         if visual is not None:
             window.set_visual(visual)
-        form, username = build_form(Gtk, GdkPixbuf, on_activate)
+        form, username = build_form(Gtk, on_activate)
         window.add(form)
         if not place_window(window, monitor, exclusive=(index == 0)):
             continue
@@ -345,16 +406,15 @@ def preview(path):
     import gi
 
     gi.require_version("Gdk", "3.0")
-    gi.require_version("GdkPixbuf", "2.0")
     gi.require_version("Gtk", "3.0")
-    from gi.repository import Gdk, GdkPixbuf, Gtk
+    from gi.repository import Gdk, Gtk
 
     if not Gtk.init_check([]):
         print("corebrum-login: GTK failed to start", file=sys.stderr)
         return 1
     apply_css(Gtk, Gdk)
     window = Gtk.OffscreenWindow()
-    form, _username = build_form(Gtk, GdkPixbuf, lambda *_args: None)
+    form, _username = build_form(Gtk, lambda *_args: None)
     form.set_margin_top(24)
     form.set_margin_bottom(24)
     window.add(form)
