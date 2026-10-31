@@ -35,7 +35,7 @@ if [[ -s "$marker" ]]; then
   echo "FAIL: update status called apt or git" >&2
   exit 1
 fi
-for row in Ubuntu Corebrum "ROS 2" Zenoh Corebrum Synapse "AI Agents"; do
+for row in Ubuntu Corebrum "ROS 2" Zenoh "Corebrum Synapse" "AI Agents"; do
   if ! grep -q "$row" <<<"$update"; then
     echo "FAIL: update status omitted ${row}" >&2
     exit 1

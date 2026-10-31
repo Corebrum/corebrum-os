@@ -33,7 +33,7 @@ tool_pin="$(sed -n 's/^COREBRUM_ZENOH_CLI_TOOL="\(.*\)"/\1/p' "$ros_lib")"
 [[ -n "$lib_pin" && -n "$tool_pin" ]] || fail "Zenoh client pins are missing from ros.sh"
 
 labels="$(run_menu labels)"
-for row in Ubuntu Corebrum "ROS 2" Zenoh Corebrum Synapse "AI Agents" All; do
+for row in Ubuntu Corebrum "ROS 2" Zenoh "Corebrum Synapse" "AI Agents" All; do
   printf '%s\n' "$labels" | grep -F -x -- "$row" >/dev/null || fail "missing row ${row}"
 done
 
@@ -91,7 +91,7 @@ printf '%s\n' "$full" | grep -F 'synapse mcp setup --claude' >/dev/null || fail 
 printf '%s\n' "$full" | grep -F '@xai-official/grok' >/dev/null && fail "Grok was updated without being installed"
 
 set +e
-agentic_dirty="$(COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_UPDATES_DIRTY=synapse run_menu apply Corebrum Synapse 2>&1)"
+agentic_dirty="$(COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_UPDATES_DIRTY=synapse run_menu apply "Corebrum Synapse" 2>&1)"
 agentic_ec=$?
 set -e
 [[ "$agentic_ec" -ne 0 ]] || fail "a dirty Corebrum Synapse checkout continued"

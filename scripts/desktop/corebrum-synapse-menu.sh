@@ -139,10 +139,11 @@ corebrum_synapse_menu_labels() {
 corebrum_synapse_menu_clear_actions() {
   local dir="$1" file
   shopt -s nullglob
-  for file in "${dir}"/corebrum-synapse-action-*.desktop; do
+  for file in "${dir}"/corebrum-synapse-action-*.desktop "${dir}"/corebrum-agenticros-action-*.desktop; do
     rm -f "$file"
   done
   shopt -u nullglob
+  rm -f "${dir}/corebrum-agenticros.desktop"
 }
 
 corebrum_synapse_menu_write_actions() {

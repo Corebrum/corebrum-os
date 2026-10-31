@@ -199,7 +199,14 @@ rm -rf "$clone_tmp"
 
 export COREBRUM_SYNAPSE_READY=1
 assert_eq "$("$menu" entry-name)" "Corebrum Synapse" "initialized Corebrum Synapse has no install indicator"
+mkdir -p "${runtime}/corebrum/applications"
+printf '%s\n' '[Desktop Entry]' 'Name=AgenticROS' >"${runtime}/corebrum/applications/corebrum-agenticros.desktop"
+printf '%s\n' '[Desktop Entry]' 'Name=Motors: Start' >"${runtime}/corebrum/applications/corebrum-agenticros-action-motors-start.desktop"
 "$menu" refresh
+if [[ -e "${runtime}/corebrum/applications/corebrum-agenticros.desktop" || -e "${runtime}/corebrum/applications/corebrum-agenticros-action-motors-start.desktop" ]]; then
+  echo "FAIL: refresh left the AgenticROS desktop files" >&2
+  exit 1
+fi
 if ! grep -q '^Name=Corebrum Synapse$' "${runtime}/corebrum/applications/corebrum-synapse.desktop"; then
   echo "FAIL: refreshed desktop entry did not name Corebrum Synapse" >&2
   exit 1

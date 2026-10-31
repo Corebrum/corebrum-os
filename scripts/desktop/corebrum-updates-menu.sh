@@ -173,7 +173,7 @@ corebrum_updates_labels() {
     Corebrum \
     "ROS 2" \
     Zenoh \
-    Corebrum Synapse \
+    "Corebrum Synapse" \
     "AI Agents" \
     All
 }
@@ -339,7 +339,7 @@ corebrum_updates_apply() {
     corebrum | Corebrum) corebrum_updates_apply_corebrum ;;
     ros | ROS | "ROS 2") corebrum_updates_apply_ros ;;
     zenoh | Zenoh) corebrum_updates_apply_zenoh ;;
-    synapse | Corebrum Synapse) corebrum_updates_apply_synapse ;;
+    synapse | "Corebrum Synapse") corebrum_updates_apply_synapse ;;
     agents | "AI Agents") corebrum_updates_apply_agents ;;
     all | All) corebrum_updates_apply_all ;;
     *)
