@@ -278,7 +278,9 @@ corebrum_agents_install_action() {
   if [[ "$kind" == "npm" ]]; then
     allow="$(corebrum_agents_npm_package "$install")"
     if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
-      printf 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=%s %s\n' "$allow" "$install"
+      printf 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=%s %s' "$allow" "$install"
+      corebrum_agents_npm_home_fix "$allow"
+      printf '\n'
       return 0
     fi
     # sudo's default PATH does not include nvm. npm is a script whose shebang
@@ -290,10 +292,20 @@ corebrum_agents_install_action() {
     node_dir="$(dirname "$node_bin")"
     path_value="${node_dir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     action="sudo env PATH=$(printf '%q' "$path_value") $(printf '%q' "$node_bin") $(printf '%q' "$npm_bin") install -g --allow-scripts=$(printf '%q' "$allow") $(printf '%q' "$install")"
+    action="${action}$(corebrum_agents_npm_home_fix "$allow")"
     printf '%s\n' "$action"
     return 0
   fi
   printf '%s\n' "$install"
+}
+
+# Grok's npm install script writes ~/.grok as root. The CLI then runs as the
+# logged-in user and cannot save the x.ai credential there.
+corebrum_agents_npm_home_fix() {
+  local allow="$1"
+  if [[ "$allow" == "@xai-official/grok" ]]; then
+    printf '%s' ' && { if [ -d "$HOME/.grok" ]; then sudo chown -R "$(id -un):$(id -gn)" "$HOME/.grok"; fi; }'
+  fi
 }
 
 corebrum_agents_rows() {

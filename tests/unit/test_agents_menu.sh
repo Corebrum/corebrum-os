@@ -60,8 +60,9 @@ fi
 
 export COREBRUM_AGENTS_CHOICE="Grok CLI   install"
 got="$("$menu" open)"
-assert_eq "$got" 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=@xai-official/grok @xai-official/grok' "Grok installs from npm"
-assert_eq "$("$menu" launch grok)" 'sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=@xai-official/grok @xai-official/grok' "typing grok installs Grok"
+grok_install='sudo env PATH="$node_dir:$PATH" node npm install -g --allow-scripts=@xai-official/grok @xai-official/grok && { if [ -d "$HOME/.grok" ]; then sudo chown -R "$(id -un):$(id -gn)" "$HOME/.grok"; fi; }'
+assert_eq "$got" "$grok_install" "Grok installs from npm"
+assert_eq "$("$menu" launch grok)" "$grok_install" "typing grok installs Grok"
 
 export COREBRUM_AGENTS_CHOICE="OpenClaw   install"
 got="$("$menu" open)"
