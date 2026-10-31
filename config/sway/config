@@ -24,6 +24,7 @@ bindsym $mod+Shift+Return exec firefox
 bindsym $mod+Shift+f exec thunar
 bindsym $mod+Shift+n exec gnome-text-editor
 bindsym $mod+w kill
+bindsym $mod+q kill
 bindsym $mod+f fullscreen toggle
 bindsym $mod+t floating toggle
 bindsym $mod+c exec /usr/local/bin/corebrum-edit-keys copy

@@ -35,6 +35,7 @@ require_line "Super+Shift+Return     Open Firefox"
 require_line "Super+Shift+F          Open Files"
 require_line "Super+Shift+N          Open Text Editor"
 require_line "Super+W                Close the focused window"
+require_line "Super+Q                Close the focused window"
 require_line "Super+F                Fullscreen"
 require_line "Super+T                Float or tile the focused window"
 require_line "Super+C                Copy"
@@ -63,6 +64,7 @@ require_bind 'bindsym $mod+Shift+Return exec firefox'
 require_bind 'bindsym $mod+Shift+f exec thunar'
 require_bind 'bindsym $mod+Shift+n exec gnome-text-editor'
 require_bind 'bindsym $mod+w kill'
+require_bind 'bindsym $mod+q kill'
 require_bind 'bindsym $mod+f fullscreen toggle'
 require_bind 'bindsym $mod+t floating toggle'
 require_bind 'bindsym $mod+c exec /usr/local/bin/corebrum-edit-keys copy'

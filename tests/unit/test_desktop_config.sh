@@ -35,10 +35,7 @@ if ! grep -q 'app_id="corebrum-camera"' "$conf"; then
   exit 1
 fi
 require "bindsym \$mod+w kill"
-if grep -q 'bindsym $mod+q kill' "$conf"; then
-  echo "FAIL: Super+Q still closes the focused window" >&2
-  exit 1
-fi
+require "bindsym \$mod+q kill"
 require "fullscreen toggle"
 require "scratchpad show"
 require "/usr/local/bin/corebrum-lock"

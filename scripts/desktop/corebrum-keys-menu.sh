@@ -11,6 +11,7 @@ Super+Shift+Return     Open Firefox
 Super+Shift+F          Open Files
 Super+Shift+N          Open Text Editor
 Super+W                Close the focused window
+Super+Q                Close the focused window
 Super+F                Fullscreen
 Super+T                Float or tile the focused window
 Super+C                Copy

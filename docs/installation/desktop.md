@@ -50,6 +50,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Sw
 | Super+Shift+F | Files |
 | Super+Shift+N | Text Editor |
 | Super+W | Close the focused window |
+| Super+Q | Close the focused window |
 | Super+F | Fullscreen |
 | Super+T | Float or tile |
 | Super+C | Copy |
@@ -76,7 +77,7 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Sw
 | Super+Shift+C | Clipboard history |
 | Ctrl+Alt+F1 | Text console |
 
-Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md` and `docs/decisions/0086-sway-edit-keys.md`.
+Super+W and Super+Q both close the focused window. See `docs/decisions/0104-close-window-keys.md`. Super+C copies, Super+X cuts, and Super+V pastes in the focused window. A terminal receives Ctrl+Shift instead of Ctrl, so Ctrl+C there still interrupts the program. Clipboard history is Super+Shift+C, and Super+T floats or tiles the window. See `docs/decisions/0028-copy-paste-keys.md` and `docs/decisions/0086-sway-edit-keys.md`.
 
 Super+K clears the focused Kitty window to the prompt and erases its scrollback. That is Kitty's Command+K action. Another window ignores the key. A Kitty window that is already open picks up the shortcut the next time it starts. Super+Arrows move focus to the tile in that direction on the screen. Super+Shift+Arrows swap with that tile. See `docs/decisions/0053-terminal-clear.md` and `docs/decisions/0085-spatial-tile-keys.md`.
 
