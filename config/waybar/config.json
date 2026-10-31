@@ -58,7 +58,7 @@
     "return-type": "json",
     "interval": 5,
     "on-click": "/usr/local/bin/corebrum-synapse-status click",
-    "format": "{text}",
+    "format": "Cloud",
     "tooltip": true
   }
 },

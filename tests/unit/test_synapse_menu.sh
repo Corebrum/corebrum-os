@@ -235,6 +235,11 @@ assert_eq "$("$menu" open)" "synapse mcp setup --installed" "agent connect refre
 
 export COREBRUM_SYNAPSE_STATUS_JSON='{"hardware":[{"name":"comms","running":true},{"name":"realsense","running":false}],"components":[{"name":"eyes","running":false}],"openclawGatewayActive":false}'
 shown="$("$status" show)"
+if ! grep -q '"text": "Cloud"' <<<"$shown"; then
+  echo "FAIL: Waybar status did not label the chip Cloud" >&2
+  printf '%s\n' "$shown" >&2
+  exit 1
+fi
 if ! grep -q '"class": "connected"' <<<"$shown"; then
   echo "FAIL: connected Cloud did not mark the status connected" >&2
   printf '%s\n' "$shown" >&2
@@ -242,6 +247,13 @@ if ! grep -q '"class": "connected"' <<<"$shown"; then
 fi
 if ! grep -q 'realsense: stopped' <<<"$shown"; then
   echo "FAIL: status tooltip omitted RealSense" >&2
+  exit 1
+fi
+export COREBRUM_SYNAPSE_STATUS_JSON=$'ROS setup noise\n{"hardware":[{"name":"comms","running":false}],"openclawGatewayActive":false}'
+shown="$("$status" show)"
+if ! grep -q '"text": "Cloud"' <<<"$shown"; then
+  echo "FAIL: noisy status output hid the Cloud label" >&2
+  printf '%s\n' "$shown" >&2
   exit 1
 fi
 export COREBRUM_SYNAPSE_STATUS_JSON='{"absent":true}'

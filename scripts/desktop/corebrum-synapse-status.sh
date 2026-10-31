@@ -15,15 +15,39 @@ corebrum_synapse_status_raw() {
 }
 
 corebrum_synapse_status_print() {
-  corebrum_synapse_status_raw | python3 -c "$(cat <<'PY'
+  # status --json is indented and the ROS wrapper can print before it.
+  # Waybar hides the module when this command fails, which leaves a blank
+  # clickable gap. Always emit one JSON object, with the word Cloud when
+  # the CLI is installed.
+  local raw
+  raw="$(corebrum_synapse_status_raw 2>/dev/null || true)"
+  printf '%s\n' "$raw" | python3 -c "$(cat <<'PY'
 import json, sys
-raw = json.load(sys.stdin)
+blob = sys.stdin.read()
+raw = None
+try:
+    raw = json.loads(blob)
+except json.JSONDecodeError:
+    decoder = json.JSONDecoder()
+    for index, char in enumerate(blob):
+        if char != "{":
+            continue
+        try:
+            raw, _end = decoder.raw_decode(blob[index:])
+            break
+        except json.JSONDecodeError:
+            raw = None
+if not isinstance(raw, dict):
+    print(json.dumps({"text": "Cloud", "tooltip": "Corebrum Cloud", "class": "idle"}))
+    raise SystemExit
 if raw.get("absent"):
     print(json.dumps({"text": "", "tooltip": "Corebrum Synapse is not installed", "class": "absent"}))
     raise SystemExit
 lines = []
 connected = False
 for item in raw.get("hardware", []) + raw.get("components", []):
+    if not isinstance(item, dict):
+        continue
     name = str(item.get("name", ""))
     running = bool(item.get("running"))
     if name == "comms":
@@ -34,16 +58,17 @@ gateway = "running" if raw.get("openclawGatewayActive") else "stopped"
 lines.append(f"openclaw: {gateway}")
 print(json.dumps({
     "text": "Cloud",
-    "tooltip": "\n".join(lines),
+    "tooltip": "\n".join(lines) if lines else "Corebrum Cloud",
     "class": "connected" if connected else "idle",
 }))
 PY
-)"
+)" || printf '%s\n' '{"text":"Cloud","tooltip":"Corebrum Cloud","class":"idle"}'
 }
 
 corebrum_synapse_status_click() {
   local choice
   if [[ ! -x /usr/local/bin/synapse ]]; then
+    notify-send "Corebrum Cloud" "Corebrum Synapse is not installed" || true
     return 0
   fi
   if [[ "${COREBRUM_SYNAPSE_STATUS_STUB:-0}" == 1 ]]; then

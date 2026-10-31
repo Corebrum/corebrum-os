@@ -36,12 +36,13 @@ window#waybar {
     padding: 0 8px;
 }
 
-#custom-cloud.connected {
-    color: #3d9a8b;
+#custom-cloud,
+#custom-cloud.idle {
+    color: #e8e6e3;
 }
 
-#custom-cloud.idle {
-    color: rgba(232, 230, 227, 0.55);
+#custom-cloud.connected {
+    color: #3d9a8b;
 }
 
 window#waybar.tagline {
