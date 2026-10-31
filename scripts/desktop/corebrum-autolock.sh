@@ -350,17 +350,14 @@ corebrum_autolock_open() {
     corebrum_autolock_apply_choice "$choice"
     return 0
   fi
-  # The list is drawn before the choice is saved. Open it again so "on" follows that choice.
-  while true; do
-    choice="$(corebrum_autolock_lines | fuzzel \
-      --config /etc/corebrum/fuzzel/fuzzel.ini \
-      --dmenu \
-      --prompt 'Autolock  ' \
-      --width 32 \
-      --lines "$lines")" || return 0
-    [[ -n "$choice" ]] || return 0
-    corebrum_autolock_apply_choice "$choice"
-  done
+  choice="$(corebrum_autolock_lines | fuzzel \
+    --config /etc/corebrum/fuzzel/fuzzel.ini \
+    --dmenu \
+    --prompt 'Autolock  ' \
+    --width 32 \
+    --lines "$lines")" || return 0
+  [[ -n "$choice" ]] || return 0
+  corebrum_autolock_apply_choice "$choice"
 }
 
 usage() {
