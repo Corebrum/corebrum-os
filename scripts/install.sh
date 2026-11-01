@@ -130,5 +130,5 @@ if [[ "$PROFILE" == "ros" ]]; then
 fi
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
-  corebrum_log "Corebrum OS installed. Hack the planet! Reboot..."
+  corebrum_log "Corebrum OS installed. Hack the planet!"
 fi
