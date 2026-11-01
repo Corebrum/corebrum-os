@@ -234,6 +234,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-power-menu.sh" /usr/local/bin/corebrum-power-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-vnc-menu.sh" /usr/local/bin/corebrum-vnc-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-wormhole-menu.sh" /usr/local/bin/corebrum-wormhole-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-vnc-proxy.py" /usr/local/bin/corebrum-vnc-proxy 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-record.sh" /usr/local/bin/corebrum-record 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-camera-preview.py" /usr/local/lib/corebrum/corebrum-camera-preview.py 755
@@ -470,6 +471,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-power-menu
 /usr/local/bin/corebrum-vnc-menu
 /usr/local/bin/corebrum-vnc-proxy
+/usr/local/bin/corebrum-wormhole-menu
 /usr/local/bin/corebrum-record
 /usr/local/lib/corebrum/corebrum-camera-preview.py
 /etc/systemd/user/hyprpaper.service.d/corebrum.conf

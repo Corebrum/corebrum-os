@@ -93,6 +93,7 @@ for path in \
   /usr/local/bin/corebrum-power-menu \
   /usr/local/bin/corebrum-vnc-menu \
   /usr/local/bin/corebrum-vnc-proxy \
+  /usr/local/bin/corebrum-wormhole-menu \
   /usr/local/bin/corebrum-record \
   /usr/local/lib/corebrum/corebrum-camera-preview.py \
   /etc/systemd/user/hypridle.service.d/corebrum.conf \
