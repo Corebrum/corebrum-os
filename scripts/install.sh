@@ -128,3 +128,7 @@ if [[ "$PROFILE" == "ros" ]]; then
   source "${COREBRUM_ROOT}/scripts/phases/05-ros.sh"
   corebrum_phase_ros
 fi
+
+if [[ "$DRY_RUN" -eq 0 ]]; then
+  corebrum_log "Corebrum OS installed. Hack the planet! Reboot..."
+fi
