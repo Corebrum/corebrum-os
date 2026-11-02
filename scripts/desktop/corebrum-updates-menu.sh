@@ -315,6 +315,30 @@ corebrum_updates_apply_zenoh() {
   fi
 }
 
+# The Synapse installer clones with --depth 1. A later fetch --depth 1 marks the
+# new tip as another shallow root, so merge --ff-only refuses unrelated histories
+# even when main only moved forward. Fetch without a depth cap, then deepen or
+# unshallow until HEAD and origin/main share an ancestor.
+corebrum_updates_synapse_fetch() {
+  local root="$1"
+  git -C "$root" fetch origin main
+  if git -C "$root" merge-base HEAD origin/main >/dev/null 2>&1; then
+    return 0
+  fi
+  if [[ "$(git -C "$root" rev-parse --is-shallow-repository 2>/dev/null || true)" == "true" ]]; then
+    printf 'Deepening the Corebrum Synapse checkout so the update can fast-forward.\n'
+    git -C "$root" fetch --deepen=100 origin main || true
+    if git -C "$root" merge-base HEAD origin/main >/dev/null 2>&1; then
+      return 0
+    fi
+    git -C "$root" fetch --unshallow origin \
+      || corebrum_updates_die "could not deepen the Corebrum Synapse checkout (${root})"
+  fi
+  if ! git -C "$root" merge-base HEAD origin/main >/dev/null 2>&1; then
+    corebrum_updates_die "Corebrum Synapse checkout and origin/main have unrelated histories (${root})"
+  fi
+}
+
 corebrum_updates_apply_synapse() {
   local root script
   printf '== Corebrum Synapse ==\n'
@@ -328,14 +352,14 @@ corebrum_updates_apply_synapse() {
   fi
   corebrum_updates_restore_synapse_mcp "$root"
   if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
-    printf 'run: git -C %s fetch --depth 1 origin main\n' "$root"
-    printf 'run: git -C %s merge --ff-only FETCH_HEAD\n' "$root"
+    printf 'run: git -C %s fetch origin main\n' "$root"
+    printf 'run: git -C %s merge --ff-only origin/main\n' "$root"
     printf 'run: synapse-install.sh\n'
     printf 'run: synapse init --yes\n'
     return 0
   fi
-  git -C "$root" fetch --depth 1 origin main
-  git -C "$root" merge --ff-only FETCH_HEAD
+  corebrum_updates_synapse_fetch "$root"
+  git -C "$root" merge --ff-only origin/main
   if [[ -n "${COREBRUM_UPDATES_SYNAPSE_INSTALL:-}" ]]; then
     script="$COREBRUM_UPDATES_SYNAPSE_INSTALL"
   elif [[ -x /usr/local/lib/corebrum/synapse-install.sh ]]; then

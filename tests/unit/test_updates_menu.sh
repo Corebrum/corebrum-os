@@ -80,11 +80,12 @@ printf '%s\n' "$full" | grep -F "$tool_pin" >/dev/null || fail "Zenoh client too
 printf '%s\n' "$full" | grep -F 'scripts/ros/zenoh-cli.sh' >/dev/null || fail "Zenoh client wrapper was not copied"
 printf '%s\n' "$full" | grep -F '@corebrum/zenoh-fleet@0.1.4' >/dev/null || fail "installed Zenoh fleet was not reinstalled"
 printf '%s\n' "$full" | grep -F 'git -C synapse checkout -- .mcp.json' >/dev/null || fail "Corebrum Synapse did not restore .mcp.json"
-printf '%s\n' "$full" | grep -F 'git -C synapse fetch --depth 1 origin main' >/dev/null || fail "Corebrum Synapse was not fetched"
+printf '%s\n' "$full" | grep -F 'git -C synapse fetch origin main' >/dev/null || fail "Corebrum Synapse was not fetched"
 mcp_at="$(line_of 'checkout -- .mcp.json' <(printf '%s\n' "$full"))"
-fetch_at="$(line_of 'fetch --depth 1 origin main' <(printf '%s\n' "$full"))"
+fetch_at="$(line_of 'fetch origin main' <(printf '%s\n' "$full"))"
 [[ "$mcp_at" -lt "$fetch_at" ]] || fail ".mcp.json was restored after the fetch"
-printf '%s\n' "$full" | grep -F 'merge --ff-only FETCH_HEAD' >/dev/null || fail "Corebrum Synapse was not fast-forwarded"
+printf '%s\n' "$full" | grep -F 'merge --ff-only origin/main' >/dev/null || fail "Corebrum Synapse was not fast-forwarded"
+printf '%s\n' "$full" | grep -F 'fetch --depth 1' >/dev/null && fail "Corebrum Synapse still used a depth-1 fetch"
 printf '%s\n' "$full" | grep -F 'synapse init --yes' >/dev/null || fail "Corebrum Synapse init did not run"
 printf '%s\n' "$full" | grep -F 'https://claude.ai/install.sh' >/dev/null || fail "installed Claude was not updated"
 printf '%s\n' "$full" | grep -F 'synapse mcp setup --claude' >/dev/null || fail "Claude was not coupled to Corebrum Synapse"
@@ -95,7 +96,7 @@ agentic_dirty="$(COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_UPDATES_DIRTY=synapse ru
 agentic_ec=$?
 set -e
 [[ "$agentic_ec" -ne 0 ]] || fail "a dirty Corebrum Synapse checkout continued"
-printf '%s\n' "$agentic_dirty" | grep -F 'fetch --depth 1' >/dev/null && fail "a dirty Corebrum Synapse checkout still fetched"
+printf '%s\n' "$agentic_dirty" | grep -F 'fetch origin main' >/dev/null && fail "a dirty Corebrum Synapse checkout still fetched"
 
 reboot="$(COREBRUM_UPDATES_REBOOT=1 run_menu apply Ubuntu)"
 printf '%s\n' "$reboot" | grep -F 'A reboot is required before the new packages are fully in use.' >/dev/null \
