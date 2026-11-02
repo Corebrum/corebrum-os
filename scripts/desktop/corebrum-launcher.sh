@@ -29,6 +29,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-timezone-menu refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-password-menu refresh &
+pids+=("$!")
 /usr/local/bin/corebrum-power-menu refresh &
 pids+=("$!")
 /usr/local/bin/corebrum-about-menu refresh &

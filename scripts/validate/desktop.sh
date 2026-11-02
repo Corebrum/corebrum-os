@@ -91,6 +91,7 @@ for path in \
   /usr/local/bin/corebrum-osd \
   /usr/local/bin/corebrum-autolock \
   /usr/local/bin/corebrum-timezone-menu \
+  /usr/local/bin/corebrum-password-menu \
   /usr/local/bin/corebrum-power-menu \
   /usr/local/bin/corebrum-about \
   /usr/local/bin/corebrum-about-menu \
