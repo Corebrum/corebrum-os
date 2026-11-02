@@ -4,15 +4,15 @@
 Ubuntu wayvnc 0.9 offers Apple and VeNCrypt logins. Screen Sharing refuses
 those and reports a firewall error before it asks for a password. This process
 listens on the network, checks the 8-character VNC password, and then connects
-the viewer to wayvnc on localhost. Screen Sharing speaks protocol 3.3, asks
-for depth 32, and reads 3 bytes per pixel, so the window flashes with no
-desktop. For that client this process reports depth 24 and turns the Command
-key into Super. Copied Mac text is placed on the Wayland clipboard, and
-Command+V pastes it after Super is released. TigerVNC and Remmina speak
-protocol 3.8, so they keep the pixel format and the Alt key they send.
-Every client gets a ZRLE or raw picture. The local connection is not left
-on the connect timer, or Screen Sharing closes and redraws after a few
-quiet seconds.
+the viewer to wayvnc on localhost. The desktop name sent to the viewer is
+Corebrum instead of WayVNC. Screen Sharing speaks protocol 3.3, asks for
+depth 32, and reads 3 bytes per pixel, so the window flashes with no desktop.
+For that client this process reports depth 24 and turns the Command key into
+Super. Copied Mac text is placed on the Wayland clipboard, and Command+V
+pastes it after Super is released. TigerVNC and Remmina speak protocol 3.8,
+so they keep the pixel format and the Alt key they send. Every client gets a
+ZRLE or raw picture. The local connection is not left on the connect timer,
+or Screen Sharing closes and redraws after a few quiet seconds.
 """
 import argparse
 import hmac
@@ -72,6 +72,9 @@ def client_version(banner):
     return int(major), int(minor)
 
 
+DESKTOP_NAME = b"Corebrum"
+
+
 def handshake_upstream(upstream, shared):
     banner = recvn(upstream, 12)
     if not banner.startswith(b"RFB "):
@@ -86,6 +89,26 @@ def handshake_upstream(upstream, shared):
     if result != b"\x00\x00\x00\x00":
         raise RuntimeError("wayvnc rejected the local connection")
     upstream.sendall(bytes([shared]))
+
+
+def read_server_init(sock):
+    """Read RFB ServerInit: size, pixel format, and desktop name."""
+    head = recvn(sock, 24)
+    name_len = int.from_bytes(head[20:24], "big")
+    if name_len > 1_000_000:
+        raise RuntimeError("desktop name was too long")
+    name = recvn(sock, name_len) if name_len else b""
+    return head[:20] + name_len.to_bytes(4, "big") + name
+
+
+def rewrite_desktop_name(server_init, name=DESKTOP_NAME):
+    """Replace wayvnc's desktop name so viewers show Corebrum."""
+    if len(server_init) < 24:
+        return server_init
+    name_len = int.from_bytes(server_init[20:24], "big")
+    if len(server_init) < 24 + name_len:
+        return server_init
+    return server_init[:20] + len(name).to_bytes(4, "big") + name
 
 
 def screen_pixel_format(msg):
@@ -418,6 +441,7 @@ def serve_client(client, password, upstream_host, upstream_port):
         upstream.settimeout(None)
         try:
             handshake_upstream(upstream, shared)
+            client.sendall(rewrite_desktop_name(read_server_init(upstream)))
         except (ConnectionError, OSError, RuntimeError):
             upstream.close()
             return
@@ -494,6 +518,16 @@ def self_test():
         raise SystemExit("Alt from another computer was mapped to Super")
     if other.feed(depth32)[5] != 32:
         raise SystemExit("another computer was told to use 3-byte pixels")
+    wayvnc_init = (
+        (1920).to_bytes(2, "big")
+        + (1080).to_bytes(2, "big")
+        + bytes(16)
+        + (6).to_bytes(4, "big")
+        + b"WayVNC"
+    )
+    renamed = rewrite_desktop_name(wayvnc_init)
+    if renamed[20:24] != (8).to_bytes(4, "big") or renamed[24:] != b"Corebrum":
+        raise SystemExit("desktop name was not rewritten to Corebrum")
 
     upstream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     upstream.bind(("127.0.0.1", 0))
@@ -523,7 +557,7 @@ def self_test():
             conn.sendall(b"\x00\x00\x00\x00")
             if recvn(conn, 1) != b"\x01":
                 raise SystemExit("proxy did not send ClientInit")
-            conn.sendall(b"SERVERINIT")
+            conn.sendall(wayvnc_init)
             if index == 0:
                 pixel_format = recvn(conn, 20)
                 if pixel_format[5] != 32:
@@ -575,8 +609,9 @@ def self_test():
     if recvn(client, 4) != b"\x00\x00\x00\x00":
         raise SystemExit("correct password was rejected")
     client.sendall(bytes([1]))
-    if recvn(client, len(b"SERVERINIT")) != b"SERVERINIT":
-        raise SystemExit("desktop data did not pass through")
+    expected_init = rewrite_desktop_name(wayvnc_init)
+    if recvn(client, len(expected_init)) != expected_init:
+        raise SystemExit("desktop name was not Corebrum")
     client.sendall(bytes([0, 0, 0, 0, 32, 32, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0, 0, 0, 0]))
     client.sendall(encoding_message([7, -239, -308, -313, 16, 0, -223]))
     client.sendall(bytes([3, 1, 0, 0, 0, 0, 7, 128, 4, 56]))
@@ -593,8 +628,8 @@ def self_test():
     if recvn(legacy, 4) != b"\x00\x00\x00\x00":
         raise SystemExit("protocol 3.3 did not accept the password")
     legacy.sendall(bytes([1]))
-    if recvn(legacy, len(b"SERVERINIT")) != b"SERVERINIT":
-        raise SystemExit("protocol 3.3 desktop data did not pass through")
+    if recvn(legacy, len(expected_init)) != expected_init:
+        raise SystemExit("protocol 3.3 desktop name was not Corebrum")
     legacy.sendall(bytes([0, 0, 0, 0, 32, 32, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0, 0, 0, 0]))
     legacy.sendall(key_event(True, 0xFFE9))
     legacy.close()
