@@ -36,6 +36,8 @@ if req < 0 or imp < 0 or req > imp:
     raise SystemExit("the menu does not request Gdk 3 before importing it")
 if "KEY_BackSpace" not in text:
     raise SystemExit("the menu has no Backspace go-back handling")
+if "KEY_Right" not in text or "KEY_KP_Right" not in text:
+    raise SystemExit("the menu has no Right open-submenu handling")
 PY
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$launcher"; then
   echo "FAIL: Super+Space has no Fuzzel fallback with a blank prompt" >&2

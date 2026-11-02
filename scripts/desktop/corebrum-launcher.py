@@ -2,9 +2,9 @@
 """Super+Space menu.
 
 The idle list is the root groups (Apps, Learn, Robot, Appearance, Setup,
-Updates, System). Enter drills into a group. Backspace or Left with an empty
-search box goes up one level. Typing finds matching descendants of the active
-menu; nested hits show a parent path.
+Updates, System). Enter or Right drills into a group. Backspace or Left with an
+empty search box goes up one level. Typing finds matching descendants of the
+active menu; nested hits show a parent path.
 
 COREBRUM_LAUNCHER_LIST=1 prints the visible names and does not open a window.
 COREBRUM_LAUNCHER_QUERY is the filter. COREBRUM_LAUNCHER_ACTIVE is the menu id
@@ -674,19 +674,29 @@ def run_window():
         clear_filter()
         refill()
 
+    def selected_menu_id():
+        row = results.get_selected_row()
+        if row is None:
+            return None
+        data = row.row_data
+        if data.kind in ("menu", "provider") and data.menu_id and model.can_navigate(data.menu_id):
+            return data.menu_id
+        if data.kind == "menu" and data.entry is not None:
+            target = data.entry.app_id
+            if model.can_navigate(target):
+                return target
+        return None
+
     def activate(*_args):
         row = results.get_selected_row()
         if row is None:
             return
-        data = row.row_data
-        if data.kind in ("menu", "provider") and data.menu_id and model.can_navigate(data.menu_id):
-            enter_menu(data.menu_id)
+        menu_id = selected_menu_id()
+        if menu_id is not None:
+            enter_menu(menu_id)
             return
+        data = row.row_data
         if data.kind == "menu" and data.entry is not None:
-            target = data.entry.app_id
-            if model.can_navigate(target):
-                enter_menu(target)
-                return
             try:
                 launch(data.entry)
             finally:
@@ -710,6 +720,13 @@ def run_window():
             return True
         if empty and key in (Gdk.KEY_BackSpace, Gdk.KEY_Left, Gdk.KEY_KP_Left):
             if go_back():
+                return True
+            return False
+        # Right only opens a submenu. It does not launch a leaf the way Enter does.
+        if empty and key in (Gdk.KEY_Right, Gdk.KEY_KP_Right):
+            menu_id = selected_menu_id()
+            if menu_id is not None:
+                enter_menu(menu_id)
                 return True
             return False
         if key in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):

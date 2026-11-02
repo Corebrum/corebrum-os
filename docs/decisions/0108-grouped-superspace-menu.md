@@ -10,7 +10,7 @@ Status: Accepted
 ## Decision
 
 - Super+Space keeps the GTK launcher. The idle list is seven fixed groups from `/etc/corebrum/menu/corebrum-menu.json`: Apps, Learn, Robot, Appearance, Setup, Updates, and System.
-- Enter on a group or static parent (ROS, AI Agents, RealSense, Corebrum Synapse, Learn, Updates, System) shows children in the same window. Backspace or Left with an empty search box goes up one level. Escape clears a non-empty filter, then quits.
+- Enter or Right on a group or static parent (ROS, AI Agents, RealSense, Corebrum Synapse, Learn, Updates, System) shows children in the same window. Right only opens a submenu; it does not launch a leaf. Backspace or Left with an empty search box goes up one level. Escape clears a non-empty filter, then quits.
 - Typing searches descendants of the active menu. Nested hits show a short parent path. Empty filter shows only direct children.
 - Updates rows and System power actions are `NoDisplay=true` desktop leaves, the same pattern as agent and ROS tool leaves, so typing `ubuntu` or `reboot` works from root. The Power parent desktop is named System.
 - Dynamic choosers (Wallpaper, Ollama, Skills, Remote desktop, Wormhole, Autolock) still run their existing `open` path. Fuzzel remains the flat fallback when GTK cannot start.
