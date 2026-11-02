@@ -2,9 +2,10 @@
 """Super+Space menu.
 
 The idle list is the root groups (Apps, Learn, Robot, Appearance, Setup,
-Updates, System). Enter or Right drills into a group. Backspace or Left with an
-empty search box goes up one level. Typing finds matching descendants of the
-active menu; nested hits show a parent path.
+Updates, System). Rows that open another level end with >. Enter or Right
+drills into a group. Backspace or Left with an empty search box goes up one
+level. Typing finds matching descendants of the active menu; nested hits show
+a parent path.
 
 COREBRUM_LAUNCHER_LIST=1 prints the visible names and does not open a window.
 COREBRUM_LAUNCHER_QUERY is the filter. COREBRUM_LAUNCHER_ACTIVE is the menu id
@@ -414,6 +415,18 @@ class MenuModel:
             return bool(self.navigate_children(menu_id))
         return False
 
+    def row_navigable(self, row):
+        if row.kind in ("menu", "provider") and row.menu_id and self.can_navigate(row.menu_id):
+            return True
+        if row.kind == "menu" and row.entry is not None:
+            return self.can_navigate(row.entry.app_id)
+        return False
+
+    def display_name(self, row):
+        if self.row_navigable(row):
+            return f"{row.name} >"
+        return row.name
+
     def collect_descendants(self, menu_id, path_parts=None, depth=0):
         if path_parts is None:
             path_parts = []
@@ -468,10 +481,11 @@ def list_names():
     active = os.environ.get("COREBRUM_LAUNCHER_ACTIVE", "root")
     model = MenuModel(load_menu_tree(), load_entries())
     for row in model.visible(active, query):
+        name = model.display_name(row)
         if row.path:
-            print(f"{row.name}\t{row.path}")
+            print(f"{name}\t{row.path}")
         else:
-            print(row.name)
+            print(name)
 
 
 def widget_pointer(widget):
@@ -645,7 +659,7 @@ def run_window():
                 except Exception:
                     pass
             text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            label = Gtk.Label(label=row_data.name, xalign=0)
+            label = Gtk.Label(label=model.display_name(row_data), xalign=0)
             text_box.pack_start(label, True, True, 0)
             if row_data.path:
                 path_label = Gtk.Label(label=row_data.path, xalign=0)
@@ -679,12 +693,12 @@ def run_window():
         if row is None:
             return None
         data = row.row_data
-        if data.kind in ("menu", "provider") and data.menu_id and model.can_navigate(data.menu_id):
+        if not model.row_navigable(data):
+            return None
+        if data.menu_id:
             return data.menu_id
-        if data.kind == "menu" and data.entry is not None:
-            target = data.entry.app_id
-            if model.can_navigate(target):
-                return target
+        if data.entry is not None:
+            return data.entry.app_id
         return None
 
     def activate(*_args):

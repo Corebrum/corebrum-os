@@ -38,6 +38,8 @@ if "KEY_BackSpace" not in text:
     raise SystemExit("the menu has no Backspace go-back handling")
 if "KEY_Right" not in text or "KEY_KP_Right" not in text:
     raise SystemExit("the menu has no Right open-submenu handling")
+if "def display_name" not in text or 'f"{row.name} >"' not in text:
+    raise SystemExit("navigable rows do not show a > marker")
 PY
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$launcher"; then
   echo "FAIL: Super+Space has no Fuzzel fallback with a blank prompt" >&2
@@ -207,9 +209,9 @@ names() {
 
 idle="$(COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
 idle_names="$(names <<<"$idle")"
-expected=$'Apps\nLearn\nRobot\nAppearance\nSetup\nUpdates\nSystem'
+expected=$'Apps >\nLearn >\nRobot >\nAppearance >\nSetup >\nUpdates >\nSystem >'
 if [[ "$idle_names" != "$expected" ]]; then
-  echo "FAIL: the idle menu is not the seven root groups" >&2
+  echo "FAIL: the idle menu is not the seven root groups with > markers" >&2
   printf '%s\n' "$idle_names" >&2
   exit 1
 fi
@@ -223,6 +225,11 @@ apps="$(COREBRUM_LAUNCHER_ACTIVE=apps COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
 apps_names="$(names <<<"$apps")"
 if ! grep -qx 'Firefox' <<<"$apps_names" || ! grep -qx 'Chromium' <<<"$apps_names" || ! grep -qx 'Text Editor' <<<"$apps_names"; then
   echo "FAIL: Apps dropped a normal application" >&2
+  printf '%s\n' "$apps_names" >&2
+  exit 1
+fi
+if grep -q ' >' <<<"$apps_names"; then
+  echo "FAIL: Apps leaf rows show a submenu marker" >&2
   printf '%s\n' "$apps_names" >&2
   exit 1
 fi
@@ -252,8 +259,8 @@ fi
 
 robot="$(COREBRUM_LAUNCHER_ACTIVE=robot COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
 robot_names="$(names <<<"$robot")"
-if ! grep -qx 'AI Agents' <<<"$robot_names" || ! grep -qx 'ROS' <<<"$robot_names"; then
-  echo "FAIL: Robot dropped AI Agents or ROS" >&2
+if ! grep -qx 'AI Agents >' <<<"$robot_names" || ! grep -qx 'ROS >' <<<"$robot_names"; then
+  echo "FAIL: Robot dropped AI Agents or ROS submenu markers" >&2
   printf '%s\n' "$robot_names" >&2
   exit 1
 fi
@@ -291,8 +298,8 @@ if ! grep -qx 'Wallpaper' <<<"$(names <<<"$wallpaper")" && ! grep -q $'^Wallpape
 fi
 
 updates="$(COREBRUM_LAUNCHER_QUERY=updates python3 "$ui")"
-if ! grep -qx 'Updates' <<<"$(names <<<"$updates")"; then
-  echo "FAIL: typing updates did not find Updates" >&2
+if ! grep -qx 'Updates >' <<<"$(names <<<"$updates")"; then
+  echo "FAIL: typing updates did not find Updates with a submenu marker" >&2
   printf '%s\n' "$updates" >&2
   exit 1
 fi
