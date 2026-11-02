@@ -15,6 +15,7 @@ After that install, `/usr/local/bin/corebrum` points at `scripts/corebrum.sh` in
 | Command | Effect |
 | --- | --- |
 | `corebrum version` | Print the version from `VERSION` |
+| `corebrum about` | Print hardware, Corebrum and Synapse versions, Ubuntu, uptime, and the last apt upgrade |
 | `corebrum status` | Say whether base, desktop, services, and ROS are installed, plus RealSense, Corebrum Synapse, and the Skills helper |
 | `corebrum doctor` | Run the validators and print the next command if one fails. A missing RealSense install, Corebrum Synapse install, or Skills helper does not fail it |
 | `corebrum config` | List `/etc/corebrum`, logs, and backups |

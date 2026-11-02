@@ -29,6 +29,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-power-menu refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-about-menu refresh &
+pids+=("$!")
 /usr/local/bin/corebrum-vnc-menu refresh &
 pids+=("$!")
 /usr/local/bin/corebrum-wormhole-menu refresh &

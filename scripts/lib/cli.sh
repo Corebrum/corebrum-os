@@ -50,6 +50,10 @@ corebrum_cmd_version() {
   printf 'corebrum %s\n' "$(corebrum_version_string)"
 }
 
+corebrum_cmd_about() {
+  bash "${COREBRUM_ROOT}/scripts/desktop/corebrum-about.sh" print
+}
+
 corebrum_profile_line() {
   local name="$1"
   local installed="$2"

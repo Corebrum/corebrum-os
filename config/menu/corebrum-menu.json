@@ -65,9 +65,10 @@
       "id": "system",
       "label": "System",
       "icon": "system-shutdown",
-      "keywords": "power;logout;reboot;shutdown;poweroff;sign out",
+      "keywords": "power;logout;reboot;shutdown;poweroff;sign out;about;info",
       "desktop": "corebrum-power",
       "children": [
+        "corebrum-about",
         "corebrum-power-action-logout",
         "corebrum-power-action-reboot",
         "corebrum-power-action-poweroff"

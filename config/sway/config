@@ -79,6 +79,7 @@ bindsym $mod+Shift+5 move container to workspace number 5
 for_window [app_id="corebrum-launcher"] floating enable
 for_window [app_id="corebrum-setup"] floating enable
 for_window [app_id="corebrum-camera"] floating enable, sticky enable, border none
+for_window [app_id="org.corebrum.about"] floating enable, resize set 920 520, move position center
 for_window [app_id="corebrum-agent"] move scratchpad
 
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SWAYSOCK

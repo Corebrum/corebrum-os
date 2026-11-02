@@ -18,6 +18,7 @@ usage() {
 Usage: corebrum <command> [arguments]
 
   version                  Print the Corebrum version
+  about                    Print hardware, software, uptime, and last update
   status                   Show which profiles are installed
   doctor                   Check an install and print the next action
   config                   Show configuration paths
@@ -54,9 +55,13 @@ case "$command_name" in
   version)
     corebrum_cmd_version
     ;;
+  about)
+    corebrum_cmd_about
+    ;;
   status)
     corebrum_cmd_status
     ;;
+
   doctor)
     corebrum_cmd_doctor
     ;;
