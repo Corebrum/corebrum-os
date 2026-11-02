@@ -80,20 +80,38 @@ fi
 runtime="$(mktemp -d)"
 XDG_RUNTIME_DIR="$runtime" bash "$menu" refresh
 desktop="${runtime}/corebrum/applications/corebrum-power.desktop"
-if ! grep -q '^Name=Power$' "$desktop"; then
-  echo "FAIL: Power is not the menu name" >&2
+if ! grep -q '^Name=System$' "$desktop"; then
+  echo "FAIL: System is not the menu name" >&2
   fail=1
 fi
 if ! grep -q '^Exec=/usr/local/bin/corebrum-power-menu open$' "$desktop"; then
-  echo "FAIL: Power does not open the menu" >&2
+  echo "FAIL: System does not open the menu" >&2
   fail=1
 fi
-if ! grep -q '^Keywords=sign out;shutdown;poweroff;$' "$desktop"; then
-  echo "FAIL: search cannot find Power from shutdown or sign out" >&2
+if ! grep -q '^Keywords=power;sign out;shutdown;poweroff;logout;reboot;$' "$desktop"; then
+  echo "FAIL: search cannot find System from shutdown or sign out" >&2
   fail=1
 fi
 if ! grep -q '^Comment=Log out, reboot, or power off$' "$desktop"; then
-  echo "FAIL: search cannot find Power from log out, reboot, or power off" >&2
+  echo "FAIL: search cannot find System from log out, reboot, or power off" >&2
+  fail=1
+fi
+reboot_leaf="${runtime}/corebrum/applications/corebrum-power-action-reboot.desktop"
+if ! grep -q '^Name=Reboot$' "$reboot_leaf"; then
+  echo "FAIL: Reboot searchable leaf is missing" >&2
+  fail=1
+fi
+if ! grep -q '^NoDisplay=true$' "$reboot_leaf"; then
+  echo "FAIL: Reboot leaf is visible in the flat idle list" >&2
+  fail=1
+fi
+if ! grep -q '^Exec=/usr/local/bin/corebrum-power-menu launch reboot$' "$reboot_leaf"; then
+  echo "FAIL: Reboot leaf does not launch reboot" >&2
+  fail=1
+fi
+output="$(COREBRUM_POWER_STUB=1 COREBRUM_POWER_CONFIRM='Reboot' bash "$menu" launch reboot)"
+if [[ "$output" != "systemctl reboot" ]]; then
+  echo "FAIL: launch reboot command was ${output}" >&2
   fail=1
 fi
 rm -rf "$runtime"

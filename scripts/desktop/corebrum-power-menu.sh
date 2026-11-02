@@ -45,16 +45,94 @@ corebrum_power_refresh() {
   cat >"${dir}/corebrum-power.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=Power
-GenericName=Power
+Name=System
+GenericName=System
 Comment=Log out, reboot, or power off
-Keywords=sign out;shutdown;poweroff;
+Keywords=power;sign out;shutdown;poweroff;logout;reboot;
 Exec=/usr/local/bin/corebrum-power-menu open
 Icon=system-shutdown
 Terminal=false
 Categories=System;
 StartupNotify=false
 EOF
+  # Hidden leaves so Super+Space can match reboot without opening System first.
+  cat >"${dir}/corebrum-power-action-logout.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Log out
+GenericName=Log out
+Keywords=logout;sign out;exit;
+Comment=System
+Exec=/usr/local/bin/corebrum-power-menu launch logout
+Icon=system-log-out
+Terminal=false
+Categories=System;
+StartupNotify=false
+NoDisplay=true
+EOF
+  cat >"${dir}/corebrum-power-action-reboot.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Reboot
+GenericName=Reboot
+Keywords=reboot;restart;
+Comment=System
+Exec=/usr/local/bin/corebrum-power-menu launch reboot
+Icon=system-reboot
+Terminal=false
+Categories=System;
+StartupNotify=false
+NoDisplay=true
+EOF
+  cat >"${dir}/corebrum-power-action-poweroff.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Power off
+GenericName=Power off
+Keywords=poweroff;shutdown;power off;
+Comment=System
+Exec=/usr/local/bin/corebrum-power-menu launch poweroff
+Icon=system-shutdown
+Terminal=false
+Categories=System;
+StartupNotify=false
+NoDisplay=true
+EOF
+}
+
+corebrum_power_action_label() {
+  case "$1" in
+    logout | "Log out") printf 'Log out\n' ;;
+    reboot | Reboot) printf 'Reboot\n' ;;
+    poweroff | "Power off") printf 'Power off\n' ;;
+    *) return 1 ;;
+  esac
+}
+
+corebrum_power_launch() {
+  local choice confirm
+  choice="$(corebrum_power_action_label "$1")" || corebrum_power_die "unknown power choice"
+  corebrum_power_command "$choice" >/dev/null || corebrum_power_die "unknown power choice"
+  if [[ "${COREBRUM_POWER_STUB:-0}" == 1 && -z "${COREBRUM_POWER_CONFIRM:-}" ]]; then
+    corebrum_power_confirm_lines "$choice"
+    return 0
+  fi
+  if [[ "${COREBRUM_POWER_STUB:-0}" == 1 ]]; then
+    confirm="$COREBRUM_POWER_CONFIRM"
+  else
+    confirm="$(corebrum_power_confirm_lines "$choice" | fuzzel \
+      --config /etc/corebrum/fuzzel/fuzzel.ini \
+      --dmenu \
+      --prompt "${choice}?  " \
+      --width 28 \
+      --lines 2)" || return 0
+  fi
+  [[ "$confirm" == "$choice" ]] || return 0
+  if [[ "${COREBRUM_POWER_STUB:-0}" == 1 ]]; then
+    corebrum_power_command "$choice"
+    return 0
+  fi
+  corebrum_power_run "$choice"
 }
 
 corebrum_power_run() {
@@ -121,7 +199,7 @@ corebrum_power_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-power-menu refresh|open|lines|data-dir
+Usage: corebrum-power-menu refresh|open|launch ACTION|lines|data-dir
 EOF
 }
 
@@ -129,6 +207,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_power_refresh ;;
   open) corebrum_power_open ;;
+  launch) corebrum_power_launch "${2:-}" ;;
   lines) corebrum_power_lines ;;
   data-dir) corebrum_power_data_dir ;;
   -h | --help | help) usage ;;

@@ -91,9 +91,10 @@ else
   export XDG_DATA_DIRS="${data_dir}:/usr/local/share:/usr/share"
 fi
 # Fuzzel rejects an empty prompt in its ini file, so the blank search field is set here.
-# The menu window lists parent entries until the user types. Submenu items such as
-# Grok and Gazebo are desktop files with NoDisplay=true, and the window adds them
-# only when the typed text matches. Fuzzel remains the fallback and the submenu UI.
+# The GTK window shows root groups from /etc/corebrum/menu/corebrum-menu.json. Enter
+# drills into a group; Backspace goes up when the search box is empty. Submenu items
+# such as Grok and Gazebo are NoDisplay desktop files, and typing finds them under the
+# active menu. Fuzzel remains the flat fallback when GTK cannot start.
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ui="${script_dir}/corebrum-launcher.py"
 if [[ ! -f "$ui" ]]; then

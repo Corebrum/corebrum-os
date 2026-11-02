@@ -118,6 +118,11 @@ XDG_RUNTIME_DIR="$runtime" "$menu" refresh
 desktop="${runtime}/corebrum/applications/corebrum-updates.desktop"
 grep -F 'Name=Updates' "$desktop" >/dev/null || fail "Updates desktop entry is missing"
 grep -F 'Keywords=update;upgrade;apt' "$desktop" >/dev/null || fail "typing update cannot find Updates"
+ubuntu_leaf="${runtime}/corebrum/applications/corebrum-update-ubuntu.desktop"
+grep -F 'Name=Ubuntu' "$ubuntu_leaf" >/dev/null || fail "Ubuntu searchable leaf is missing"
+grep -F 'NoDisplay=true' "$ubuntu_leaf" >/dev/null || fail "Ubuntu leaf is visible in the flat idle list"
+grep -F 'Exec=/usr/local/bin/corebrum-updates-menu launch ubuntu' "$ubuntu_leaf" >/dev/null \
+  || fail "Ubuntu leaf does not launch ubuntu"
 
 repo="$(mktemp -d)"
 git -C "$repo" init -q

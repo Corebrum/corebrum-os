@@ -178,8 +178,21 @@ corebrum_updates_labels() {
     All
 }
 
+corebrum_updates_leaf_id() {
+  case "$1" in
+    Ubuntu) printf 'ubuntu\n' ;;
+    Corebrum) printf 'corebrum\n' ;;
+    "ROS 2") printf 'ros\n' ;;
+    Zenoh) printf 'zenoh\n' ;;
+    "Corebrum Synapse") printf 'synapse\n' ;;
+    "AI Agents") printf 'agents\n' ;;
+    All) printf 'all\n' ;;
+    *) return 1 ;;
+  esac
+}
+
 corebrum_updates_refresh() {
-  local dir
+  local dir label id
   dir="$(corebrum_updates_data_dir)/applications"
   mkdir -p "$dir"
   cat >"${dir}/corebrum-updates.desktop" <<'EOF'
@@ -195,6 +208,40 @@ Terminal=false
 Categories=System;
 StartupNotify=false
 EOF
+  # Hidden leaves so Super+Space can match ubuntu without opening Updates first.
+  shopt -s nullglob
+  for file in "${dir}"/corebrum-update-*.desktop; do
+    rm -f "$file"
+  done
+  shopt -u nullglob
+  while IFS= read -r label; do
+    [[ -n "$label" ]] || continue
+    id="$(corebrum_updates_leaf_id "$label")" || continue
+    cat >"${dir}/corebrum-update-${id}.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${label}
+GenericName=${label}
+Keywords=${id};${label};update;upgrade;
+Comment=Updates
+Exec=/usr/local/bin/corebrum-updates-menu launch ${id}
+Icon=system-software-update
+Terminal=false
+Categories=System;
+StartupNotify=false
+NoDisplay=true
+EOF
+  done < <(corebrum_updates_labels)
+}
+
+corebrum_updates_launch() {
+  local choice="$1"
+  [[ -n "$choice" ]] || corebrum_updates_die "missing update name"
+  if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
+    corebrum_updates_apply "$choice"
+    return 0
+  fi
+  corebrum_updates_terminal "$choice"
 }
 
 corebrum_updates_apply_ubuntu() {
@@ -416,7 +463,7 @@ corebrum_updates_remind() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-updates-menu refresh|open|labels|apply NAME|remind|data-dir
+Usage: corebrum-updates-menu refresh|open|launch NAME|labels|apply NAME|remind|data-dir
 EOF
 }
 
@@ -425,6 +472,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_updates_refresh ;;
   open) corebrum_updates_open ;;
+  launch) corebrum_updates_launch "${2:-}" ;;
   labels) corebrum_updates_labels ;;
   apply) corebrum_updates_apply "${2:-}" ;;
   remind) corebrum_updates_remind ;;

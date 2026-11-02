@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """Super+Space menu.
 
-The idle list is the parent entries and normal applications. Submenu items
-such as Grok and Gazebo stay in their menus. Typing a name adds the matching
-submenu item, and choosing it installs or launches that item.
+The idle list is the root groups (Apps, Learn, Robot, Appearance, Setup,
+Updates, System). Enter drills into a group. Backspace or Left with an empty
+search box goes up one level. Typing finds matching descendants of the active
+menu; nested hits show a parent path.
 
 COREBRUM_LAUNCHER_LIST=1 prints the visible names and does not open a window.
-The query is COREBRUM_LAUNCHER_QUERY. Exit 2 when GTK is unavailable so the
-shell can fall back to Fuzzel.
+COREBRUM_LAUNCHER_QUERY is the filter. COREBRUM_LAUNCHER_ACTIVE is the menu id
+(default root). COREBRUM_MENU_TREE overrides the menu tree path. Exit 2 when
+GTK is unavailable so the shell can fall back to Fuzzel.
 """
 
+import json
 import os
 import subprocess
 import sys
@@ -19,6 +22,8 @@ SEARCH_PREFIXES = (
     "corebrum-ros-tool-",
     "corebrum-realsense-tool-",
     "corebrum-synapse-action-",
+    "corebrum-update-",
+    "corebrum-power-action-",
 )
 FIELD_CODES = {
     "%f", "%F", "%u", "%U", "%i", "%c", "%k", "%d", "%D", "%n", "%N", "%v", "%m",
@@ -36,6 +41,20 @@ class Entry:
         self.argv = argv
         self.terminal = terminal
         self.search_only = search_only
+
+
+class Row:
+    def __init__(self, name, icon, keywords, comment, kind, menu_id=None, entry=None, path="", depth=0):
+        self.name = name
+        self.icon = icon
+        self.keywords = keywords
+        self.comment = comment
+        self.kind = kind  # menu | leaf | provider
+        self.menu_id = menu_id
+        self.entry = entry
+        self.path = path
+        self.depth = depth
+        self.app_id = entry.app_id if entry is not None else (menu_id or name)
 
 
 def data_dirs():
@@ -195,7 +214,28 @@ def load_entries():
                     terminal=fields.get("Terminal", "").lower() == "true",
                     search_only=search_only,
                 )
-    return [entry for entry in found.values() if entry is not None]
+    return {app_id: entry for app_id, entry in found.items() if entry is not None}
+
+
+def menu_tree_path():
+    override = os.environ.get("COREBRUM_MENU_TREE", "")
+    if override:
+        return override
+    installed = "/etc/corebrum/menu/corebrum-menu.json"
+    if os.path.isfile(installed):
+        return installed
+    here = os.path.dirname(os.path.abspath(__file__))
+    checkout = os.path.normpath(os.path.join(here, "..", "..", "config", "menu", "corebrum-menu.json"))
+    return checkout
+
+
+def load_menu_tree():
+    path = menu_tree_path()
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return {"root": [], "navigate": {}, "dynamic": []}
 
 
 def load_icon_pixbuf(theme, icon, size):
@@ -216,29 +256,201 @@ def normalize(text):
     return "".join(ch.lower() if ch.isalnum() else " " for ch in text)
 
 
-def haystack(entry):
-    return normalize(" ".join([entry.name, entry.generic, entry.keywords, entry.comment, entry.app_id.replace("-", " ")]))
+def haystack_parts(*parts):
+    return normalize(" ".join(part for part in parts if part))
 
 
-def visible_entries(entries, query):
-    compact = " ".join(normalize(query).split())
-    shown = []
-    for entry in entries:
-        if not compact:
-            if not entry.search_only:
-                shown.append(entry)
-            continue
-        text = haystack(entry)
-        if compact in text or compact.replace(" ", "") in text.replace(" ", ""):
+def entry_haystack(entry):
+    return haystack_parts(
+        entry.name,
+        entry.generic,
+        entry.keywords,
+        entry.comment,
+        entry.app_id.replace("-", " "),
+    )
+
+
+def row_haystack(row):
+    if row.entry is not None:
+        return entry_haystack(row.entry)
+    return haystack_parts(row.name, row.keywords, row.comment, row.menu_id or "")
+
+
+def matches(hay, compact):
+    if not compact:
+        return True
+    return compact in hay or compact.replace(" ", "") in hay.replace(" ", "")
+
+
+class MenuModel:
+    def __init__(self, tree, entries):
+        self.tree = tree or {}
+        self.entries = entries
+        self.root_nodes = list(self.tree.get("root") or [])
+        self.navigate = dict(self.tree.get("navigate") or {})
+        self.dynamic = set(self.tree.get("dynamic") or [])
+        self.nodes = {node["id"]: node for node in self.root_nodes if "id" in node}
+        self.claimed = self._claimed_ids()
+
+    def _claimed_ids(self):
+        claimed = set()
+        for node in self.root_nodes:
+            desktop = node.get("desktop")
+            if desktop:
+                claimed.add(desktop)
+            for child in node.get("children") or []:
+                claimed.add(child)
+        claimed.update(self.navigate)
+        claimed.update(self.dynamic)
+        return claimed
+
+    def label_for(self, menu_id):
+        node = self.nodes.get(menu_id)
+        if node:
+            return node.get("label", menu_id)
+        entry = self.entries.get(menu_id)
+        if entry:
+            return entry.name
+        return menu_id
+
+    def path_labels(self, parts):
+        return " / ".join(self.label_for(part) for part in parts if part and part != "root")
+
+    def group_row(self, node, path="", depth=0):
+        icon = node.get("icon", "")
+        desktop = node.get("desktop")
+        if desktop and desktop in self.entries and not icon:
+            icon = self.entries[desktop].icon
+        kind = "provider" if node.get("provider") else "menu"
+        return Row(
+            name=node.get("label", node["id"]),
+            icon=icon,
+            keywords=node.get("keywords", ""),
+            comment=node.get("comment", ""),
+            kind=kind,
+            menu_id=node["id"],
+            path=path,
+            depth=depth,
+        )
+
+    def entry_row(self, entry, path="", depth=0, kind="leaf"):
+        return Row(
+            name=entry.name,
+            icon=entry.icon,
+            keywords=entry.keywords,
+            comment=entry.comment,
+            kind=kind,
+            menu_id=entry.app_id if kind == "menu" else None,
+            entry=entry,
+            path=path,
+            depth=depth,
+        )
+
+    def apps_entries(self):
+        shown = []
+        for entry in self.entries.values():
+            if entry.search_only:
+                continue
+            if entry.app_id in self.claimed:
+                continue
             shown.append(entry)
+        shown.sort(key=lambda item: item.name.casefold())
+        return shown
 
-    def sort_key(entry):
-        text = haystack(entry)
-        starts = 0 if compact and (text.startswith(compact) or normalize(entry.name).startswith(compact)) else 1
-        return (starts, entry.name.casefold())
+    def children_of(self, menu_id):
+        if menu_id in ("", "root", None):
+            return [self.group_row(node) for node in self.root_nodes]
 
-    shown.sort(key=sort_key)
-    return shown
+        if menu_id == "apps" or (menu_id in self.nodes and self.nodes[menu_id].get("provider") == "apps"):
+            return [self.entry_row(entry) for entry in self.apps_entries()]
+
+        if menu_id in self.nodes:
+            node = self.nodes[menu_id]
+            rows = []
+            for child_id in node.get("children") or []:
+                if child_id in self.navigate:
+                    entry = self.entries.get(child_id)
+                    if entry is None:
+                        continue
+                    rows.append(self.entry_row(entry, kind="menu"))
+                    continue
+                if child_id in self.dynamic:
+                    entry = self.entries.get(child_id)
+                    if entry is not None:
+                        rows.append(self.entry_row(entry, kind="leaf"))
+                    continue
+                entry = self.entries.get(child_id)
+                if entry is not None:
+                    rows.append(self.entry_row(entry, kind="leaf"))
+            return rows
+
+        if menu_id in self.navigate:
+            prefix = self.navigate[menu_id].get("prefix", "")
+            rows = []
+            for entry in self.entries.values():
+                if entry.app_id.startswith(prefix):
+                    rows.append(self.entry_row(entry))
+            rows.sort(key=lambda row: row.name.casefold())
+            return rows
+
+        return []
+
+    def navigate_children(self, menu_id):
+        if menu_id not in self.navigate:
+            return []
+        prefix = self.navigate[menu_id].get("prefix", "")
+        return [
+            entry
+            for entry in self.entries.values()
+            if entry.app_id.startswith(prefix)
+        ]
+
+    def can_navigate(self, menu_id):
+        if menu_id in self.nodes:
+            return True
+        if menu_id == "apps":
+            return True
+        if menu_id in self.navigate:
+            return bool(self.navigate_children(menu_id))
+        return False
+
+    def collect_descendants(self, menu_id, path_parts=None, depth=0):
+        if path_parts is None:
+            path_parts = []
+        rows = []
+        children = self.children_of(menu_id)
+        path = self.path_labels(path_parts)
+        for child in children:
+            child.path = path
+            child.depth = depth
+            rows.append(child)
+            next_id = None
+            if child.kind in ("menu", "provider") and child.menu_id:
+                next_id = child.menu_id
+            elif child.kind == "menu" and child.entry is not None:
+                next_id = child.entry.app_id
+            if next_id and self.can_navigate(next_id):
+                nested_parts = path_parts + [next_id]
+                for nested in self.collect_descendants(next_id, nested_parts, depth + 1):
+                    rows.append(nested)
+        return rows
+
+    def visible(self, menu_id, query):
+        compact = " ".join(normalize(query).split())
+        if not compact:
+            return self.children_of(menu_id or "root")
+
+        active = menu_id or "root"
+        candidates = self.collect_descendants(active, [], 0)
+        shown = [row for row in candidates if matches(row_haystack(row), compact)]
+
+        def sort_key(row):
+            text = row_haystack(row)
+            starts = 0 if text.startswith(compact) or normalize(row.name).startswith(compact) else 1
+            return (row.depth, starts, row.name.casefold())
+
+        shown.sort(key=sort_key)
+        return shown
 
 
 def launch(entry):
@@ -253,8 +465,13 @@ def launch(entry):
 
 def list_names():
     query = os.environ.get("COREBRUM_LAUNCHER_QUERY", "")
-    for entry in visible_entries(load_entries(), query):
-        print(entry.name)
+    active = os.environ.get("COREBRUM_LAUNCHER_ACTIVE", "root")
+    model = MenuModel(load_menu_tree(), load_entries())
+    for row in model.visible(active, query):
+        if row.path:
+            print(f"{row.name}\t{row.path}")
+        else:
+            print(row.name)
 
 
 def widget_pointer(widget):
@@ -307,7 +524,8 @@ def run_window():
     GLib.set_prgname("corebrum-launcher")
     if hasattr(Gdk, "set_program_class"):
         Gdk.set_program_class("corebrum-launcher")
-    entries = load_entries()
+    model = MenuModel(load_menu_tree(), load_entries())
+    state = {"active": "root", "stack": []}
     Gtk.init([])
     window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
     window.set_title("corebrum-launcher")
@@ -360,9 +578,16 @@ def run_window():
   font-family: "Noto Sans Mono";
   font-size: 12pt;
 }
+.corebrum-menu label.path {
+  color: #9a9895;
+  font-size: 10pt;
+}
 .corebrum-menu row:selected,
 .corebrum-menu row:selected label {
   background-color: #3d9a8b;
+  color: #1c1c1c;
+}
+.corebrum-menu row:selected label.path {
   color: #1c1c1c;
 }
 """)
@@ -394,46 +619,99 @@ def run_window():
     window.add(box)
     theme = Gtk.IconTheme.get_default()
     armed = {"ok": False}
+    refill_guard = {"skip": False}
+
+    def clear_filter():
+        if search.get_text():
+            refill_guard["skip"] = True
+            search.set_text("")
+            refill_guard["skip"] = False
 
     def refill(*_args):
+        if refill_guard["skip"]:
+            return
         for child in results.get_children():
             results.remove(child)
-        shown = visible_entries(entries, search.get_text())
-        for entry in shown:
+        shown = model.visible(state["active"], search.get_text())
+        for row_data in shown:
             row = Gtk.ListBoxRow()
             line = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-            if entry.icon:
+            if row_data.icon:
                 try:
-                    pix = load_icon_pixbuf(theme, entry.icon, 24)
+                    pix = load_icon_pixbuf(theme, row_data.icon, 24)
                     if pix is not None:
                         image = Gtk.Image.new_from_pixbuf(pix)
                         line.pack_start(image, False, False, 0)
                 except Exception:
                     pass
-            label = Gtk.Label(label=entry.name, xalign=0)
-            line.pack_start(label, True, True, 0)
+            text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            label = Gtk.Label(label=row_data.name, xalign=0)
+            text_box.pack_start(label, True, True, 0)
+            if row_data.path:
+                path_label = Gtk.Label(label=row_data.path, xalign=0)
+                path_label.get_style_context().add_class("path")
+                text_box.pack_start(path_label, True, True, 0)
+            line.pack_start(text_box, True, True, 0)
             row.add(line)
-            row.entry = entry
+            row.row_data = row_data
             results.add(row)
         results.show_all()
         first = results.get_row_at_index(0)
         if first is not None:
             results.select_row(first)
 
+    def go_back():
+        if not state["stack"]:
+            return False
+        state["active"] = state["stack"].pop()
+        clear_filter()
+        refill()
+        return True
+
+    def enter_menu(menu_id):
+        state["stack"].append(state["active"])
+        state["active"] = menu_id
+        clear_filter()
+        refill()
+
     def activate(*_args):
         row = results.get_selected_row()
         if row is None:
             return
-        try:
-            launch(row.entry)
-        finally:
-            Gtk.main_quit()
+        data = row.row_data
+        if data.kind in ("menu", "provider") and data.menu_id and model.can_navigate(data.menu_id):
+            enter_menu(data.menu_id)
+            return
+        if data.kind == "menu" and data.entry is not None:
+            target = data.entry.app_id
+            if model.can_navigate(target):
+                enter_menu(target)
+                return
+            try:
+                launch(data.entry)
+            finally:
+                Gtk.main_quit()
+            return
+        if data.entry is not None:
+            try:
+                launch(data.entry)
+            finally:
+                Gtk.main_quit()
 
     def on_key(_widget, event):
         key = event.keyval
+        empty = search.get_text() == ""
         if key == Gdk.KEY_Escape:
+            if not empty:
+                clear_filter()
+                refill()
+                return True
             Gtk.main_quit()
             return True
+        if empty and key in (Gdk.KEY_BackSpace, Gdk.KEY_Left, Gdk.KEY_KP_Left):
+            if go_back():
+                return True
+            return False
         if key in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
             activate()
             return True

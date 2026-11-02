@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Super+Space keeps submenu items out of the idle list and finds them by name.
+# Super+Space shows root groups; typing finds nested items under the active menu.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ui="${ROOT}/scripts/desktop/corebrum-launcher.py"
 launcher="${ROOT}/scripts/desktop/corebrum-launcher.sh"
+menu_tree="${ROOT}/config/menu/corebrum-menu.json"
 
 if ! grep -q 'background-color: #1c1c1c' "$ui"; then
   echo "FAIL: Super+Space is not using the dark Fuzzel background" >&2
@@ -18,6 +19,14 @@ if ! grep -q 'corebrum-launcher.py' "$launcher"; then
   echo "FAIL: Super+Space does not open the search window" >&2
   exit 1
 fi
+if [[ ! -f "$menu_tree" ]]; then
+  echo "FAIL: the Corebrum menu tree is missing" >&2
+  exit 1
+fi
+if ! grep -q 'corebrum-menu.json' "${ROOT}/scripts/lib/desktop.sh"; then
+  echo "FAIL: desktop install does not ship the menu tree" >&2
+  exit 1
+fi
 python3 - "$ui" <<'PY'
 import pathlib, sys
 text = pathlib.Path(sys.argv[1]).read_text()
@@ -25,6 +34,8 @@ req = text.find('gi.require_version("Gdk", "3.0")')
 imp = text.find("from gi.repository import Gdk, GLib, Gtk")
 if req < 0 or imp < 0 or req > imp:
     raise SystemExit("the menu does not request Gdk 3 before importing it")
+if "KEY_BackSpace" not in text:
+    raise SystemExit("the menu has no Backspace go-back handling")
 PY
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$launcher"; then
   echo "FAIL: Super+Space has no Fuzzel fallback with a blank prompt" >&2
@@ -78,6 +89,40 @@ Type=Application
 Name=Gazebo   install
 Keywords=gazebo;
 Exec=/usr/local/bin/corebrum-ros-menu launch gazebo
+NoDisplay=true
+EOF
+cat >"${share}/applications/corebrum-wallpaper.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Wallpaper
+Exec=/usr/local/bin/corebrum-wallpaper-menu open
+EOF
+cat >"${share}/applications/corebrum-updates.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Updates
+Exec=/usr/local/bin/corebrum-updates-menu open
+EOF
+cat >"${share}/applications/corebrum-update-ubuntu.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Ubuntu
+Keywords=ubuntu;update;
+Exec=/usr/local/bin/corebrum-updates-menu launch ubuntu
+NoDisplay=true
+EOF
+cat >"${share}/applications/corebrum-power.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=System
+Exec=/usr/local/bin/corebrum-power-menu open
+EOF
+cat >"${share}/applications/corebrum-power-action-reboot.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Reboot
+Keywords=reboot;restart;
+Exec=/usr/local/bin/corebrum-power-menu launch reboot
 NoDisplay=true
 EOF
 cat >"${share}/applications/hidden.desktop" <<'EOF'
@@ -151,66 +196,116 @@ EOF
 export XDG_DATA_HOME="$home"
 export XDG_DATA_DIRS="${menu}:${share}"
 export COREBRUM_LAUNCHER_LIST=1
+export COREBRUM_MENU_TREE="$menu_tree"
 export XDG_CURRENT_DESKTOP=Hyprland
 
+names() {
+  cut -f1
+}
+
 idle="$(COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
-if ! grep -qx 'AI Agents' <<<"$idle" || ! grep -qx 'Firefox' <<<"$idle" || ! grep -qx 'ROS' <<<"$idle" || ! grep -qx 'Chromium' <<<"$idle" || ! grep -qx 'Text Editor' <<<"$idle"; then
-  echo "FAIL: the idle menu dropped a parent entry" >&2
+idle_names="$(names <<<"$idle")"
+expected=$'Apps\nLearn\nRobot\nAppearance\nSetup\nUpdates\nSystem'
+if [[ "$idle_names" != "$expected" ]]; then
+  echo "FAIL: the idle menu is not the seven root groups" >&2
+  printf '%s\n' "$idle_names" >&2
+  exit 1
+fi
+if grep -q 'Grok' <<<"$idle" || grep -q 'Gazebo' <<<"$idle" || grep -q 'Firefox' <<<"$idle" || grep -q 'AI Agents' <<<"$idle" || grep -q 'Hidden Tool' <<<"$idle"; then
+  echo "FAIL: the idle menu lists a nested or app row" >&2
   printf '%s\n' "$idle" >&2
   exit 1
 fi
-if grep -q 'Grok' <<<"$idle" || grep -q 'Gazebo' <<<"$idle" || grep -q 'Hidden Tool' <<<"$idle" || grep -q 'Chromium Web Browser' <<<"$idle"; then
-  echo "FAIL: the idle menu lists a submenu item" >&2
-  printf '%s\n' "$idle" >&2
+
+apps="$(COREBRUM_LAUNCHER_ACTIVE=apps COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
+apps_names="$(names <<<"$apps")"
+if ! grep -qx 'Firefox' <<<"$apps_names" || ! grep -qx 'Chromium' <<<"$apps_names" || ! grep -qx 'Text Editor' <<<"$apps_names"; then
+  echo "FAIL: Apps dropped a normal application" >&2
+  printf '%s\n' "$apps_names" >&2
   exit 1
 fi
-if grep -qx 'Advanced Network Configuration' <<<"$idle"; then
-  echo "FAIL: the idle menu still uses Advanced Network Configuration" >&2
+if grep -q 'Grok' <<<"$apps" || grep -q 'ROS' <<<"$apps" || grep -q 'Chromium Web Browser' <<<"$apps"; then
+  echo "FAIL: Apps listed a claimed or hidden row" >&2
+  printf '%s\n' "$apps" >&2
   exit 1
 fi
-if ! grep -qx 'Network Configuration' <<<"$idle"; then
-  echo "FAIL: the idle menu dropped Network Configuration" >&2
-  printf '%s\n' "$idle" >&2
+if grep -qx 'Advanced Network Configuration' <<<"$apps_names"; then
+  echo "FAIL: Apps still uses Advanced Network Configuration" >&2
   exit 1
 fi
-if [[ "$(grep -cx 'Files' <<<"$idle")" -ne 1 ]]; then
-  echo "FAIL: the idle menu does not list one Files row" >&2
-  printf '%s\n' "$idle" >&2
+if ! grep -qx 'Network Configuration' <<<"$apps_names"; then
+  echo "FAIL: Apps dropped Network Configuration" >&2
+  printf '%s\n' "$apps_names" >&2
   exit 1
 fi
-if grep -qx 'Thunar File Manager' <<<"$idle"; then
-  echo "FAIL: the idle menu still lists Thunar File Manager" >&2
+if [[ "$(grep -cx 'Files' <<<"$apps_names")" -ne 1 ]]; then
+  echo "FAIL: Apps does not list one Files row" >&2
+  printf '%s\n' "$apps_names" >&2
   exit 1
 fi
-sorted="$(printf '%s\n' "$idle" | LC_ALL=C sort -f)"
-if [[ "$idle" != "$sorted" ]]; then
-  echo "FAIL: the idle menu is not alphabetical" >&2
-  printf '%s\n' "$idle" >&2
+if grep -qx 'Thunar File Manager' <<<"$apps_names"; then
+  echo "FAIL: Apps still lists Thunar File Manager" >&2
+  exit 1
+fi
+
+robot="$(COREBRUM_LAUNCHER_ACTIVE=robot COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
+robot_names="$(names <<<"$robot")"
+if ! grep -qx 'AI Agents' <<<"$robot_names" || ! grep -qx 'ROS' <<<"$robot_names"; then
+  echo "FAIL: Robot dropped AI Agents or ROS" >&2
+  printf '%s\n' "$robot_names" >&2
   exit 1
 fi
 
 grok="$(COREBRUM_LAUNCHER_QUERY=grok python3 "$ui")"
-if ! grep -qx 'Grok CLI   install' <<<"$grok"; then
-  echo "FAIL: typing grok did not find Grok CLI" >&2
+if ! grep -q $'^Grok CLI   install\tRobot / AI Agents$' <<<"$grok"; then
+  echo "FAIL: typing grok did not find Grok under Robot / AI Agents" >&2
   printf '%s\n' "$grok" >&2
   exit 1
 fi
-if grep -qx 'Gazebo   install' <<<"$grok"; then
+if grep -q 'Gazebo' <<<"$grok"; then
   echo "FAIL: typing grok also listed Gazebo" >&2
   exit 1
 fi
 
 notepad="$(COREBRUM_LAUNCHER_QUERY=notepad python3 "$ui")"
-if ! grep -qx 'Text Editor' <<<"$notepad"; then
-  echo "FAIL: typing notepad did not find Text Editor" >&2
+if ! grep -q $'^Text Editor\tApps$' <<<"$notepad"; then
+  echo "FAIL: typing notepad did not find Text Editor under Apps" >&2
   printf '%s\n' "$notepad" >&2
   exit 1
 fi
 
 gazebo="$(COREBRUM_LAUNCHER_QUERY=gazebo python3 "$ui")"
-if ! grep -qx 'Gazebo   install' <<<"$gazebo"; then
-  echo "FAIL: typing gazebo did not find Gazebo" >&2
+if ! grep -q $'^Gazebo   install\tRobot / ROS$' <<<"$gazebo"; then
+  echo "FAIL: typing gazebo did not find Gazebo under Robot / ROS" >&2
   printf '%s\n' "$gazebo" >&2
+  exit 1
+fi
+
+wallpaper="$(COREBRUM_LAUNCHER_QUERY=wallpaper python3 "$ui")"
+if ! grep -qx 'Wallpaper' <<<"$(names <<<"$wallpaper")" && ! grep -q $'^Wallpaper\t' <<<"$wallpaper"; then
+  echo "FAIL: typing wallpaper did not find Wallpaper" >&2
+  printf '%s\n' "$wallpaper" >&2
+  exit 1
+fi
+
+updates="$(COREBRUM_LAUNCHER_QUERY=updates python3 "$ui")"
+if ! grep -qx 'Updates' <<<"$(names <<<"$updates")"; then
+  echo "FAIL: typing updates did not find Updates" >&2
+  printf '%s\n' "$updates" >&2
+  exit 1
+fi
+
+ubuntu="$(COREBRUM_LAUNCHER_QUERY=ubuntu python3 "$ui")"
+if ! grep -q $'^Ubuntu\tUpdates$' <<<"$ubuntu"; then
+  echo "FAIL: typing ubuntu did not find the Updates Ubuntu leaf" >&2
+  printf '%s\n' "$ubuntu" >&2
+  exit 1
+fi
+
+reboot="$(COREBRUM_LAUNCHER_QUERY=reboot python3 "$ui")"
+if ! grep -q $'^Reboot\tSystem$' <<<"$reboot"; then
+  echo "FAIL: typing reboot did not find Reboot under System" >&2
+  printf '%s\n' "$reboot" >&2
   exit 1
 fi
 

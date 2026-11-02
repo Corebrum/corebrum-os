@@ -196,6 +196,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/mako/config" /etc/corebrum/mako/config 644
   corebrum_install_file "${root}/config/wofi/config" /etc/corebrum/wofi/config 644
   corebrum_install_file "${root}/config/wofi/style.css" /etc/corebrum/wofi/style.css 644
+  corebrum_install_file "${root}/config/menu/corebrum-menu.json" /etc/corebrum/menu/corebrum-menu.json 644
   corebrum_install_file "${root}/apps/dashboard/tiles.conf" /etc/corebrum/dashboard/tiles.conf 644
   corebrum_install_file "${root}/scripts/lib/grid.sh" /usr/local/lib/corebrum/grid.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-node-path.sh" /usr/local/lib/corebrum/node-path.sh 644
@@ -432,6 +433,7 @@ corebrum_desktop_managed_paths() {
 /etc/corebrum/mako/config
 /etc/corebrum/wofi/config
 /etc/corebrum/wofi/style.css
+/etc/corebrum/menu/corebrum-menu.json
 /etc/corebrum/dashboard/tiles.conf
 /usr/local/lib/corebrum/grid.sh
 /usr/local/lib/corebrum/node-path.sh
@@ -599,6 +601,7 @@ corebrum_uninstall_desktop() {
     /etc/corebrum/fuzzel \
     /etc/corebrum/mako \
     /etc/corebrum/wofi \
+    /etc/corebrum/menu \
     /etc/corebrum/dashboard \
     /etc/corebrum/node \
     /etc/corebrum \
