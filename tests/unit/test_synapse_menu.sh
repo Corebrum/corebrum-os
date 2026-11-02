@@ -60,10 +60,65 @@ if ! grep -q 'prebuild-install' "$install_script" || ! grep -q 'node-datachannel
   echo "FAIL: Corebrum Synapse install does not install the node-datachannel prebuild" >&2
   exit 1
 fi
+# An older pnpm copy can load while synapse-robot's copy is still missing its
+# .node. The installer must walk every package.json, not quit on the first hit.
+if grep -qE "node-datachannel/package\.json' -print -quit" "$install_script"; then
+  echo "FAIL: node-datachannel install still quits after the first package" >&2
+  exit 1
+fi
+if ! grep -q "node-datachannel/package.json' -print0" "$install_script"; then
+  echo "FAIL: node-datachannel install does not walk every package" >&2
+  exit 1
+fi
 if ! grep -q 'https://github.com/Corebrum/corebrum-synapse.git' "$install_script"; then
   echo "FAIL: Corebrum Synapse install does not clone github.com/Corebrum/corebrum-synapse" >&2
   exit 1
 fi
+
+# Simulate two pnpm copies: the first already loads, the second needs a prebuild.
+prebuild_tmp="$(mktemp -d)"
+mkdir -p \
+  "${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.12.0/node_modules/node-datachannel/build/Release" \
+  "${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.25.0/node_modules/node-datachannel" \
+  "${prebuild_tmp}/node_modules/.pnpm/prebuild-install@7.1.3/node_modules/prebuild-install"
+printf '{}\n' >"${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.12.0/node_modules/node-datachannel/package.json"
+printf '{}\n' >"${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.25.0/node_modules/node-datachannel/package.json"
+# Healthy older copy: require succeeds without downloading.
+cat >"${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.12.0/node_modules/node-datachannel/index.js" <<'EOF'
+module.exports = {};
+EOF
+: >"${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.12.0/node_modules/node-datachannel/build/Release/node_datachannel.node"
+# Broken newer copy: no binary until prebuild-install runs.
+cat >"${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.25.0/node_modules/node-datachannel/index.js" <<'EOF'
+const fs = require("fs");
+const path = require("path");
+const native = path.join(__dirname, "build/Release/node_datachannel.node");
+if (!fs.existsSync(native) || fs.statSync(native).size === 0) {
+  throw new Error("missing native");
+}
+module.exports = {};
+EOF
+cat >"${prebuild_tmp}/node_modules/.pnpm/prebuild-install@7.1.3/node_modules/prebuild-install/bin.js" <<'EOF'
+#!/usr/bin/env node
+const fs = require("fs");
+const path = require("path");
+const dir = path.join(process.cwd(), "build/Release");
+fs.mkdirSync(dir, { recursive: true });
+fs.writeFileSync(path.join(dir, "node_datachannel.node"), "ok");
+EOF
+chmod 755 "${prebuild_tmp}/node_modules/.pnpm/prebuild-install@7.1.3/node_modules/prebuild-install/bin.js"
+bash --noprofile --norc -c '
+set -euo pipefail
+source "$1"
+root="$2"
+corebrum_synapse_install_node_datachannel
+' bash "$install_script" "$prebuild_tmp"
+if [[ ! -s "${prebuild_tmp}/node_modules/.pnpm/node-datachannel@0.25.0/node_modules/node-datachannel/build/Release/node_datachannel.node" ]]; then
+  echo "FAIL: install skipped the broken node-datachannel 0.25 copy" >&2
+  rm -rf "$prebuild_tmp"
+  exit 1
+fi
+rm -rf "$prebuild_tmp"
 
 synapse_prepare() {
   bash --noprofile --norc -c '

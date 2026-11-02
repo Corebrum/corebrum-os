@@ -161,24 +161,32 @@ corebrum_synapse_build_rclnodejs() {
 }
 
 # pnpm install --ignore-scripts skips the node-datachannel prebuild. connect
-# loads that native module before it opens the ARC socket.
+# loads that native module before it opens the ARC socket. pnpm may keep more
+# than one version (for example 0.12 beside 0.25); the first find hit can be
+# healthy while synapse-robot's copy is still missing its .node, so walk every
+# package and repair any that fail to load.
 corebrum_synapse_install_node_datachannel() {
-  local pkg bin native
-  pkg="$(find "$root/node_modules/.pnpm" -path '*/node_modules/node-datachannel/package.json' -print -quit)"
-  [[ -n "$pkg" ]] || corebrum_synapse_install_die "node-datachannel is not installed"
-  pkg="$(dirname "$pkg")"
-  native="${pkg}/build/Release/node_datachannel.node"
-  if [[ -f "$native" ]] && (cd "$pkg" && node -e "require('node-datachannel')"); then
-    return 0
-  fi
+  local pkg bin native pkgjson found=0 label
   bin="$(find "$root/node_modules/.pnpm" -path '*/prebuild-install/bin.js' -print -quit)"
   [[ -n "$bin" ]] || corebrum_synapse_install_die "prebuild-install is not installed"
-  printf 'Installing the node-datachannel prebuild\n'
-  (
-    cd "$pkg"
-    node "$bin" -r napi
-  ) || corebrum_synapse_install_die "node-datachannel prebuild failed"
-  [[ -f "$native" ]] || corebrum_synapse_install_die "node-datachannel binary is missing"
+  while IFS= read -r -d '' pkgjson; do
+    found=1
+    pkg="$(dirname "$pkgjson")"
+    native="${pkg}/build/Release/node_datachannel.node"
+    if [[ -f "$native" ]] && (cd "$pkg" && node -e "require('node-datachannel')" >/dev/null 2>&1); then
+      continue
+    fi
+    label="$(basename "$(dirname "$(dirname "$pkg")")")"
+    printf 'Installing the node-datachannel prebuild (%s)\n' "$label"
+    (
+      cd "$pkg"
+      node "$bin" -r napi
+    ) || corebrum_synapse_install_die "node-datachannel prebuild failed (${label})"
+    [[ -f "$native" ]] || corebrum_synapse_install_die "node-datachannel binary is missing (${label})"
+    (cd "$pkg" && node -e "require('node-datachannel')") \
+      || corebrum_synapse_install_die "node-datachannel still fails to load (${label})"
+  done < <(find "$root/node_modules/.pnpm" -path '*/node_modules/node-datachannel/package.json' -print0)
+  [[ "$found" -eq 1 ]] || corebrum_synapse_install_die "node-datachannel is not installed"
 }
 
 corebrum_synapse_install_main() {
