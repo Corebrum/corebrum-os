@@ -23,6 +23,20 @@ if grep -Eq 'bashrc|HOME' "${ROOT}/config/ros/profile.sh"; then
   echo "FAIL: ROS profile mentions a user home or bashrc" >&2
   exit 1
 fi
+if grep -qE '\[\[|^[[:space:]]*source ' "${ROOT}/config/ros/profile.sh"; then
+  echo "FAIL: ROS profile uses bash-only [[ or source (dash sources /etc/profile.d)" >&2
+  exit 1
+fi
+if ! grep -q 'BASH_VERSION' "${ROOT}/config/ros/profile.sh"; then
+  echo "FAIL: ROS profile does not gate the bash-only ROS setup" >&2
+  exit 1
+fi
+# /etc/profile runs this under /bin/sh before the login wallpaper.
+if ! dash -c "set -e; . '${ROOT}/config/ros/profile.sh'"; then
+  echo "FAIL: dash cannot source the ROS profile" >&2
+  exit 1
+fi
+
 if grep -q 'releases/latest' "${ROOT}/scripts/lib/ros.sh"; then
   echo "FAIL: ROS apt source follows the latest GitHub release" >&2
   exit 1
