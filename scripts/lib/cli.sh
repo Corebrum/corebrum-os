@@ -609,6 +609,165 @@ corebrum_record_bin() {
   command -v pw-record
 }
 
+# PipeWire 1.2+ accepts -n <samples>. Noble's 1.0.5 pw-record does not.
+corebrum_record_supports_sample_count() {
+  local rec help
+  if [[ -n "${COREBRUM_RECORD_HAS_N:-}" ]]; then
+    [[ "${COREBRUM_RECORD_HAS_N}" == "1" ]]
+    return $?
+  fi
+  rec="$(corebrum_record_bin)" || return 1
+  if command -v timeout >/dev/null 2>&1; then
+    help="$(timeout -k 1 2 "$rec" --help 2>&1 || true)"
+  else
+    help="$("$rec" --help 2>&1 || true)"
+  fi
+  if grep -qE -- '(^|[[:space:]])-n([,[:space:]]|$)' <<<"$help"; then
+    return 0
+  fi
+  return 1
+}
+
+# Record mono 16 kHz into wav for the given seconds. Optional mic target.
+corebrum_record_wav() {
+  local rec="$1" wav="$2" seconds="$3" mic="${4:-}"
+  local -a args
+  args=(--rate 16000 --channels 1 --format s16)
+  if [[ -n "$mic" ]]; then
+    args+=(--target "$mic")
+  fi
+  if corebrum_record_supports_sample_count; then
+    args+=(-n "$((seconds * 16000))")
+    "$rec" "${args[@]}" "$wav" >/dev/null 2>&1 || true
+    return 0
+  fi
+  # Noble and other 1.0 builds: stop with SIGINT after the duration.
+  # -k sends KILL if pw-record ignores INT while connecting.
+  if command -v timeout >/dev/null 2>&1; then
+    timeout -k 1 --signal=INT "$seconds" "$rec" "${args[@]}" "$wav" >/dev/null 2>&1 || true
+  else
+    "$rec" "${args[@]}" "$wav" >/dev/null 2>&1 &
+    local pid=$!
+    sleep "$seconds" || true
+    kill -INT "$pid" 2>/dev/null || true
+    wait "$pid" 2>/dev/null || true
+  fi
+}
+
+# Microphone target for pw-record --target. Empty means PipeWire default.
+corebrum_mic_get() {
+  corebrum_speech_get mic ""
+}
+
+corebrum_mic_set() {
+  local value="$1"
+  if [[ -z "$value" || "$value" == "default" ]]; then
+    corebrum_speech_set mic ""
+    printf 'microphone: default\n'
+    return 0
+  fi
+  corebrum_speech_set mic "$value"
+  printf 'microphone: %s\n' "$value"
+}
+
+# Prints "target<TAB>description" rows. Stub with COREBRUM_MIC_LINES.
+corebrum_mic_list_rows() {
+  local raw
+  if [[ -n "${COREBRUM_MIC_LINES:-}" ]]; then
+    printf '%s\n' "$COREBRUM_MIC_LINES"
+    return 0
+  fi
+  if command -v pw-dump >/dev/null 2>&1; then
+    raw="$(timeout 3 pw-dump 2>/dev/null || true)"
+    if [[ -n "$raw" ]]; then
+      printf '%s\n' "$raw" | python3 -c "$(cat <<'PY'
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    raise SystemExit(0)
+seen = set()
+for obj in data:
+    info = obj.get("info") or {}
+    props = info.get("props") or {}
+    if props.get("media.class") != "Audio/Source":
+        continue
+    name = (props.get("node.name") or "").strip()
+    desc = (
+        props.get("node.description")
+        or props.get("node.nick")
+        or name
+        or str(obj.get("id") or "")
+    ).strip()
+    target = name or str(obj.get("id") or "").strip()
+    if not target or target in seen:
+        continue
+    seen.add(target)
+    print(f"{target}\t{desc}")
+PY
+)" 2>/dev/null && return 0
+    fi
+  fi
+  if command -v wpctl >/dev/null 2>&1; then
+    raw="$(timeout 3 wpctl status 2>/dev/null || true)"
+    if [[ -n "$raw" ]]; then
+      printf '%s\n' "$raw" | python3 -c "$(cat <<'PY'
+import re, sys
+text = sys.stdin.read()
+in_sources = False
+for line in text.splitlines():
+    if re.search(r"^\s*Sources:\s*$", line):
+        in_sources = True
+        continue
+    if in_sources and re.search(r"^\s*Sink endpoints:|^\s*Source endpoints:|^\s*Filters:|^\s*Streams:|^\s*Video\b|^\s*Sinks:\s*$", line):
+        break
+    if not in_sources:
+        continue
+    m = re.search(r"(\d+)\.\s+(.+?)(?:\s+\[vol:.*\])?\s*$", line)
+    if not m:
+        continue
+    target, desc = m.group(1), m.group(2).strip()
+    desc = re.sub(r"^\*\s*", "", desc)
+    print(f"{target}\t{desc}")
+PY
+)" 2>/dev/null && return 0
+    fi
+  fi
+  return 0
+}
+
+corebrum_mic_list() {
+  local current rows target desc
+  current="$(corebrum_mic_get)"
+  if [[ -z "$current" ]]; then
+    printf 'current: default\n'
+  else
+    printf 'current: %s\n' "$current"
+  fi
+  rows="$(corebrum_mic_list_rows || true)"
+  if [[ -z "$rows" ]]; then
+    printf 'No PipeWire microphones were listed. The default source will be used.\n'
+    return 0
+  fi
+  while IFS=$'\t' read -r target desc; do
+    [[ -n "$target" ]] || continue
+    if [[ "$target" == "$current" ]]; then
+      printf '* %s\t%s\n' "$target" "$desc"
+    else
+      printf '  %s\t%s\n' "$target" "$desc"
+    fi
+  done <<<"$rows"
+}
+
+# Append --target when a mic is stored. Prints args one per line for callers.
+corebrum_record_target_args() {
+  local mic
+  mic="$(corebrum_mic_get)"
+  if [[ -n "$mic" ]]; then
+    printf '%s\n' --target "$mic"
+  fi
+}
+
 corebrum_apt_candidate() {
   local policy
   policy="$(apt-cache policy "$1" 2>/dev/null || true)"
@@ -700,30 +859,33 @@ corebrum_hear_alive() {
 }
 
 corebrum_hear_finish() {
-  local wav="$1" text="" bytes=0 bin
+  local wav="$1" text="" bytes=0 bin dir pidfile
+  dir="$(corebrum_hear_dir)"
+  pidfile="${dir}/pid"
   if [[ ! -f "$wav" ]]; then
-    corebrum_hear_notify "Transcribe" "The recording was empty."
+    rm -f "$pidfile"
+    corebrum_hear_notify "Transcribe" "No audio was captured. Check the mic under Setup → Voice → Microphone, then try Control+Space again."
     return 0
   fi
   bytes="$(wc -c <"$wav")"
   if [[ "$bytes" -le 44 ]]; then
-    rm -f "$wav"
-    corebrum_hear_notify "Transcribe" "The recording was empty."
+    rm -f "$wav" "$pidfile"
+    corebrum_hear_notify "Transcribe" "No audio was captured. Check the mic under Setup → Voice → Microphone, then try Control+Space again."
     return 0
   fi
   bin="$(corebrum_stt_bin)" || {
-    rm -f "$wav"
-    corebrum_hear_notify "Transcribe" "Speech recognition is not installed."
+    rm -f "$wav" "$pidfile"
+    corebrum_hear_notify "Transcribe" "Speech recognition is not installed. Run corebrum voice hear --install"
     return 0
   }
   if ! text="$(corebrum_stt_text "$bin" "$wav")"; then
-    rm -f "$wav"
+    rm -f "$wav" "$pidfile"
     corebrum_hear_notify "Transcribe" "Speech recognition failed."
     return 0
   fi
-  rm -f "$wav"
+  rm -f "$wav" "$pidfile"
   if [[ -z "$text" ]]; then
-    corebrum_hear_notify "Transcribe" "No speech recognized."
+    corebrum_hear_notify "Transcribe" "No speech recognized. Speak louder, close to the mic, then try Control+Space again."
     return 0
   fi
   corebrum_hear_copy "$text"
@@ -789,7 +951,7 @@ EOF
 }
 
 corebrum_hear_toggle() {
-  local dir pidfile wav pid rec waited
+  local dir pidfile wav pid rec waited use_samples
   if ! corebrum_stt_ready; then
     corebrum_hear_notify "Transcribe" "Speech recognition is not installed. Run corebrum voice hear --install"
     return 0
@@ -808,9 +970,23 @@ corebrum_hear_toggle() {
     pid="$(<"$pidfile")"
   fi
   if corebrum_hear_alive "$pid"; then
+    # Stop the recorder. GNU timeout (noble path) puts pw-record in a new
+    # process group, so signal the whole session, not only the owner's group.
+    if command -v pkill >/dev/null 2>&1; then
+      pkill -INT -s "$pid" 2>/dev/null || true
+    fi
     kill -INT -"$pid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
     flock -u 9
     exec 9>&-
+    waited=0
+    while corebrum_hear_alive "$pid" && [[ "$waited" -lt 100 ]]; do
+      sleep 0.1
+      waited=$((waited + 1))
+    done
+    # Owner normally runs finish; if it did not, finish here.
+    if [[ -f "$wav" ]]; then
+      corebrum_hear_finish "$wav"
+    fi
     return 0
   fi
   if [[ -f "$wav" ]]; then
@@ -827,14 +1003,37 @@ corebrum_hear_toggle() {
 set -u
 trap 'true' INT TERM
 printf '%s\n' "$$" >"$COREBRUM_HEAR_PIDFILE"
-"$COREBRUM_HEAR_REC" --rate 16000 --channels 1 --format s16 -n "$COREBRUM_HEAR_SAMPLES" "$COREBRUM_HEAR_WAV" >/dev/null 2>&1 || true
+args=(--rate 16000 --channels 1 --format s16)
+if [[ -n "${COREBRUM_HEAR_TARGET:-}" ]]; then
+  args+=(--target "$COREBRUM_HEAR_TARGET")
+fi
+# Keep pw-record in this session. Avoid `timeout` here: it creates a new
+# process group, and Control+Space could not stop the recorder.
+if [[ "${COREBRUM_HEAR_USE_SAMPLES:-0}" == 1 ]]; then
+  args+=(-n "${COREBRUM_HEAR_SAMPLES:-960000}")
+  "$COREBRUM_HEAR_REC" "${args[@]}" "$COREBRUM_HEAR_WAV" >/dev/null 2>&1 || true
+else
+  "$COREBRUM_HEAR_REC" "${args[@]}" "$COREBRUM_HEAR_WAV" >/dev/null 2>&1 &
+  rec_pid=$!
+  ( sleep 60 && kill -INT "$rec_pid" 2>/dev/null ) &
+  watch_pid=$!
+  wait "$rec_pid" 2>/dev/null || true
+  kill "$watch_pid" 2>/dev/null || true
+  wait "$watch_pid" 2>/dev/null || true
+fi
 exec "$COREBRUM_HEAR_CMD" voice hear finish
 EOF
   chmod 755 "${dir}/owner.sh"
+  use_samples=0
+  if corebrum_record_supports_sample_count; then
+    use_samples=1
+  fi
   COREBRUM_HEAR_REC="$rec" \
     COREBRUM_HEAR_WAV="$wav" \
     COREBRUM_HEAR_PIDFILE="$pidfile" \
     COREBRUM_HEAR_SAMPLES="$((60 * 16000))" \
+    COREBRUM_HEAR_USE_SAMPLES="$use_samples" \
+    COREBRUM_HEAR_TARGET="$(corebrum_mic_get)" \
     COREBRUM_HEAR_CMD="$0" \
     setsid "${dir}/owner.sh" >/dev/null 2>&1 &
   disown || true
@@ -848,7 +1047,7 @@ EOF
 }
 
 corebrum_cmd_voice_hear() {
-  local install=0 toggle=0 seconds=5 rec wav bytes text bin answer
+  local install=0 toggle=0 seconds=5 rec wav bytes text bin answer mic
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --install)
@@ -906,14 +1105,15 @@ corebrum_cmd_voice_hear() {
   fi
   rec="$(corebrum_record_bin)" || corebrum_die "pw-record is not installed. sudo corebrum install desktop"
   wav="$(mktemp "${TMPDIR:-/tmp}/corebrum-hear.XXXXXX.wav")"
-  "$rec" --rate 16000 --channels 1 --format s16 -n "$((seconds * 16000))" "$wav" >/dev/null 2>&1 || true
+  mic="$(corebrum_mic_get)"
+  corebrum_record_wav "$rec" "$wav" "$seconds" "$mic"
   bytes=0
   if [[ -f "$wav" ]]; then
     bytes="$(wc -c <"$wav")"
   fi
   if [[ "$bytes" -le 44 ]]; then
     rm -f "$wav"
-    corebrum_die "could not record the default microphone"
+    corebrum_die "could not record audio. Check the mic with: corebrum voice mic list"
   fi
   bin="$(corebrum_stt_bin)"
   if ! text="$(corebrum_stt_text "$bin" "$wav")"; then
@@ -922,7 +1122,7 @@ corebrum_cmd_voice_hear() {
   fi
   rm -f "$wav"
   if [[ -z "$text" ]]; then
-    corebrum_die "no speech recognized"
+    corebrum_die "no speech recognized. Speak louder, or pick a microphone with: corebrum voice mic list"
   fi
   printf '%s\n' "$text"
 }
@@ -1044,6 +1244,38 @@ corebrum_cmd_voice() {
     test)
       corebrum_speak_now "Hello from Corebrum."
       ;;
+    mic)
+      shift
+      case "${1:-}" in
+        "" | list)
+          corebrum_mic_list
+          ;;
+        set)
+          [[ -n "${2:-}" ]] || corebrum_die "usage: corebrum voice mic set <name|id|default>"
+          corebrum_mic_set "$2"
+          ;;
+        clear | default)
+          corebrum_mic_set ""
+          ;;
+        -h | --help | help)
+          cat <<'EOF'
+Usage: corebrum voice mic [list]
+       corebrum voice mic set <name|id|default>
+       corebrum voice mic clear
+
+  list              Show PipeWire microphones and the current choice
+  set <name|id>     Record with that source (pw-record --target)
+  set default       Use the PipeWire default source
+  clear             Same as set default
+
+Control+Space and voice hear use this microphone. Empty means default.
+EOF
+          ;;
+        *)
+          corebrum_die "usage: corebrum voice mic [list|set|clear]"
+          ;;
+      esac
+      ;;
     hear)
       shift
       corebrum_cmd_voice_hear "$@"
@@ -1079,7 +1311,7 @@ corebrum_cmd_voice() {
       ;;
     "" | -h | --help | help)
       cat <<'EOF'
-Usage: corebrum voice list|test|set|enable|disable|hear
+Usage: corebrum voice list|test|set|enable|disable|mic|hear
 
   list              List espeak-ng voices
   test              Say "Hello from Corebrum."
@@ -1087,7 +1319,10 @@ Usage: corebrum voice list|test|set|enable|disable|hear
   set espeak <name> Use one voice from voice list
   enable            Turn local speech on
   disable           Turn local speech off
-  hear [seconds]    Transcribe the default microphone
+  mic [list]        List microphones and the current choice
+  mic set <name>    Record with that PipeWire source
+  mic clear         Use the PipeWire default source
+  hear [seconds]    Transcribe the chosen microphone
   hear toggle       Start listening, or stop and copy the words
   hear --install    Install Ubuntu pocketsphinx, then transcribe
 

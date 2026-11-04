@@ -31,6 +31,8 @@ pids+=("$!")
 pids+=("$!")
 /usr/local/bin/corebrum-password-menu refresh &
 pids+=("$!")
+/usr/local/bin/corebrum-voice-menu refresh &
+pids+=("$!")
 /usr/local/bin/corebrum-power-menu refresh &
 pids+=("$!")
 /usr/local/bin/corebrum-about-menu refresh &

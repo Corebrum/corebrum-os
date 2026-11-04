@@ -6,8 +6,12 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CMD="${ROOT}/scripts/corebrum.sh"
 
 help="$("$CMD" help)"
-if ! grep -q 'voice list|test|set|hear' <<<"$help"; then
+if ! grep -qE 'voice list\|test\|set\|mic\|hear|voice list\|test\|set\|hear' <<<"$help"; then
   echo "FAIL: help does not name voice hear" >&2
+  exit 1
+fi
+if ! grep -q 'mic' <<<"$help"; then
+  echo "FAIL: help does not name voice mic" >&2
   exit 1
 fi
 
@@ -31,6 +35,11 @@ exit 0
 EOF
 cat >"${stub}/pw-record" <<EOF
 #!/bin/sh
+if [ "\$1" = "--help" ]; then
+  printf '%s\n' "pw-record [options] [<file>|-]"
+  printf '%s\n' "  -n, --media-role  sample count (test stub)"
+  exit 0
+fi
 printf '%s\n' "\$*" >>"${record}"
 wav=""
 for arg in "\$@"; do
@@ -77,7 +86,7 @@ chmod 755 "${stub}/espeak-ng" "${stub}/pw-record" "${recog}/pocketsphinx" \
 export XDG_STATE_HOME="$state"
 export XDG_RUNTIME_DIR="$runtime"
 export COREBRUM_SPEECH_BIN="${stub}/espeak-ng"
-for tool in bash python3 awk grep rm mkdir mv mktemp id wc dd chmod cp cat date basename dirname readlink flock setsid sleep; do
+for tool in bash python3 awk grep rm mkdir mv mktemp id wc dd chmod cp cat date basename dirname readlink flock setsid sleep timeout ln pkill; do
   target="$(command -v "$tool" || true)"
   if [[ -n "$target" ]]; then
     ln -s "$target" "${tools}/${tool}"
@@ -117,10 +126,47 @@ if ! grep -q -- '-n 32000' "$record"; then
   echo "FAIL: voice hear did not record 2 seconds at 16 kHz" >&2
   exit 1
 fi
+if grep -q -- '--target' "$record"; then
+  echo "FAIL: voice hear used --target before a mic was set" >&2
+  exit 1
+fi
 if [[ -s "$net" ]]; then
   echo "FAIL: voice hear called curl" >&2
   exit 1
 fi
+
+: >"$record"
+export COREBRUM_MIC_LINES=$'alsa_input.usb\tUSB Mic\npw_source_42\tHeadset'
+listed="$("$CMD" voice mic list)"
+if ! grep -q 'current: default' <<<"$listed"; then
+  echo "FAIL: mic list did not report default: ${listed}" >&2
+  exit 1
+fi
+if ! grep -q $'alsa_input.usb\tUSB Mic' <<<"$listed"; then
+  echo "FAIL: mic list omitted USB Mic: ${listed}" >&2
+  exit 1
+fi
+"$CMD" voice mic set alsa_input.usb >/dev/null
+if [[ "$(grep '^mic=' "${XDG_STATE_HOME}/corebrum/speech.conf")" != "mic=alsa_input.usb" ]]; then
+  echo "FAIL: mic set did not store alsa_input.usb" >&2
+  exit 1
+fi
+: >"$record"
+heard="$("$CMD" voice hear 1)"
+if [[ "$heard" != "hello from the microphone" ]]; then
+  echo "FAIL: voice hear with a mic printed ${heard}" >&2
+  exit 1
+fi
+if ! grep -q -- '--target' "$record" || ! grep -q 'alsa_input.usb' "$record"; then
+  echo "FAIL: voice hear did not pass --target: $(cat "$record")" >&2
+  exit 1
+fi
+"$CMD" voice mic clear >/dev/null
+if grep -qE '^mic=.+' "${XDG_STATE_HOME}/corebrum/speech.conf"; then
+  echo "FAIL: mic clear left a non-empty mic" >&2
+  exit 1
+fi
+unset COREBRUM_MIC_LINES
 
 "$CMD" voice disable >/dev/null
 disabled="$("$CMD" voice hear 1)"
@@ -220,6 +266,11 @@ import signal
 import sys
 import time
 
+if len(sys.argv) > 1 and sys.argv[1] in ("--help", "-h"):
+    print("pw-record [options] [<file>|-]")
+    print("  -n, --samples  sample count (test stub)")
+    raise SystemExit(0)
+
 signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
 path = sys.argv[-1]
 with open(path, "wb") as handle:
@@ -267,5 +318,40 @@ if awk '
   echo "FAIL: a missing recognizer fails doctor" >&2
   exit 1
 fi
+
+# Ubuntu 24.04 PipeWire 1.0.5 has no -n; hear must use timeout instead.
+cat >"${stub}/pw-record-noble" <<EOF
+#!/bin/sh
+if [ "\$1" = "--help" ]; then
+  printf '%s\n' "pw-record [options] [<file>|-]"
+  printf '%s\n' "      --target   Set node target"
+  exit 0
+fi
+printf '%s\n' "\$*" >>"${record}"
+wav=""
+for arg in "\$@"; do
+  wav="\$arg"
+done
+# Write immediately, then wait for SIGINT like a live capture.
+dd if=/dev/zero bs=100 count=1 of="\$wav" status=none
+trap 'exit 0' INT TERM
+while true; do sleep 0.05; done
+EOF
+chmod 755 "${stub}/pw-record-noble"
+: >"$record"
+export COREBRUM_RECORD_BIN="${stub}/pw-record-noble"
+export COREBRUM_RECORD_HAS_N=0
+export COREBRUM_STT_BIN="${recog}/pocketsphinx"
+"$CMD" voice mic clear >/dev/null 2>&1 || true
+noble_hear="$("$CMD" voice hear 1)"
+if [[ "$noble_hear" != "hello from the microphone" ]]; then
+  echo "FAIL: noble timeout hear printed ${noble_hear}" >&2
+  exit 1
+fi
+if grep -qE '(^| )-n( |$)' "$record"; then
+  echo "FAIL: noble hear still passed -n: $(cat "$record")" >&2
+  exit 1
+fi
+unset COREBRUM_RECORD_HAS_N
 
 echo "ok"

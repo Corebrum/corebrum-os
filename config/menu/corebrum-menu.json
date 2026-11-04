@@ -42,8 +42,8 @@
       "id": "setup",
       "label": "Setup",
       "icon": "preferences-system",
-      "keywords": "settings;autolock;timezone;tz;password;passwd;vnc;remote;wormhole",
-      "children": ["corebrum-autolock", "corebrum-timezone", "corebrum-password", "corebrum-vnc", "corebrum-wormhole"]
+      "keywords": "settings;autolock;timezone;tz;password;passwd;voice;speech;mic;microphone;transcribe;vnc;remote;wormhole",
+      "children": ["corebrum-autolock", "corebrum-timezone", "corebrum-password", "corebrum-voice", "corebrum-vnc", "corebrum-wormhole"]
     },
     {
       "id": "updates",
@@ -90,6 +90,7 @@
     "corebrum-wormhole",
     "corebrum-autolock",
     "corebrum-timezone",
-    "corebrum-password"
+    "corebrum-password",
+    "corebrum-voice"
   ]
 }

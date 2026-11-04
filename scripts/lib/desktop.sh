@@ -235,6 +235,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-timezone-menu.sh" /usr/local/bin/corebrum-timezone-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-password-menu.sh" /usr/local/bin/corebrum-password-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-voice-menu.sh" /usr/local/bin/corebrum-voice-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-power-menu.sh" /usr/local/bin/corebrum-power-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-about.sh" /usr/local/bin/corebrum-about 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-about-menu.sh" /usr/local/bin/corebrum-about-menu 755
@@ -476,6 +477,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-autolock
 /usr/local/bin/corebrum-timezone-menu
 /usr/local/bin/corebrum-password-menu
+/usr/local/bin/corebrum-voice-menu
 /usr/local/bin/corebrum-power-menu
 /usr/local/bin/corebrum-about
 /usr/local/bin/corebrum-about-menu
