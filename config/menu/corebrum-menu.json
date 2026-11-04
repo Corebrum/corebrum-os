@@ -79,7 +79,8 @@
     "corebrum-agents": {"prefix": "corebrum-agent-"},
     "corebrum-ros": {"prefix": "corebrum-ros-tool-"},
     "corebrum-realsense": {"prefix": "corebrum-realsense-tool-"},
-    "corebrum-synapse": {"prefix": "corebrum-synapse-action-"}
+    "corebrum-synapse": {"prefix": "corebrum-synapse-action-"},
+    "corebrum-arc": {"prefix": "corebrum-arc-action-"}
   },
   "dynamic": [
     "corebrum-wallpaper",

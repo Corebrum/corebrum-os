@@ -105,9 +105,11 @@ corebrum_synapse_menu_terminal() {
 
 corebrum_synapse_menu_actions() {
   cat <<'EOF'
+arc-setup|Cloud: Set up
 arc-connect|Cloud: Connect
 arc-disconnect|Cloud: Disconnect
 arc-sign-in|Cloud: Sign in
+arc-register|Cloud: Register
 camera-start-realsense|Camera: Start RealSense
 camera-stop-realsense|Camera: Stop RealSense
 camera-start-2d|Camera: Start 2D
@@ -196,6 +198,19 @@ corebrum_synapse_menu_run() {
       ;;
     "Cloud: Sign in")
       corebrum_synapse_menu_terminal "synapse login"
+      ;;
+    "Cloud: Register")
+      corebrum_synapse_menu_terminal "synapse register"
+      ;;
+    "Cloud: Set up")
+      if [[ "${COREBRUM_SYNAPSE_STUB:-0}" == 1 ]]; then
+        printf 'corebrum-arc-menu launch setup\n'
+        return 0
+      fi
+      if [[ -x /usr/local/bin/corebrum-arc-menu ]]; then
+        exec /usr/local/bin/corebrum-arc-menu launch setup
+      fi
+      corebrum_synapse_menu_die "the Corebrum Cloud menu is not installed"
       ;;
     "Camera: Start RealSense")
       corebrum_synapse_menu_terminal "synapse start realsense"

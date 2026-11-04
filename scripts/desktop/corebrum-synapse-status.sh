@@ -66,37 +66,19 @@ PY
 }
 
 corebrum_synapse_status_click() {
-  local choice
+  # Same Cloud wizard as Super+Space Corebrum Cloud.
+  if [[ "${COREBRUM_SYNAPSE_STATUS_STUB:-0}" == 1 ]]; then
+    printf 'corebrum-arc-menu open\n'
+    return 0
+  fi
+  if [[ -x /usr/local/bin/corebrum-arc-menu ]]; then
+    exec /usr/local/bin/corebrum-arc-menu open
+  fi
   if [[ ! -x /usr/local/bin/synapse ]]; then
     notify-send "Corebrum Cloud" "Corebrum Synapse is not installed" || true
     return 0
   fi
-  if [[ "${COREBRUM_SYNAPSE_STATUS_STUB:-0}" == 1 ]]; then
-    printf '%s\n' "Connect Cloud" "Disconnect Cloud"
-    return 0
-  fi
-  choice="$(printf '%s\n' "Connect Cloud" "Disconnect Cloud" | fuzzel \
-    --config /etc/corebrum/fuzzel/fuzzel.ini \
-    --dmenu \
-    --prompt 'Cloud ' \
-    --width 32 \
-    --lines 4)" || return 0
-  case "$choice" in
-    "Connect Cloud")
-      if /usr/local/bin/synapse connect; then
-        notify-send "Corebrum Synapse" "Connected to Corebrum Cloud"
-      else
-        notify-send "Corebrum Synapse" "Could not connect to Corebrum Cloud"
-      fi
-      ;;
-    "Disconnect Cloud")
-      if /usr/local/bin/synapse disconnect; then
-        notify-send "Corebrum Synapse" "Disconnected from Corebrum Cloud"
-      else
-        notify-send "Corebrum Synapse" "Could not disconnect from Corebrum Cloud"
-      fi
-      ;;
-  esac
+  notify-send "Corebrum Cloud" "Corebrum Cloud menu is not installed" || true
 }
 
 cmd="${1:-}"

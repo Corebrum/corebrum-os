@@ -23,6 +23,7 @@ SEARCH_PREFIXES = (
     "corebrum-ros-tool-",
     "corebrum-realsense-tool-",
     "corebrum-synapse-action-",
+    "corebrum-arc-action-",
     "corebrum-update-",
     "corebrum-power-action-",
 )
