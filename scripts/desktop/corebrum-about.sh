@@ -9,6 +9,16 @@ corebrum_about_die() {
   exit 1
 }
 
+corebrum_about_banner() {
+  cat <<'EOF'
+  ____   ___   ____   _____  ____   ____   _   _  __  __
+ / ___| / _ \ |  _ \ | ____|| __ ) |  _ \ | | | ||  \/  |
+| |    | | | || |_) ||  _|  |  _ \ | |_) || | | || |\/| |
+| |___ | |_| ||  _ < | |___ | |_) ||  _ < | |_| || |  | |
+ \____| \___/ |_| \_\|_____||____/ |_| \_\ \___/ |_|  |_|
+EOF
+}
+
 corebrum_about_heading() {
   local title="$1"
   local width=52
@@ -319,6 +329,8 @@ corebrum_about_last_update() {
 corebrum_about_print() {
   local value synapse
 
+  printf '\n'
+  corebrum_about_banner
   printf '\n'
   corebrum_about_heading "Hardware"
   corebrum_about_row "PC" "$(corebrum_about_pc)"
