@@ -29,6 +29,8 @@
           <tr><td><code>synapse stop realsense</code></td><td>Stop the RealSense camera</td></tr>
           <tr><td><code>synapse start camera</code></td><td>Start the 2D camera</td></tr>
           <tr><td><code>synapse stop camera</code></td><td>Stop the 2D camera</td></tr>
+          <tr><td><code>synapse start battery</code></td><td>Publish <code>sensor_msgs/BatteryState</code> from Linux <code>/sys/class/power_supply</code> when a Battery supply exists (see <code>synapse logs battery</code>)</td></tr>
+          <tr><td><code>synapse stop battery</code></td><td>Stop the battery publisher</td></tr>
           <tr><td><code>synapse start motors</code></td><td>Start the motors</td></tr>
           <tr><td><code>synapse stop motors</code></td><td>Stop the motors</td></tr>
           <tr><td><code>synapse eyes</code></td><td>Start the eyes</td></tr>
@@ -36,7 +38,7 @@
           <tr><td><code>synapse up real</code></td><td>Bring up the real robot stack</td></tr>
           <tr><td><code>synapse up sim-amr</code></td><td>Bring up the simulated AMR stack</td></tr>
           <tr><td><code>synapse up sim-arm</code></td><td>Bring up the simulated arm stack</td></tr>
-          <tr><td><code>synapse down</code></td><td>Stop the stack</td></tr>
+          <tr><td><code>synapse down</code></td><td>Stop the stack (including the battery publisher when running)</td></tr>
           <tr><td><code>synapse mode real</code></td><td>Switch to the real robot</td></tr>
           <tr><td><code>synapse mode sim</code></td><td>Switch to simulation</td></tr>
           <tr><td><code>synapse mcp setup</code></td><td>Register installed agent CLIs. The menu runs <code>synapse mcp setup --installed</code></td></tr>

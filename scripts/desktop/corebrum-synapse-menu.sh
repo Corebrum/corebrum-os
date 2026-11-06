@@ -114,6 +114,8 @@ camera-start-realsense|Camera: Start RealSense
 camera-stop-realsense|Camera: Stop RealSense
 camera-start-2d|Camera: Start 2D
 camera-stop-2d|Camera: Stop 2D
+battery-start|Battery: Start reporting
+battery-stop|Battery: Stop reporting
 motors-start|Motors: Start
 motors-stop|Motors: Stop
 eyes-start|Eyes: Start
@@ -223,6 +225,12 @@ corebrum_synapse_menu_run() {
       ;;
     "Camera: Stop 2D")
       corebrum_synapse_menu_terminal "synapse stop camera"
+      ;;
+    "Battery: Start reporting")
+      corebrum_synapse_menu_terminal "synapse start battery"
+      ;;
+    "Battery: Stop reporting")
+      corebrum_synapse_menu_terminal "synapse stop battery"
       ;;
     "Motors: Start")
       corebrum_synapse_menu_terminal "synapse start motors"
