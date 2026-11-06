@@ -7,7 +7,7 @@ set -euo pipefail
 corebrum_edit_is_terminal() {
   local class="${1,,}"
   case "$class" in
-    kitty | alacritty | foot | footclient | wezterm | ghostty | xterm | uxterm | kgx | tilix | terminator | konsole | gnome-terminal | org.gnome.terminal | org.gnome.console | org.wezfurlong.wezterm | com.mitchellh.ghostty | com.gexperts.tilix | io.elementary.terminal | org.kde.konsole | dev.warp.warp | warp | corebrum-agent | corebrum-setup)
+    kitty | alacritty | foot | footclient | wezterm | ghostty | xterm | uxterm | kgx | tilix | terminator | konsole | gnome-terminal | org.gnome.terminal | org.gnome.console | org.wezfurlong.wezterm | com.mitchellh.ghostty | com.gexperts.tilix | io.elementary.terminal | org.kde.konsole | dev.warp.warp | warp | corebrum-terminal-float | corebrum-agent-float | corebrum-setup)
       return 0
       ;;
     *terminal* | *kitty* | *wezterm* | *ghostty* | *alacritty* | *konsole*)

@@ -176,6 +176,9 @@ for command in \
   "corebrum zenoh" \
   "corebrum camera list" \
   "corebrum agents list" \
+  "corebrum agents default get" \
+  "corebrum agents default set" \
+  "corebrum agents default clear" \
   "corebrum agents update" \
   "corebrum update status" \
   "corebrum speak" \

@@ -43,7 +43,8 @@ require_line "Super+X                Cut"
 require_line "Super+V                Paste"
 require_line "Super+Space            Open the grouped application menu above fullscreen when needed. Rows with > open another level. Enter or Right opens a group; Backspace or Left goes up a level when the search box is empty"
 require_line "Super+Alt+Space        Open the app grid"
-require_line "Super+S                Toggle the agent scratchpad terminal"
+require_line "Super+S                Open a floating Kitty terminal"
+require_line "Super+A                Default AI agent in a floating terminal (set under AI Agents when the CLI is installed)"
 require_line "Super+Escape           Lock the screen. Type the account password and press Enter"
 require_line "Super+Shift+Escape     Pause autolock, or resume it"
 require_line "Super+Shift+E          Log out and return to the login screen"
@@ -72,7 +73,8 @@ require_bind 'bindsym $mod+x exec /usr/local/bin/corebrum-edit-keys cut'
 require_bind 'bindsym $mod+v exec /usr/local/bin/corebrum-edit-keys paste'
 require_bind 'bindsym $mod+space exec /usr/local/bin/corebrum-launcher'
 require_bind 'bindsym $mod+Mod1+space exec /usr/local/bin/corebrum-grid'
-require_bind 'bindsym $mod+s scratchpad show'
+require_bind 'bindsym $mod+s exec /usr/local/bin/corebrum-float-terminal'
+require_bind 'bindsym $mod+a exec /usr/local/bin/corebrum-default-agent'
 require_bind 'bindsym $mod+Escape exec /usr/local/bin/corebrum-lock'
 require_bind 'bindsym $mod+Shift+Escape exec /usr/local/bin/corebrum-autolock toggle'
 require_bind 'bindsym $mod+Shift+e exit'

@@ -7,7 +7,7 @@ CMD="${ROOT}/scripts/corebrum.sh"
 cli="${ROOT}/scripts/lib/cli.sh"
 
 help="$("$CMD" help)"
-for name in "camera list" "agents list" "update status"; do
+for name in "camera list" "agents list" "agents default" "update status"; do
   if ! grep -q "$name" <<<"$help"; then
     echo "FAIL: help does not name ${name}" >&2
     exit 1

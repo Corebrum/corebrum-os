@@ -29,6 +29,7 @@ require_file "${ROOT}/scripts/phases/02-desktop.sh" "corebrum_install_node"
 require_file "${ROOT}/scripts/desktop/corebrum-session.sh" "/etc/profile.d/corebrum-node.sh"
 require_file "${ROOT}/scripts/desktop/corebrum-terminal.sh" "/etc/profile.d/corebrum-node.sh"
 require_file "${ROOT}/scripts/lib/desktop.sh" "/usr/local/lib/corebrum/node-path.sh"
+require_file "${ROOT}/scripts/desktop/corebrum-node-path.sh" "getent passwd"
 require_file "${ROOT}/scripts/desktop/corebrum-agents-menu.sh" "corebrum-node-path.sh"
 require_file "${ROOT}/scripts/desktop/corebrum-zenoh-fleet-menu.sh" "corebrum-node-path.sh"
 if grep -q '/etc/profile.d/corebrum-node.sh' \
@@ -78,5 +79,19 @@ if [[ "$found" != "${nvm_root}/versions/node/v26.12.1/bin/node" ]]; then
   exit 1
 fi
 rm -rf "$nvm_root"
+
+# Sway keybind exec often omits HOME; PATH must still include ~/.local/bin from passwd.
+real_home="$(getent passwd "$(id -un)" | cut -d: -f6)"
+path_unset_home="$(PATH="/usr/bin:/bin" bash --noprofile --norc -c '
+set -euo pipefail
+unset HOME
+source "$1"
+corebrum_node_prepare_path
+printf "%s\n" "$PATH"
+' bash "${ROOT}/scripts/desktop/corebrum-node-path.sh")"
+if [[ ":${path_unset_home}:" != *":${real_home}/.local/bin:"* ]]; then
+  echo "FAIL: with HOME unset, PATH did not include ${real_home}/.local/bin (got ${path_unset_home})" >&2
+  exit 1
+fi
 
 echo "ok: node"

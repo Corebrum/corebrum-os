@@ -10,7 +10,7 @@ The operator asked for a Super+Space entry that lists and explains the Super sho
 ## Decision
 
 - Super+Space shows `Keybindings`. Choosing it opens a Fuzzel list of every Super shortcut: what to press, then what it does. Choosing a row closes the list.
-- The list covers terminal, Firefox, Files, Text Editor, close, fullscreen, float, this menu, the app grid, the agent scratchpad, lock, leave the session, clipboard, screen recording, focus movement, and workspaces. Super+Shift+N runs `gnome-text-editor`. See `docs/decisions/0039-text-editor.md`.
+- The list covers terminal, Firefox, Files, Text Editor, close, fullscreen, float, this menu, the app grid, floating Kitty on Super+S, default catalog AI agent on Super+A, lock, leave the session, clipboard, screen recording, focus movement, and workspaces. Super+Shift+N runs `gnome-text-editor`. See `docs/decisions/0039-text-editor.md`.
 - Super+Space lists the file manager as `Files`. The launcher writes that name over the Thunar desktop entry for the menu only. Super+Shift+F runs `thunar`.
 - Super+Space lists `nm-connection-editor` as `Network Configuration`. The launcher writes that name over Ubuntu's `Advanced Network Configuration` entry. The idle list is sorted by name, so the row sits with the other N entries.
 - Volume, brightness, Print without Super, and the text console are not on this list.

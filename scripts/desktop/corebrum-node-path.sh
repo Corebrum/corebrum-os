@@ -35,6 +35,12 @@ corebrum_node_prepend_path() {
 }
 
 corebrum_node_prepare_path() {
+  # Sway keybind `exec` and similar wrappers often omit HOME; agent CLIs and
+  # user npm globals live under ~/.local/bin.
+  if [[ -z "${HOME:-}" ]] && command -v getent >/dev/null 2>&1; then
+    HOME="$(getent passwd "$(id -un)" 2>/dev/null | cut -d: -f6 || true)"
+    [[ -n "$HOME" ]] && export HOME
+  fi
   corebrum_node_prepend_path
   if [[ -n "${HOME:-}" ]]; then
     case ":${PATH}:" in

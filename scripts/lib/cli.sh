@@ -400,8 +400,9 @@ corebrum_agent_version() {
 }
 
 corebrum_cmd_agents() {
-  local sub="${1:-}" file line binary version
+  local sub="${1:-}" file line binary version menu
   local -a fields=()
+  menu="${COREBRUM_ROOT}/scripts/desktop/corebrum-agents-menu.sh"
   case "$sub" in
     list)
       file="$(corebrum_agents_catalog)"
@@ -426,6 +427,39 @@ corebrum_cmd_agents() {
         fi
       done <"$file"
       ;;
+    default)
+      case "${2:-}" in
+        get)
+          [[ -f "$menu" ]] || corebrum_die "missing ${menu}"
+          bash "$menu" default-get
+          ;;
+        set)
+          [[ -f "$menu" ]] || corebrum_die "missing ${menu}"
+          bash "$menu" default-set "${3:-}"
+          ;;
+        clear)
+          [[ -f "$menu" ]] || corebrum_die "missing ${menu}"
+          bash "$menu" default-clear
+          ;;
+        "" | -h | --help | help)
+          cat <<'EOF'
+Usage: corebrum agents default get
+       corebrum agents default set <id>
+       corebrum agents default clear
+
+  get       Print the Super+A default agent id, or nothing when unset
+  set       Store one catalog id (e.g. cursor, grok) for Super+A
+  clear     Remove the Super+A default
+
+IDs match Super+Space → AI Agents. This does not install a CLI.
+EOF
+          [[ -n "${2:-}" ]] || return 1
+          ;;
+        *)
+          corebrum_die "unknown agents default command: ${2:-}"
+          ;;
+      esac
+      ;;
     update)
       cat <<'EOF'
 AI agent updates stay in Super+Space Updates.
@@ -437,9 +471,11 @@ EOF
       cat <<'EOF'
 Usage: corebrum agents list
        corebrum agents update
+       corebrum agents default get|set ID|clear
 
   list      Show which AI agent CLIs from the catalog are on PATH
   update    Point at Super+Space Updates. Does not run an installer
+  default   Read or set the catalog id used by Super+A (floating agent)
 
 The first launch of an installed CLI asks that publisher to sign in.
 This command does not install an agent and does not store a token.

@@ -19,7 +19,8 @@ Super+X                Cut
 Super+V                Paste
 Super+Space            Open the grouped application menu above fullscreen when needed. Rows with > open another level. Enter or Right opens a group; Backspace or Left goes up a level when the search box is empty
 Super+Alt+Space        Open the app grid
-Super+S                Toggle the agent scratchpad terminal
+Super+S                Open a floating Kitty terminal
+Super+A                Default AI agent in a floating terminal (set under AI Agents when the CLI is installed)
 Super+Escape           Lock the screen. Type the account password and press Enter
 Super+Shift+Escape     Pause autolock, or resume it
 Super+Shift+E          Log out and return to the login screen

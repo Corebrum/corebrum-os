@@ -14,7 +14,7 @@ Ubuntu 26.04 publishes `wtype` 0.4-3build1. It types a chord on its own keyboard
 - The desktop profile installs `wtype`.
 - On Sway, `/usr/local/bin/corebrum-edit-keys` reads the focused window from `swaymsg -t get_tree`. A Wayland window uses `app_id`. An X11 window uses `window_properties.class`.
 - The same helper types the chord with `wtype`. Super+K still types Ctrl+Shift+K in a terminal and does nothing in another window.
-- Kitty windows started as `corebrum-agent` and `corebrum-setup` are terminals. A session that is still Hyprland keeps `hyprctl dispatch sendshortcut`.
+- Kitty windows started as `corebrum-terminal-float`, `corebrum-agent-float`, and `corebrum-setup` are terminals. A session that is still Hyprland keeps `hyprctl dispatch sendshortcut`.
 
 ## Consequences
 

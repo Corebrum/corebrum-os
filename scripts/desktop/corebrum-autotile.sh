@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Split the longer side of the focused tile so new windows stay closer to square.
 # Sway 1.9 has no dwindle layout. A wide tile opens the next window beside it.
-# A tall tile opens the next one below it. Floating windows and the agent
-# scratchpad are skipped.
+# A tall tile opens the next one below it. Floating windows are skipped.
 # swaymsg blocks its event stream when stdout is a pipe, so the stream is
 # line-buffered. Otherwise a few new windows never change the split.
 set -euo pipefail
@@ -24,8 +23,6 @@ def find(node, parent):
 
 focused, parent = find(json.load(sys.stdin), None)
 if focused is None or focused.get("type") != "con" or parent is None:
-    sys.exit(0)
-if focused.get("app_id") == "corebrum-agent":
     sys.exit(0)
 if (focused.get("floating") or "") in ("user_on", "auto_on"):
     sys.exit(0)

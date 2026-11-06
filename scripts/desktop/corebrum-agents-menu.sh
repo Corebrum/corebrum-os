@@ -156,6 +156,89 @@ corebrum_agents_data_dir() {
   printf '%s\n' "${root}/corebrum"
 }
 
+corebrum_agents_state_dir() {
+  printf '%s\n' "${XDG_STATE_HOME:-${HOME}/.local/state}/corebrum"
+}
+
+corebrum_agents_default_path() {
+  printf '%s\n' "$(corebrum_agents_state_dir)/default-agent"
+}
+
+# One line: catalog agent id (e.g. cursor). Empty means no default.
+corebrum_agents_default_get() {
+  local f id
+  f="$(corebrum_agents_default_path)"
+  [[ -f "$f" ]] || return 0
+  read -r id <"$f" || true
+  id="${id%%#*}"
+  id="${id#"${id%%[![:space:]]*}"}"
+  id="${id%"${id##*[![:space:]]}"}"
+  printf '%s\n' "$id"
+}
+
+corebrum_agents_default_set() {
+  local id="$1"
+  [[ "$id" =~ ^[a-z0-9-]+$ ]] || corebrum_agents_die "invalid agent id"
+  corebrum_agents_prepare_path
+  corebrum_agents_load
+  corebrum_agents_find "$id" >/dev/null || corebrum_agents_die "unknown agent ${id}"
+  mkdir -p "$(corebrum_agents_state_dir)"
+  printf '%s\n' "$id" >"$(corebrum_agents_default_path)"
+}
+
+corebrum_agents_default_clear() {
+  local f
+  f="$(corebrum_agents_default_path)"
+  [[ -f "$f" ]] && rm -f "$f"
+}
+
+# Super+A: floating Kitty with default agent if set and installed.
+corebrum_agents_default_open() {
+  local id i
+  corebrum_agents_prepare_path
+  corebrum_agents_load
+  id="$(corebrum_agents_default_get)"
+  if [[ -z "$id" ]]; then
+    if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+      printf 'notify:no-default\n'
+      return 0
+    fi
+    if command -v notify-send >/dev/null 2>&1; then
+      notify-send --app-name=Corebrum --urgency=normal "AI Agents" "No default agent. Super+Space → AI Agents: set Super+A default (Clear / Set rows), or corebrum agents default set." || true
+    fi
+    return 0
+  fi
+  i=""
+  for j in "${!AGENTS_IDS[@]}"; do
+    if [[ "${AGENTS_IDS[$j]}" == "$id" ]]; then
+      i="$j"
+      break
+    fi
+  done
+  if [[ -z "$i" ]]; then
+    corebrum_agents_default_clear
+    if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+      printf 'notify:invalid-default\n'
+      return 0
+    fi
+    if command -v notify-send >/dev/null 2>&1; then
+      notify-send --app-name=Corebrum --urgency=normal "AI Agents" "Removed invalid default. Open AI Agents to set Super+A default again." || true
+    fi
+    return 0
+  fi
+  if ! corebrum_agents_ready "$i"; then
+    if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+      printf 'notify:not-installed:%s\n' "$id"
+      return 0
+    fi
+    if command -v notify-send >/dev/null 2>&1; then
+      notify-send --app-name=Corebrum --urgency=normal "AI Agents" "${AGENTS_LABELS[$i]} is not installed. Open AI Agents from Super+Space to install." || true
+    fi
+    return 0
+  fi
+  corebrum_agents_launch "$i" "corebrum-agent-float"
+}
+
 corebrum_agents_mcp_flag() {
   case "$1" in
     antigravity) printf 'agy\n' ;;
@@ -188,9 +271,13 @@ corebrum_agents_couple() {
 }
 
 corebrum_agents_clear_leaves() {
-  local dir="$1" file
+  local dir="$1" file base
   shopt -s nullglob
   for file in "${dir}"/corebrum-agent-*.desktop; do
+    base="$(basename "$file")"
+    case "$base" in
+      corebrum-agent-default-clear.desktop | corebrum-agent-default-set.desktop) continue ;;
+    esac
     rm -f "$file"
   done
   shopt -u nullglob
@@ -214,6 +301,36 @@ Icon=/usr/share/corebrum/agents.png
 Terminal=false
 Categories=Development;
 StartupNotify=false
+EOF
+  # GTK Super+Space drills into AI Agents via navigate prefix corebrum-agent-; it only
+  # lists matching desktop ids. NoDisplay stubs carry the Super+A default rows into that view.
+  cat >"${dir}/corebrum-agent-default-clear.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Super+A default: Clear
+GenericName=Clear Super+A default
+Comment=Remove the stored catalog id for Super+A
+Keywords=super+a;default;clear;agents;
+Exec=/usr/local/bin/corebrum-agents-menu default-clear
+Icon=/usr/share/corebrum/agents.png
+Terminal=false
+Categories=Development;
+StartupNotify=false
+NoDisplay=true
+EOF
+  cat >"${dir}/corebrum-agent-default-set.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Super+A default: Set
+GenericName=Set Super+A default
+Comment=Choose which catalog CLI Super+A opens
+Keywords=super+a;default;set;agents;
+Exec=/usr/local/bin/corebrum-agents-menu open-set-default
+Icon=/usr/share/corebrum/agents.png
+Terminal=false
+Categories=Development;
+StartupNotify=false
+NoDisplay=true
 EOF
   # One desktop file per CLI so Super+Space can match "grok" without opening this menu.
   corebrum_agents_clear_leaves "$dir"
@@ -354,7 +471,7 @@ EOF
 }
 
 corebrum_agents_launch() {
-  local i="$1" command run
+  local i="$1" kitty_class="${2:-}" command run
   command="${AGENTS_LAUNCH[$i]}"
   run="$command"
   if [[ "${COREBRUM_AGENTS_STUB:-0}" != 1 ]]; then
@@ -368,20 +485,44 @@ corebrum_agents_launch() {
     if [[ "${COREBRUM_SYNAPSE_READY:-0}" == 1 ]]; then
       corebrum_agents_couple "$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
     fi
-    printf '%s\n' "$run"
+    if [[ -n "$kitty_class" ]]; then
+      printf 'corebrum-terminal --class %s %s\n' "$kitty_class" "$run"
+    else
+      printf '%s\n' "$run"
+    fi
     return 0
   fi
   local flag
   flag="$(corebrum_agents_mcp_flag "${AGENTS_IDS[$i]}")"
   if [[ "$flag" == "openclaw" ]]; then
-    exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; /usr/local/bin/synapse mcp setup --openclaw || true; exec $(printf '%q' "$run")"
+    if [[ -n "$kitty_class" ]]; then
+      exec /usr/local/bin/corebrum-terminal --class "$kitty_class" bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; /usr/local/bin/synapse mcp setup --openclaw || true; exec $(printf '%q' "$run")"
+    else
+      exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; /usr/local/bin/synapse mcp setup --openclaw || true; exec $(printf '%q' "$run")"
+    fi
   fi
   corebrum_agents_couple "$flag"
+  if [[ -n "$kitty_class" ]]; then
+    exec /usr/local/bin/corebrum-terminal --class "$kitty_class" bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; exec $(printf '%q' "$run")"
+  fi
   exec /usr/local/bin/corebrum-terminal bash --login -c "export PATH=\"\$HOME/.local/bin:\$PATH\"; exec $(printf '%q' "$run")"
 }
 
 corebrum_agents_run() {
   local choice="$1" i
+  case "$choice" in
+    "Super+A default: Clear")
+      corebrum_agents_default_clear
+      if [[ "${COREBRUM_AGENTS_STUB:-0}" != 1 ]] && command -v notify-send >/dev/null 2>&1; then
+        notify-send --app-name=Corebrum --urgency=low "AI Agents" "Super+A default cleared." || true
+      fi
+      return 0
+      ;;
+    "Super+A default: Set")
+      corebrum_agents_open_set_default
+      return 0
+      ;;
+  esac
   for i in "${!AGENTS_IDS[@]}"; do
     if [[ "$choice" == "$(corebrum_agents_choice_label "$i")" ]]; then
       if corebrum_agents_ready "$i"; then
@@ -393,6 +534,42 @@ corebrum_agents_run() {
     fi
   done
   corebrum_agents_die "unknown AI Agents menu choice"
+}
+
+corebrum_agents_open_set_default() {
+  local choice="" i line
+  local -a lines=()
+  corebrum_agents_prepare_path
+  corebrum_agents_load
+  for i in "${!AGENTS_IDS[@]}"; do
+    lines+=("Default: ${AGENTS_LABELS[$i]}")
+  done
+  if [[ "${COREBRUM_AGENTS_STUB:-0}" == 1 ]]; then
+    if [[ -n "${COREBRUM_AGENTS_SET_DEFAULT_CHOICE:-}" ]]; then
+      choice="$COREBRUM_AGENTS_SET_DEFAULT_CHOICE"
+    else
+      printf '%s\n' "${lines[@]}"
+      return 0
+    fi
+  else
+    choice="$(printf '%s\n' "${lines[@]}" | fuzzel \
+      --config /etc/corebrum/fuzzel/fuzzel.ini \
+      --dmenu \
+      --prompt 'Default  ' \
+      --width 48 \
+      --lines 12)" || return 0
+  fi
+  [[ -n "$choice" ]] || return 0
+  for i in "${!AGENTS_IDS[@]}"; do
+    if [[ "$choice" == "Default: ${AGENTS_LABELS[$i]}" ]]; then
+      corebrum_agents_default_set "${AGENTS_IDS[$i]}"
+      if [[ "${COREBRUM_AGENTS_STUB:-0}" != 1 ]] && command -v notify-send >/dev/null 2>&1; then
+        notify-send --app-name=Corebrum --urgency=low "AI Agents" "Super+A will open ${AGENTS_LABELS[$i]}." || true
+      fi
+      return 0
+    fi
+  done
+  corebrum_agents_die "unknown default agent choice"
 }
 
 corebrum_agents_launch_id() {
@@ -415,7 +592,7 @@ corebrum_agents_launch_id() {
 
 corebrum_agents_open() {
   local choice="" i line
-  local -a lines=()
+  local -a lines=("Super+A default: Clear" "Super+A default: Set")
   corebrum_agents_prepare_path
   corebrum_agents_load
   for i in "${!AGENTS_IDS[@]}"; do
@@ -463,7 +640,7 @@ corebrum_agents_update_installed() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-agents-menu refresh|open|launch ID|labels|rows|command ID|couple ID|update-installed|data-dir
+Usage: corebrum-agents-menu refresh|open|open-set-default|launch ID|labels|rows|command ID|couple ID|update-installed|data-dir|default-get|default-set ID|default-clear|default-open
 EOF
 }
 
@@ -471,6 +648,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_agents_refresh ;;
   open) corebrum_agents_open ;;
+  open-set-default) corebrum_agents_open_set_default ;;
   launch) corebrum_agents_launch_id "${2:-}" ;;
   labels) corebrum_agents_labels ;;
   rows)
@@ -489,6 +667,13 @@ case "$cmd" in
     ;;
   update-installed) corebrum_agents_update_installed ;;
   data-dir) corebrum_agents_data_dir ;;
+  default-get) corebrum_agents_prepare_path && corebrum_agents_load && corebrum_agents_default_get ;;
+  default-set)
+    [[ -n "${2:-}" ]] || corebrum_agents_die "default-set requires an agent id"
+    corebrum_agents_default_set "$2"
+    ;;
+  default-clear) corebrum_agents_default_clear ;;
+  default-open) corebrum_agents_default_open ;;
   -h | --help | help) usage ;;
   *)
     usage >&2

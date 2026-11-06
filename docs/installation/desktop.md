@@ -58,7 +58,8 @@ Reboot. The greeter is on VT 7 (`Ctrl+Alt+F7`). Log in with an existing user. Sw
 | Super+V | Paste |
 | Super+Space | Fuzzel launcher. ROS 2 is listed there as `ROS 2   install` until `corebrum install ros` has been run, then as `ROS`. `Zenoh network` appears beside it only after that install |
 | Super+Alt+Space | App grid |
-| Super+S | Agent scratchpad terminal |
+| Super+S | Floating Kitty terminal |
+| Super+A | Default AI agent in a floating terminal (set under AI Agents when the CLI is installed) |
 | Super+1 … Super+5 | Workspaces |
 | Super+Shift+1 … Super+Shift+5 | Move the window to a workspace |
 | Super+Arrows | Move focus to the tile in that direction on the screen |

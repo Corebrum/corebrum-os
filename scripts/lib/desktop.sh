@@ -212,6 +212,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-login-logo.py" /usr/local/bin/corebrum-login-logo 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-lock.sh" /usr/local/bin/corebrum-lock 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-terminal.sh" /usr/local/bin/corebrum-terminal 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-float-terminal.sh" /usr/local/bin/corebrum-float-terminal 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-grid.sh" /usr/local/bin/corebrum-grid 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.sh" /usr/local/bin/corebrum-launcher 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-launcher.py" /usr/local/lib/corebrum/corebrum-launcher.py 644
@@ -226,6 +227,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-ollama-menu.sh" /usr/local/bin/corebrum-ollama-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-zenoh-fleet-menu.sh" /usr/local/bin/corebrum-zenoh-fleet-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-agents-menu.sh" /usr/local/bin/corebrum-agents-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-default-agent.sh" /usr/local/bin/corebrum-default-agent 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-updates-menu.sh" /usr/local/bin/corebrum-updates-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-wallpaper-menu.sh" /usr/local/bin/corebrum-wallpaper-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-keys-menu.sh" /usr/local/bin/corebrum-keys-menu 755
@@ -254,7 +256,7 @@ corebrum_install_desktop_files() {
     corebrum_log "dry-run: remove /etc/corebrum/sway/swaylock.conf"
   fi
   if [[ "${DRY_RUN:-0}" -eq 0 ]]; then
-    rm -f /usr/local/bin/corebrum-waypaper-menu
+    rm -f /usr/local/bin/corebrum-waypaper-menu /usr/local/bin/corebrum-agent-scratchpad
   fi
   corebrum_install_file "${root}/manifests/packages/agents.conf" /etc/corebrum/agents.conf 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
@@ -454,6 +456,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-lock
 /usr/local/lib/corebrum/libcorebrum-glitch.so
 /usr/local/bin/corebrum-terminal
+/usr/local/bin/corebrum-float-terminal
 /usr/local/bin/corebrum-grid
 /usr/local/bin/corebrum-launcher
 /usr/local/lib/corebrum/corebrum-launcher.py
@@ -468,6 +471,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-ollama-menu
 /usr/local/bin/corebrum-zenoh-fleet-menu
 /usr/local/bin/corebrum-agents-menu
+/usr/local/bin/corebrum-default-agent
 /usr/local/bin/corebrum-updates-menu
 /usr/local/bin/corebrum-wallpaper-menu
 /usr/local/bin/corebrum-waypaper-menu

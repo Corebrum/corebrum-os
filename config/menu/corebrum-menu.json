@@ -15,10 +15,17 @@
       "children": ["corebrum-docs", "corebrum-keys"]
     },
     {
+      "id": "ai-agents-menu",
+      "label": "AI Agents",
+      "icon": "/usr/share/corebrum/agents.png",
+      "keywords": "agents;ai;llm;cursor;claude;grok;codex;super+a;default",
+      "navigateAs": "corebrum-agents"
+    },
+    {
       "id": "robot",
       "label": "Robot",
       "icon": "/usr/share/corebrum/icon.png",
-      "keywords": "ros;synapse;agents;ollama;realsense;zenoh;skills",
+      "keywords": "ros;synapse;ollama;realsense;zenoh;skills",
       "children": [
         "corebrum-ros",
         "corebrum-zenoh-network",
@@ -27,7 +34,6 @@
         "corebrum-synapse",
         "corebrum-arc",
         "corebrum-skills",
-        "corebrum-agents",
         "corebrum-ollama"
       ]
     },

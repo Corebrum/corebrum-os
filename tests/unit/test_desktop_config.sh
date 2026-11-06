@@ -37,7 +37,30 @@ fi
 require "bindsym \$mod+w kill"
 require "bindsym \$mod+q kill"
 require "fullscreen toggle"
-require "scratchpad show"
+require 'bindsym $mod+s exec /usr/local/bin/corebrum-float-terminal'
+if ! grep -q 'exec /usr/local/bin/corebrum-terminal --class corebrum-terminal-float' "${ROOT}/scripts/desktop/corebrum-float-terminal.sh"; then
+  echo "FAIL: float terminal helper does not start Kitty with corebrum-terminal-float" >&2
+  exit 1
+fi
+if ! grep -q 'export PATH="/usr/local/bin:' "${ROOT}/scripts/desktop/corebrum-float-terminal.sh"; then
+  echo "FAIL: float terminal helper does not prepend /usr/local/bin to PATH" >&2
+  exit 1
+fi
+if ! grep -q 'getent passwd' "${ROOT}/scripts/desktop/corebrum-float-terminal.sh"; then
+  echo "FAIL: float terminal helper does not restore HOME when unset" >&2
+  exit 1
+fi
+if ! grep -q 'export PATH="/usr/local/bin:' "${ROOT}/scripts/desktop/corebrum-default-agent.sh"; then
+  echo "FAIL: default agent helper does not prepend /usr/local/bin to PATH" >&2
+  exit 1
+fi
+if ! grep -q 'getent passwd' "${ROOT}/scripts/desktop/corebrum-default-agent.sh"; then
+  echo "FAIL: default agent helper does not restore HOME when unset" >&2
+  exit 1
+fi
+require 'bindsym $mod+a exec /usr/local/bin/corebrum-default-agent'
+require 'for_window [app_id="corebrum-terminal-float"]'
+require 'for_window [app_id="corebrum-agent-float"]'
 require "/usr/local/bin/corebrum-lock"
 require "workspace number 1"
 require "/usr/local/bin/corebrum-grid"
@@ -128,6 +151,8 @@ if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$
 fi
 require "waybar --config /etc/corebrum/waybar/config.json"
 require '/usr/local/bin/corebrum-battery-notify'
+require '/usr/local/bin/corebrum-float-terminal'
+require '/usr/local/bin/corebrum-default-agent'
 require "/usr/local/bin/corebrum-osd volume-up"
 require "/usr/local/bin/corebrum-osd brightness-down"
 require "/usr/local/bin/corebrum-autolock start"

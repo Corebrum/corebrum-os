@@ -11,7 +11,7 @@
     <!-- corebrum-nav -->
     <main>
       <h1><img src="/agents.png" alt="">AI Agents</h1>
-      <p>Super+Space Robot then AI Agents lists each CLI. Each CLI says install until its command is present. Choosing it installs that CLI, or launches it when it is already installed. Typing a CLI name, such as grok, at the Super+Space prompt finds that row. The idle menu shows Robot rather than every CLI.</p>
+      <p>Super+Space <strong>AI Agents</strong> lists each CLI (Robot holds ROS, RealSense, Synapse, and related tools). The first rows set the Super+A default or clear it; choosing <strong>Super+A default: Set</strong> picks a catalog agent by name. Each CLI says install until its command is present. Choosing it installs that CLI, or launches it when it is already installed. <strong>Super+A</strong> opens the default in a floating terminal when that CLI is installed and a default is set. Typing a CLI name, such as grok, at the Super+Space prompt finds that row. The idle menu shows groups, not every CLI.</p>
       <p>The desktop profile does not install them. The first launch asks that publisher to sign in. Grok's installer runs as root, then gives <code>~/.grok</code> back to this account so the CLI can save that sign-in.</p>
       <p>
         <a class="out" href="https://antigravity.google">Antigravity CLI · antigravity.google</a>
@@ -22,8 +22,8 @@
         <a class="out" href="https://hermes-agent.nousresearch.com">Hermes CLI · hermes-agent.nousresearch.com</a>
         <a class="out" href="https://openclaw.ai">OpenClaw · openclaw.ai</a>
       </p>
-      <p>Installing an agent before or after Corebrum Synapse writes that agent’s config so the agent uses Corebrum Synapse for ROS on this machine. <code>corebrum agents list</code> shows which CLIs are on <code>PATH</code>. <code>corebrum agents update</code> points at Super+Space Updates and does not run a publisher installer.</p>
-      <p>A skill installed while an agent is already open is visible only after that agent is started again. Super+Space Corebrum Skills reminds you after install. Open the CLI from Super+Space Robot then AI Agents.</p>
+      <p>Installing an agent before or after Corebrum Synapse writes that agent’s config so the agent uses Corebrum Synapse for ROS on this machine. <code>corebrum agents list</code> shows which CLIs are on <code>PATH</code>. <code>corebrum agents default get</code>, <code>default set &lt;id&gt;</code>, and <code>default clear</code> manage the Super+A choice without installing. <code>corebrum agents update</code> points at Super+Space Updates and does not run a publisher installer.</p>
+      <p>A skill installed while an agent is already open is visible only after that agent is started again. Super+Space Corebrum Skills reminds you after install. Open the CLI from Super+Space AI Agents.</p>
       <h2><img src="/ollama.png" alt="">Ollama</h2>
       <p><a class="out" href="https://ollama.com">Ollama · ollama.com</a></p>
       <p>Ollama is under Super+Space Robot. It says install until the <code>ollama</code> command is present. After that, the row lists local models and runs one with <code>ollama run</code>. The desktop profile does not install Ollama.</p>

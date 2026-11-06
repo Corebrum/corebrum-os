@@ -70,6 +70,20 @@ Keywords=grok;
 Exec=/usr/local/bin/corebrum-agents-menu launch grok
 NoDisplay=true
 EOF
+cat >"${share}/applications/corebrum-agent-default-clear.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Super+A default: Clear
+Exec=/usr/local/bin/corebrum-agents-menu default-clear
+NoDisplay=true
+EOF
+cat >"${share}/applications/corebrum-agent-default-set.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Super+A default: Set
+Exec=/usr/local/bin/corebrum-agents-menu open-set-default
+NoDisplay=true
+EOF
 cat >"${share}/applications/firefox.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -215,13 +229,13 @@ names() {
 
 idle="$(COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
 idle_names="$(names <<<"$idle")"
-expected=$'Apps >\nLearn >\nRobot >\nAppearance >\nSetup >\nUpdates >\nSystem >'
+expected=$'Apps >\nLearn >\nAI Agents >\nRobot >\nAppearance >\nSetup >\nUpdates >\nSystem >'
 if [[ "$idle_names" != "$expected" ]]; then
-  echo "FAIL: the idle menu is not the seven root groups with > markers" >&2
+  echo "FAIL: the idle menu is not the eight root groups with > markers" >&2
   printf '%s\n' "$idle_names" >&2
   exit 1
 fi
-if grep -q 'Grok' <<<"$idle" || grep -q 'Gazebo' <<<"$idle" || grep -q 'Firefox' <<<"$idle" || grep -q 'AI Agents' <<<"$idle" || grep -q 'Hidden Tool' <<<"$idle"; then
+if grep -q 'Grok' <<<"$idle" || grep -q 'Gazebo' <<<"$idle" || grep -q 'Firefox' <<<"$idle" || grep -q 'Hidden Tool' <<<"$idle"; then
   echo "FAIL: the idle menu lists a nested or app row" >&2
   printf '%s\n' "$idle" >&2
   exit 1
@@ -265,16 +279,28 @@ fi
 
 robot="$(COREBRUM_LAUNCHER_ACTIVE=robot COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
 robot_names="$(names <<<"$robot")"
-if ! grep -qx 'AI Agents >' <<<"$robot_names" || ! grep -qx 'ROS >' <<<"$robot_names"; then
-  echo "FAIL: Robot dropped AI Agents or ROS submenu markers" >&2
+if ! grep -qx 'ROS >' <<<"$robot_names"; then
+  echo "FAIL: Robot dropped the ROS submenu marker" >&2
+  printf '%s\n' "$robot_names" >&2
+  exit 1
+fi
+if grep -qx 'AI Agents >' <<<"$robot_names"; then
+  echo "FAIL: Robot still nests AI Agents; it should be a top-level group" >&2
   printf '%s\n' "$robot_names" >&2
   exit 1
 fi
 
 grok="$(COREBRUM_LAUNCHER_QUERY=grok python3 "$ui")"
-if ! grep -q $'^Grok CLI   install\tRobot / AI Agents$' <<<"$grok"; then
-  echo "FAIL: typing grok did not find Grok under Robot / AI Agents" >&2
+if ! grep -q $'^Grok CLI   install\tAI Agents$' <<<"$grok"; then
+  echo "FAIL: typing grok did not find Grok under AI Agents" >&2
   printf '%s\n' "$grok" >&2
+  exit 1
+fi
+ai="$(COREBRUM_LAUNCHER_ACTIVE=ai-agents-menu COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
+ai_first="$(names <<<"$ai" | head -n 1)"
+if [[ "$ai_first" != "Super+A default: Clear" ]]; then
+  echo "FAIL: AI Agents top group should list default rows first, not a duplicate AI Agents row" >&2
+  printf '%s\n' "$ai" >&2
   exit 1
 fi
 if grep -q 'Gazebo' <<<"$grok"; then

@@ -9,7 +9,7 @@ Super+Arrows ran Sway `focus left|right|up|down`. Super+Shift+Arrows ran Sway `m
 
 ## Decision
 
-- `/usr/local/bin/corebrum-tile` reads the Sway tree and chooses the tiled window in that direction by rectangle. A window that shares the edge in that direction wins over a nearer window on the diagonal. A hidden workspace, a floating window, and the agent scratchpad are skipped. When no tile lies that way, the key does nothing.
+- `/usr/local/bin/corebrum-tile` reads the Sway tree and chooses the tiled window in that direction by rectangle. A window that shares the edge in that direction wins over a nearer window on the diagonal. A hidden workspace and a floating window are skipped. When no tile lies that way, the key does nothing.
 - Super+Left, Super+Right, Super+Up, and Super+Down run `corebrum-tile focus` for that direction.
 - Super+Shift plus those arrows run `corebrum-tile swap`. Swap uses Sway `swap container with con_id`, so the two tiles exchange places and the other splits stay put.
 

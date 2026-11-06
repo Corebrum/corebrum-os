@@ -28,8 +28,6 @@ expect "$(tree 946 1022 splith | corebrum_autotile_command)" "splitv" "a tall ti
 expect "$(tree 946 1022 splitv | corebrum_autotile_command)" "" "a tall tile already below its parent still changes split"
 expect "$(tree 800 400 splitv | corebrum_autotile_command)" "splith" "a short tile stacked vertically does not open beside it"
 expect "$(tree 946 1022 splith user_on | corebrum_autotile_command)" "" "a floating window changes the split"
-expect "$(tree 946 1022 splith auto_off corebrum-agent | corebrum_autotile_command)" "" "the agent scratchpad changes the split"
-
 if grep -q 'split toggle' "$script"; then
   echo "FAIL: autotile still toggles split with no regard to tile shape" >&2
   fail=1

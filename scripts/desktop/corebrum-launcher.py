@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Super+Space menu.
 
-The idle list is the root groups (Apps, Learn, Robot, Appearance, Setup,
-Updates, System). Rows that open another level end with >. Enter or Right
+The idle list is the root groups (Apps, Learn, AI Agents, Robot, Appearance,
+Setup, Updates, System). Rows that open another level end with >. Enter or Right
 drills into a group. Backspace or Left with an empty search box goes up one
 level. Typing finds matching descendants of the active menu; nested hits show
 a parent path.
@@ -368,6 +368,9 @@ class MenuModel:
 
         if menu_id in self.nodes:
             node = self.nodes[menu_id]
+            nav_as = node.get("navigateAs")
+            if nav_as:
+                return self.children_of(nav_as)
             rows = []
             for child_id in node.get("children") or []:
                 if child_id in self.navigate:
@@ -392,7 +395,14 @@ class MenuModel:
             for entry in self.entries.values():
                 if entry.app_id.startswith(prefix):
                     rows.append(self.entry_row(entry))
-            rows.sort(key=lambda row: row.name.casefold())
+
+            def navigate_sort_key(row):
+                name = row.name.casefold()
+                if name.startswith("super+a default:"):
+                    return (0, name)
+                return (1, name)
+
+            rows.sort(key=navigate_sort_key)
             return rows
 
         return []
@@ -409,6 +419,9 @@ class MenuModel:
 
     def can_navigate(self, menu_id):
         if menu_id in self.nodes:
+            node = self.nodes[menu_id]
+            if node.get("navigateAs"):
+                return bool(self.navigate_children(node["navigateAs"]))
             return True
         if menu_id == "apps":
             return True

@@ -37,6 +37,18 @@ export COREBRUM_AGENTS_STUB=1
 export COREBRUM_AGENTS_FILE="$catalog"
 export COREBRUM_AGENTS_INSTALLED="agent"
 unset COREBRUM_SYNAPSE_READY
+unset COREBRUM_AGENTS_CHOICE
+
+assert_eq "$("$menu" open)" "$(printf '%s\n' \
+  "Super+A default: Clear" \
+  "Super+A default: Set" \
+  "Antigravity CLI   install" \
+  "Claude Code CLI   install" \
+  "Codex CLI   install" \
+  "Cursor CLI" \
+  "Grok CLI   install" \
+  "Hermes CLI   install" \
+  "OpenClaw   install")" "AI Agents menu lists Super+A default rows first"
 
 assert_eq "$("$menu" labels)" "$(printf '%s\n' \
   "Antigravity CLI   install" \
@@ -124,6 +136,20 @@ if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu launch grok$' "$grok_ent
   echo "FAIL: choosing Grok from search does not launch that agent" >&2
   exit 1
 fi
+clear_stub="${runtime}/corebrum/applications/corebrum-agent-default-clear.desktop"
+if ! grep -q '^Name=Super+A default: Clear$' "$clear_stub"; then
+  echo "FAIL: refresh did not write Super+A default Clear desktop stub" >&2
+  exit 1
+fi
+if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu default-clear$' "$clear_stub"; then
+  echo "FAIL: Super+A default Clear stub does not run default-clear" >&2
+  exit 1
+fi
+set_stub="${runtime}/corebrum/applications/corebrum-agent-default-set.desktop"
+if ! grep -q '^Exec=/usr/local/bin/corebrum-agents-menu open-set-default$' "$set_stub"; then
+  echo "FAIL: Super+A default Set stub does not run open-set-default" >&2
+  exit 1
+fi
 if ! grep -q '^NoDisplay=true$' "$grok_entry"; then
   echo "FAIL: Grok is listed in the idle Super+Space menu" >&2
   exit 1
@@ -133,5 +159,36 @@ if ! grep -q '^Name=Claude Code CLI$' "${runtime}/corebrum/applications/corebrum
   exit 1
 fi
 rm -rf "$runtime"
+
+state_tmp="$(mktemp -d)"
+export XDG_STATE_HOME="$state_tmp"
+export COREBRUM_AGENTS_INSTALLED="agent"
+assert_eq "$("$menu" default-get)" "" "default-get is empty when unset"
+"$menu" default-set cursor
+assert_eq "$(cat "${state_tmp}/corebrum/default-agent")" "cursor" "default-set writes id"
+assert_eq "$("$menu" default-get)" "cursor" "default-get returns id"
+got="$("$menu" default-open)"
+assert_eq "$got" "corebrum-terminal --class corebrum-agent-float agent" "default-open uses float class when default is installed"
+"$menu" default-clear
+assert_eq "$("$menu" default-get)" "" "default-clear removes default"
+assert_eq "$("$menu" default-open)" "notify:no-default" "default-open notifies when unset"
+"$menu" default-set cursor
+export COREBRUM_AGENTS_INSTALLED=""
+got="$("$menu" default-open)"
+assert_eq "$got" "notify:not-installed:cursor" "default-open notifies when default not installed"
+export COREBRUM_AGENTS_INSTALLED="agent"
+printf 'not-an-id\n' >"${state_tmp}/corebrum/default-agent"
+assert_eq "$("$menu" default-open)" "notify:invalid-default" "default-open clears unknown id"
+unset XDG_STATE_HOME
+rm -rf "$state_tmp"
+
+state_tmp="$(mktemp -d)"
+export XDG_STATE_HOME="$state_tmp"
+export COREBRUM_AGENTS_CHOICE="Super+A default: Set"
+export COREBRUM_AGENTS_SET_DEFAULT_CHOICE="Default: Cursor CLI"
+"$menu" open
+assert_eq "$(cat "${state_tmp}/corebrum/default-agent")" "cursor" "Super+A default: Set writes cursor id"
+unset XDG_STATE_HOME COREBRUM_AGENTS_CHOICE COREBRUM_AGENTS_SET_DEFAULT_CHOICE
+rm -rf "$state_tmp"
 
 echo "ok: agents-menu"

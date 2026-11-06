@@ -74,6 +74,7 @@ for path in \
   /usr/local/bin/corebrum-session \
   /usr/local/bin/corebrum-setup \
   /usr/local/bin/corebrum-terminal \
+  /usr/local/bin/corebrum-float-terminal \
   /usr/local/bin/corebrum-grid \
   /usr/local/bin/corebrum-launcher \
   /usr/local/bin/corebrum-ros-menu \
@@ -83,6 +84,7 @@ for path in \
   /usr/local/bin/corebrum-ollama-menu \
   /usr/local/bin/corebrum-zenoh-fleet-menu \
   /usr/local/bin/corebrum-agents-menu \
+  /usr/local/bin/corebrum-default-agent \
   /usr/local/bin/corebrum-updates-menu \
   /usr/local/bin/corebrum-wallpaper-menu \
   /etc/systemd/user/hyprpaper.service.d/corebrum.conf \

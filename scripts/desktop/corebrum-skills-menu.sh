@@ -134,7 +134,7 @@ corebrum_skills_success_guidance() {
   blob="$ref"
   blob+=" $(corebrum_skills_listing_text "$ref")"
   printf '%s\n' "Restart AI agents so they load the new skill tools."
-  printf '%s\n' "Super+Space → Robot → AI Agents, then open the CLI again."
+  printf '%s\n' "Super+Space → AI Agents, then open the CLI again."
   while IFS= read -r hint; do
     [[ -n "$hint" ]] || continue
     printf '%s\n' "$hint"
@@ -153,7 +153,7 @@ ec=$?
 printf '\n'
 if [ "$ec" -eq 0 ]; then
   printf '%s\n' "Restart AI agents so they load the new skill tools."
-  printf '%s\n' "Super+Space → Robot → AI Agents, then open the CLI again."
+  printf '%s\n' "Super+Space → AI Agents, then open the CLI again."
   blob="$ref"
   listing=""
   case "$ref" in
