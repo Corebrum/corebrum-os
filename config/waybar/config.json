@@ -6,7 +6,7 @@
   "spacing": 8,
   "modules-left": ["sway/workspaces"],
   "modules-center": ["sway/window"],
-  "modules-right": ["cpu", "memory", "network", "pulseaudio", "battery", "custom/cloud", "tray", "clock"],
+  "modules-right": ["cpu", "memory", "pulseaudio", "battery", "custom/cloud", "tray", "clock"],
   "sway/workspaces": {
     "format": "{name}",
     "all-outputs": true,
@@ -29,14 +29,6 @@
   },
   "memory": {
     "format": "mem {percentage}%"
-  },
-  "network": {
-    "format-ethernet": "{ifname}",
-    "format-wifi": "📶",
-    "format-disconnected": "offline",
-    "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
-    "tooltip-format-wifi": "{essid}\n{ifname} · {signalStrength}% · {ipaddr}",
-    "tooltip-format-disconnected": "offline"
   },
   "pulseaudio": {
     "format": "{icon} {volume}%",
