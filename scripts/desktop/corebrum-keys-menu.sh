@@ -17,7 +17,7 @@ Super+T                Float or tile the focused window
 Super+C                Copy
 Super+X                Cut
 Super+V                Paste
-Super+Space            Open the application menu above fullscreen when needed. Rows with > open another level. Enter or Right opens a group; Backspace or Left goes up
+Super+Space            Open the grouped application menu above fullscreen when needed. Rows with > open another level. Enter or Right opens a group; Backspace or Left goes up a level when the search box is empty
 Super+Alt+Space        Open the app grid
 Super+S                Toggle the agent scratchpad terminal
 Super+Escape           Lock the screen. Type the account password and press Enter

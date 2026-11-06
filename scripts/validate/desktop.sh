@@ -89,6 +89,7 @@ for path in \
   /usr/local/bin/corebrum-keys-menu \
   /usr/local/bin/corebrum-docs-menu \
   /usr/local/bin/corebrum-osd \
+  /usr/local/bin/corebrum-battery-notify \
   /usr/local/bin/corebrum-autolock \
   /usr/local/bin/corebrum-timezone-menu \
   /usr/local/bin/corebrum-password-menu \

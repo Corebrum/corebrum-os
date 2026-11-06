@@ -93,6 +93,7 @@ output * bg /usr/share/hypr/wall2.png fill
 exec /usr/local/bin/corebrum-wallpaper-menu restore
 exec waybar --config /etc/corebrum/waybar/config.json --style /etc/corebrum/waybar/style.css
 exec mako --config /etc/corebrum/mako/config
+exec /usr/local/bin/corebrum-battery-notify
 # Weekly reminder. This does not run apt or git. The pause lets Mako start first.
 exec sh -c 'sleep 2; exec /usr/local/bin/corebrum-updates-menu remind'
 exec /usr/local/bin/corebrum-autolock start

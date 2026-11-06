@@ -16,4 +16,4 @@ Bluetooth status stays off the bar module list because Blueman provides a tray i
 
 ## Consequences
 
-Operators reading `docs/installation/desktop.md` see the same modules as on screen. Unit tests continue to require `battery` in `config/waybar/config.json`.
+Operators reading `docs/installation/desktop.md` see the same modules as on screen. Unit tests continue to require `battery` in `config/waybar/config.json`. A separate helper can raise a Mako popup at a low charge threshold; see `docs/decisions/0128-battery-low-notification.md`.

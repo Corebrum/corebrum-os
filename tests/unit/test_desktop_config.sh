@@ -127,6 +127,7 @@ if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$
   exit 1
 fi
 require "waybar --config /etc/corebrum/waybar/config.json"
+require '/usr/local/bin/corebrum-battery-notify'
 require "/usr/local/bin/corebrum-osd volume-up"
 require "/usr/local/bin/corebrum-osd brightness-down"
 require "/usr/local/bin/corebrum-autolock start"
