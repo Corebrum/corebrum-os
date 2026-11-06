@@ -32,22 +32,38 @@
   },
   "network": {
     "format-ethernet": "{ifname}",
-    "format-wifi": "{essid}",
+    "format-wifi": "📶",
     "format-disconnected": "offline",
-    "tooltip-format": "{ifname}"
+    "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
+    "tooltip-format-wifi": "{essid}\n{ifname} · {signalStrength}% · {ipaddr}",
+    "tooltip-format-disconnected": "offline"
   },
   "pulseaudio": {
-    "format": "{volume}%",
-    "format-muted": "muted",
+    "format": "{icon} {volume}%",
+    "format-muted": "🔇 muted",
+    "format-bluetooth": "{icon} {volume}%",
     "scroll-step": 5,
-    "on-click": "pavucontrol"
+    "on-click": "pavucontrol",
+    "format-icons": {
+      "headphone": "🎧",
+      "headset": "🎧",
+      "hands-free": "🎧",
+      "hdmi": "📺",
+      "default": ["🔈", "🔉", "🔊"]
+    }
   },
   "battery": {
-    "format": "{capacity}%",
-    "format-charging": "{capacity}%",
+    "format": "{icon} {capacity}%",
+    "format-charging": "{icon} {capacity}%",
+    "format-plugged": "{icon} {capacity}%",
     "states": {
       "warning": 30,
       "critical": 15
+    },
+    "format-icons": {
+      "charging": "🔌",
+      "plugged": "🔌",
+      "default": ["🪫", "🔋", "🔋", "🔋", "🔋"]
     }
   },
   "tray": {

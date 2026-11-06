@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-`config/waybar/config.json` lists `battery` in `modules-right` with `format` and charging states so low charge can show warning and critical styling. `docs/installation/desktop.md` described the top bar as ending at network and clock, without volume, battery, Cloud, or tray, which did not match the shipped config or `docs/installation/services.md`.
+`config/waybar/config.json` lists `battery` in `modules-right` with `{icon} {capacity}%`, `format-icons` for charge levels and charging, and `states` so low charge can show warning and critical styling. The `pulseaudio` module uses `{icon} {volume}%` with `format-icons` (including a low-to-high default array) so volume shows a speaker-style glyph before the percent. The `network` module shows a compact Wi-Fi glyph on the bar (`format-wifi`) and puts SSID, interface, signal, and IP in `tooltip-format-wifi`, because Blueman’s menu already lists the network name. `docs/installation/desktop.md` described the top bar as ending at network and clock, without volume, battery, Cloud, or tray, which did not match the shipped config or `docs/installation/services.md`.
 
 Bluetooth status stays off the bar module list because Blueman provides a tray icon; see `tests/unit/test_services_config.sh`.
 
