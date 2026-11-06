@@ -40,9 +40,15 @@ if "KEY_Right" not in text or "KEY_KP_Right" not in text:
     raise SystemExit("the menu has no Right open-submenu handling")
 if "def display_name" not in text or 'f"{row.name} >"' not in text:
     raise SystemExit("navigable rows do not show a > marker")
+if "lib.gtk_layer_set_layer(ptr, 3)" not in text:
+    raise SystemExit("the menu does not use gtk-layer-shell overlay (layer 3)")
 PY
 if ! grep -q -- "fuzzel --config /etc/corebrum/fuzzel/fuzzel.ini --prompt ''" "$launcher"; then
   echo "FAIL: Super+Space has no Fuzzel fallback with a blank prompt" >&2
+  exit 1
+fi
+if ! grep -q '^layer=overlay$' "${ROOT}/config/fuzzel/fuzzel.ini"; then
+  echo "FAIL: Super+Space fuzzel.ini does not set layer=overlay" >&2
   exit 1
 fi
 

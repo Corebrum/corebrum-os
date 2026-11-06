@@ -517,7 +517,8 @@ def use_layer_shell(window):
     if not ptr:
         return False
     lib.gtk_layer_init_for_window(ptr)
-    lib.gtk_layer_set_layer(ptr, 2)
+    # GTK_LAYER_SHELL_LAYER_OVERLAY (3): above fullscreen windows on Sway.
+    lib.gtk_layer_set_layer(ptr, 3)
     lib.gtk_layer_set_keyboard_mode(ptr, 1)
     lib.gtk_layer_set_exclusive_zone(ptr, 0)
     lib.gtk_layer_set_namespace(ptr, b"corebrum-launcher")
