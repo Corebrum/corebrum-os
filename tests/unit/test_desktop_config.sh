@@ -30,7 +30,7 @@ if grep -q 'wf-recorder' "$conf"; then
   echo "FAIL: recording still calls wf-recorder from the sway config" >&2
   exit 1
 fi
-if ! grep -q 'app_id="corebrum-camera"' "$conf"; then
+if ! grep -q 'app_id="org.corebrum.camera"' "$conf"; then
   echo "FAIL: the camera preview has no window rule" >&2
   exit 1
 fi

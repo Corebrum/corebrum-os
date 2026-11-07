@@ -2,6 +2,11 @@
 # Super+Space Setup → Voice. Test speech, pick a mic, hear, install recognition.
 set -euo pipefail
 
+if [[ -z "${HOME:-}" ]]; then
+  HOME="$(getent passwd "$(id -u)" | cut -d: -f6)"
+  export HOME
+fi
+
 corebrum_voice_die() {
   printf 'corebrum-voice-menu: %s\n' "$1" >&2
   exit 1
@@ -93,42 +98,73 @@ corebrum_voice_mic_rows() {
   '
 }
 
+corebrum_voice_current_mic() {
+  local bin
+  bin="$(corebrum_voice_corebrum)" || return 0
+  if [[ "${COREBRUM_VOICE_STUB:-0}" == 1 ]]; then
+    printf '%s\n' "${COREBRUM_VOICE_MIC_CURRENT:-default}"
+    return 0
+  fi
+  "$bin" voice mic list 2>/dev/null | awk -F': ' '/^current:/{print $2; exit}'
+}
+
 corebrum_voice_pick_mic() {
-  local rows choice target bin
+  local rows choice target desc current current_label prompt bin
+  current="$(corebrum_voice_current_mic || true)"
+  current="${current:-default}"
   rows="$(corebrum_voice_mic_rows || true)"
   if [[ -z "$rows" ]]; then
     rows=$'default\tPipeWire default'
   else
     rows=$'default\tPipeWire default\n'"$rows"
   fi
+  current_label="PipeWire default"
+  if [[ "$current" != "default" ]]; then
+    current_label="$(printf '%s\n' "$rows" | awk -F '\t' -v c="$current" '$1 == c { print $2; exit }')"
+    [[ -z "$current_label" ]] && current_label="$current"
+  fi
+  prompt="Microphone  [now: ${current_label}]"
   if [[ "${COREBRUM_VOICE_STUB:-0}" == 1 ]]; then
     choice="${COREBRUM_VOICE_MIC_CHOICE:-}"
     if [[ -z "$choice" ]]; then
-      printf '%s\n' "$rows" | while IFS=$'\t' read -r target desc; do
-        printf '%s  (%s)\n' "$desc" "$target"
+      printf '%s\n' "$rows" | while IFS=$'\t' read -r row_target row_desc; do
+        [[ -n "$row_target" ]] || continue
+        if [[ "$row_target" == "$current" ]]; then
+          printf '★ %s  (%s)\n' "$row_desc" "$row_target"
+        else
+          printf '%s  (%s)\n' "$row_desc" "$row_target"
+        fi
       done
       return 0
     fi
   else
-    choice="$(printf '%s\n' "$rows" | while IFS=$'\t' read -r target desc; do
-      printf '%s  (%s)\n' "$desc" "$target"
+    choice="$(printf '%s\n' "$rows" | while IFS=$'\t' read -r row_target row_desc; do
+      [[ -n "$row_target" ]] || continue
+      if [[ "$row_target" == "$current" ]]; then
+        printf '★ %s  (%s)\n' "$row_desc" "$row_target"
+      else
+        printf '%s  (%s)\n' "$row_desc" "$row_target"
+      fi
     done | fuzzel \
       --config /etc/corebrum/fuzzel/fuzzel.ini \
       --dmenu \
-      --prompt 'Microphone  ' \
+      --prompt "$prompt" \
       --width 56 \
       --lines 12)" || return 0
   fi
   [[ -n "$choice" ]] || return 0
+  choice="${choice#★ }"
   target="$(printf '%s\n' "$choice" | sed -n 's/.*(\([^)]*\))$/\1/p')"
   [[ -n "$target" ]] || return 0
+  desc="$(printf '%s\n' "$rows" | awk -F '\t' -v t="$target" '$1 == t { print $2; exit }')"
+  [[ -z "$desc" ]] && desc="$target"
   bin="$(corebrum_voice_corebrum)" || corebrum_voice_die "corebrum is not installed"
   if [[ "${COREBRUM_VOICE_STUB:-0}" == 1 ]]; then
     printf 'corebrum voice mic set %s\n' "$target"
     return 0
   fi
   "$bin" voice mic set "$target"
-  corebrum_voice_notify "Voice" "Microphone set to ${target}"
+  corebrum_voice_notify "Voice" "Microphone set to ${desc}"
 }
 
 corebrum_voice_run() {

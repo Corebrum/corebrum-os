@@ -41,11 +41,12 @@ bindsym $mod+Shift+e exit
 bindsym Print exec sh -c 'geom="$(slurp)" || exit 0; grim -g "$geom" - | wl-copy'
 bindsym Shift+Print exec sh -c 'grim - | wl-copy'
 bindsym $mod+Print exec /usr/local/bin/corebrum-record start
-bindsym $mod+Shift+Print exec /usr/local/bin/corebrum-record stop
+bindsym $mod+Shift+Print exec sh -c '/usr/local/bin/corebrum-record stop; true'
+bindsym $mod+Control+Print exec /usr/local/bin/corebrum-record stop
 bindsym $mod+p exec sh -c 'geom="$(slurp)" || exit 0; grim -g "$geom" - | wl-copy'
 bindsym $mod+Shift+p exec sh -c 'grim - | wl-copy'
 bindsym $mod+Mod1+p exec /usr/local/bin/corebrum-record start
-bindsym $mod+Mod1+Shift+p exec /usr/local/bin/corebrum-record stop
+bindsym $mod+Mod1+Shift+p exec sh -c '/usr/local/bin/corebrum-record stop; true'
 bindsym $mod+Shift+c exec sh -c 'cliphist list | wofi --dmenu --conf /etc/corebrum/wofi/config --style /etc/corebrum/wofi/style.css --prompt Clipboard | cliphist decode | wl-copy'
 
 bindsym XF86AudioRaiseVolume exec /usr/local/bin/corebrum-osd volume-up
@@ -79,12 +80,12 @@ bindsym $mod+Shift+5 move container to workspace number 5
 
 for_window [app_id="corebrum-launcher"] floating enable
 for_window [app_id="corebrum-setup"] floating enable
-for_window [app_id="corebrum-camera"] floating enable, sticky enable, border none
+for_window [app_id="org.corebrum.camera"] floating enable, sticky enable, border none
 for_window [app_id="org.corebrum.about"] floating enable, resize set 920 520, move position center
 for_window [app_id="corebrum-terminal-float"] floating enable, resize set 920 560, move position center
 for_window [app_id="corebrum-agent-float"] floating enable, resize set 920 560, move position center
 
-exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SWAYSOCK
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SWAYSOCK HOME XDG_RUNTIME_DIR XDG_STATE_HOME USER
 exec /usr/libexec/polkit-mate-authentication-agent-1
 exec nm-applet --indicator
 exec blueman-applet

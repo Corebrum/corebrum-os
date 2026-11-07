@@ -30,7 +30,7 @@ Super+Shift+Print      Stop recording
 Super+P                Copy a selected area
 Super+Shift+P          Copy the whole screen
 Super+Alt+P            Record the area, camera, or audio
-Super+Alt+Shift+P      Stop recording
+Super+Alt+Shift+P      Stop recording (after the Recording message; Option+Shift on Mac)
 Super+Arrows           Move focus to the tile in that direction
 Super+Shift+Arrows     Swap with the tile in that direction
 Super+1 … Super+5      Switch to that workspace

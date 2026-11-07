@@ -520,7 +520,11 @@ EOF
 }
 
 corebrum_speech_conf() {
-  printf '%s/corebrum/speech.conf\n' "${XDG_STATE_HOME:-${HOME}/.local/state}"
+  local home="${HOME:-}"
+  if [[ -z "$home" ]]; then
+    home="$(getent passwd "$(id -u)" | cut -d: -f6)"
+  fi
+  printf '%s/corebrum/speech.conf\n' "${XDG_STATE_HOME:-${home}/.local/state}"
 }
 
 corebrum_speech_get() {

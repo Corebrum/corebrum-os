@@ -9,10 +9,11 @@ import sys
 import gi
 
 gi.require_version("GdkPixbuf", "2.0")
+gi.require_version("Gio", "2.0")
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, GdkPixbuf, Gtk
+from gi.repository import GLib, GdkPixbuf, Gio, Gtk
 
-GLib.set_prgname("corebrum-camera")
+APPLICATION_ID = "org.corebrum.camera"
 
 
 def parse_args():
@@ -21,17 +22,17 @@ def parse_args():
     return parser.parse_args()
 
 
-class Window:
-    def __init__(self):
+class Window(Gtk.ApplicationWindow):
+    def __init__(self, application):
+        super().__init__(application=application, title="Camera")
         self.stopped = False
-        self.window = Gtk.Window(title="Camera")
-        self.window.set_decorated(False)
-        self.window.set_resizable(False)
-        self.window.set_default_size(320, 180)
+        self.set_decorated(False)
+        self.set_resizable(False)
+        self.set_default_size(320, 180)
         self.image = Gtk.Image()
-        self.window.add(self.image)
-        self.window.connect("destroy", self.close)
-        self.window.show_all()
+        self.add(self.image)
+        self.connect("destroy", self.close)
+        self.show_all()
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.on_signal)
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.on_signal)
 
@@ -64,7 +65,7 @@ class Window:
 
 
 class RealSensePreview(Window):
-    def __init__(self):
+    def __init__(self, application):
         try:
             import pyrealsense2 as rs
         except ImportError:
@@ -79,7 +80,7 @@ class RealSensePreview(Window):
         except Exception as exc:
             print(exc, file=sys.stderr)
             raise SystemExit(1)
-        super().__init__()
+        super().__init__(application)
         GLib.timeout_add(66, self.frame)
 
     def release(self):
@@ -100,7 +101,7 @@ class RealSensePreview(Window):
 
 
 class WebcamPreview(Window):
-    def __init__(self, device):
+    def __init__(self, application, device):
         if re.fullmatch(r"/dev/video[0-9]+", device) is None:
             print("webcam device is not a video node", file=sys.stderr)
             raise SystemExit(1)
@@ -138,7 +139,7 @@ class WebcamPreview(Window):
             print("webcam did not open", file=sys.stderr)
             self.pipeline.set_state(Gst.State.NULL)
             raise SystemExit(1)
-        super().__init__()
+        super().__init__(application)
         GLib.timeout_add(66, self.frame)
 
     def release(self):
@@ -168,11 +169,17 @@ class WebcamPreview(Window):
 
 def main():
     args = parse_args()
-    if args.v4l2:
-        WebcamPreview(args.v4l2)
-    else:
-        RealSensePreview()
-    Gtk.main()
+    app = Gtk.Application(application_id=APPLICATION_ID, flags=Gio.ApplicationFlags.NON_UNIQUE)
+
+    def on_activate(application):
+        if args.v4l2:
+            WebcamPreview(application, args.v4l2)
+        else:
+            RealSensePreview(application)
+
+    app.connect("activate", on_activate)
+    # Gtk.Application only accepts standard GApplication flags in argv, not --v4l2.
+    sys.exit(app.run([sys.argv[0]]))
 
 
 if __name__ == "__main__":

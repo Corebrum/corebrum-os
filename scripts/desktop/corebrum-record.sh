@@ -2,6 +2,17 @@
 # Screen recording. The prompt lists a microphone, a webcam, and RealSense when each is present.
 set -euo pipefail
 
+# Sway keybindings may not set this; start and stop must share the same paths.
+if [[ -z "${HOME:-}" ]]; then
+  HOME="$(getent passwd "$(id -u)" | cut -d: -f6)"
+  export HOME
+fi
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+corebrum_record_preview_ok_file() {
+  printf '%s\n' "$(corebrum_record_session_dir)/preview.ok"
+}
+
 COREBRUM_RECORD_PREVIEW_W=320
 COREBRUM_RECORD_PREVIEW_H=180
 COREBRUM_RECORD_MARGIN=16
@@ -12,6 +23,303 @@ corebrum_record_runtime() {
   local root="${XDG_RUNTIME_DIR:-/tmp/corebrum-record-${UID}}"
   mkdir -p "${root}/corebrum"
   printf '%s\n' "${root}/corebrum"
+}
+
+corebrum_record_session_dir() {
+  # Start runs under the login shell; stop often comes from a Sway keybind without
+  # XDG_STATE_HOME. Always anchor coordination files under the account home.
+  local home="${HOME:-}"
+  if [[ -z "$home" ]]; then
+    home="$(getent passwd "$(id -u)" | cut -d: -f6)"
+  fi
+  local root="${home}/.local/state/corebrum"
+  mkdir -p "$root"
+  printf '%s\n' "$root"
+}
+
+corebrum_record_capturing_file() {
+  printf '%s\n' "$(corebrum_record_session_dir)/recording.capturing"
+}
+
+corebrum_record_path_file() {
+  printf '%s\n' "$(corebrum_record_session_dir)/recording.path"
+}
+
+corebrum_record_wf_pid_file() {
+  printf '%s\n' "$(corebrum_record_session_dir)/wf-recorder.pid"
+}
+
+corebrum_record_start_pid_file() {
+  printf '%s\n' "$(corebrum_record_session_dir)/recording.start.pid"
+}
+
+corebrum_record_stop_request_file() {
+  printf '%s\n' "$(corebrum_record_session_dir)/recording.stop"
+}
+
+corebrum_record_log() {
+  printf '%s %s\n' "$(date -Iseconds)" "$*" >>"$(corebrum_record_session_dir)/record.log" 2>/dev/null || true
+}
+
+corebrum_record_note_path() {
+  printf '%s\n' "$1" >"$(corebrum_record_path_file)"
+}
+
+corebrum_record_recorder_running() {
+  pgrep -x wf-recorder >/dev/null 2>&1 \
+    || pgrep -f '[w]f-recorder' >/dev/null 2>&1
+}
+
+corebrum_record_wf_pid_live() {
+  local pid=""
+  pid="$(cat "$(corebrum_record_wf_pid_file)" 2>/dev/null || true)"
+  [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null
+}
+
+corebrum_record_capture_active() {
+  [[ -f "$(corebrum_record_capturing_file)" ]] && return 0
+  corebrum_record_recorder_running || corebrum_record_wf_pid_live
+}
+
+corebrum_record_stop_recorder() {
+  local pidfile pid i
+  pidfile="$(corebrum_record_wf_pid_file)"
+  pid="$(cat "$pidfile" 2>/dev/null || true)"
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+    kill -INT "$pid" 2>/dev/null || true
+  fi
+  if corebrum_record_recorder_running; then
+    pkill -INT -x wf-recorder 2>/dev/null || true
+  fi
+  for ((i = 0; i < 120; i++)); do
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      :
+    elif ! corebrum_record_recorder_running; then
+      break
+    fi
+    sleep 0.1
+  done
+  if corebrum_record_recorder_running; then
+    pkill -TERM -x wf-recorder 2>/dev/null || true
+    sleep 1
+  fi
+  if corebrum_record_recorder_running; then
+    pkill -KILL -x wf-recorder 2>/dev/null || true
+  fi
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+    kill -TERM "$pid" 2>/dev/null || true
+    sleep 0.5
+    kill -0 "$pid" 2>/dev/null && kill -KILL "$pid" 2>/dev/null || true
+  fi
+  rm -f "$pidfile"
+}
+
+corebrum_record_stop_wanted() {
+  [[ -f "$(corebrum_record_stop_request_file)" ]]
+}
+
+corebrum_record_clear_stop_request() {
+  rm -f "$(corebrum_record_stop_request_file)"
+}
+
+corebrum_record_on_stop_signal() {
+  if ! corebrum_record_capture_active; then
+    corebrum_record_clear_stop_request
+    corebrum_record_log "stop signal ignored (not capturing)"
+    return 0
+  fi
+  touch "$(corebrum_record_stop_request_file)"
+  corebrum_record_stop_recorder
+}
+
+corebrum_record_request_stop() {
+  local close_preview="${1:-0}"
+  corebrum_record_log "stop requested (ppid=${PPID:-?} uid=$(id -u))"
+  if ! corebrum_record_capture_active; then
+    corebrum_record_clear_stop_request
+    corebrum_record_log "stop ignored (not capturing)"
+    if corebrum_record_setup_active; then
+      corebrum_record_notify "Still starting. Wait for Recording, then press $(corebrum_record_stop_keys) to stop."
+    fi
+    if [[ "$close_preview" == 1 ]] && ! corebrum_record_setup_active; then
+      corebrum_record_stop_preview
+    fi
+    return 0
+  fi
+  touch "$(corebrum_record_stop_request_file)"
+  local sp=""
+  sp="$(cat "$(corebrum_record_start_pid_file)" 2>/dev/null || true)"
+  if [[ -n "$sp" ]] && kill -0 "$sp" 2>/dev/null; then
+    kill -USR1 "$sp" 2>/dev/null || true
+  fi
+  corebrum_record_stop_recorder
+  if [[ "$close_preview" == 1 ]]; then
+    corebrum_record_stop_preview
+  fi
+}
+
+corebrum_record_setup_active() {
+  corebrum_record_capture_active && return 1
+  local sp=""
+  sp="$(cat "$(corebrum_record_start_pid_file)" 2>/dev/null || true)"
+  [[ -n "$sp" ]] && kill -0 "$sp" 2>/dev/null
+}
+
+corebrum_record_stop_keys() {
+  printf '%s' "Super+Alt+Shift+P"
+}
+
+corebrum_record_start_session_end() {
+  rm -f "$(corebrum_record_start_pid_file)"
+}
+
+corebrum_record_file_playable() {
+  local file="$1"
+  [[ -f "$file" && -s "$file" ]] || return 1
+  if [[ "${COREBRUM_RECORD_NO_FFPROBE:-0}" == 1 ]]; then
+    return 0
+  fi
+  command -v ffprobe >/dev/null 2>&1 || return 1
+  ffprobe -v error "$file" >/dev/null 2>&1
+}
+
+corebrum_record_has_audio_stream() {
+  local file="$1"
+  [[ "${COREBRUM_RECORD_NO_FFPROBE:-0}" == 1 ]] && return 1
+  command -v ffprobe >/dev/null 2>&1 || return 1
+  ffprobe -v error -select_streams a -show_entries stream=codec_type \
+    -of csv=p=0 "$file" 2>/dev/null | grep -qxF audio
+}
+
+corebrum_record_has_usable_audio() {
+  local file="$1" br
+  corebrum_record_has_audio_stream "$file" || return 1
+  br="$(ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate \
+    -of csv=p=0 "$file" 2>/dev/null | head -n1 | tr -d '[:space:]')"
+  [[ -n "$br" && "$br" =~ ^[0-9]+$ && "$br" -ge 8000 ]]
+}
+
+corebrum_record_mic_device() {
+  local home="${HOME:-}" file line mic=""
+  if [[ -n "${COREBRUM_RECORD_MIC:-}" ]]; then
+    printf '%s\n' "$COREBRUM_RECORD_MIC"
+    return 0
+  fi
+  [[ -z "$home" ]] && home="$(getent passwd "$(id -u)" | cut -d: -f6)"
+  file="${home}/.local/state/corebrum/speech.conf"
+  if [[ -f "$file" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      case "$line" in
+        mic=*)
+          mic="${line#mic=}"
+          break
+          ;;
+      esac
+    done <"$file"
+  fi
+  if [[ -n "$mic" && "$mic" != default ]]; then
+    printf '%s\n' "$mic"
+    return 0
+  fi
+  if command -v pactl >/dev/null 2>&1; then
+    mic="$(pactl get-default-source 2>/dev/null || true)"
+    [[ -n "$mic" ]] && printf '%s\n' "$mic"
+  fi
+}
+
+corebrum_record_wait_for_file() {
+  local file="$1" i
+  # Foreground wf-recorder in start has already exited; brief pause for the muxer trailer.
+  sleep "${COREBRUM_RECORD_FINALIZE_DELAY:-1}"
+  for ((i = 0; i < 30; i++)); do
+    corebrum_record_file_playable "$file" && return 0
+    sleep 0.15
+  done
+  return 1
+}
+
+corebrum_record_finalize_file() {
+  local file="$1" want_audio="${2:-0}" tmp gain_db
+  [[ -n "$file" && -f "$file" ]] || return 1
+  [[ "${COREBRUM_RECORD_NO_FFPROBE:-0}" == 1 ]] && return 0
+  command -v ffprobe >/dev/null 2>&1 || return 0
+  if ! ffprobe -v error "$file" >/dev/null 2>&1; then
+    return 1
+  fi
+  command -v ffmpeg >/dev/null 2>&1 || return 0
+  tmp="$(mktemp "${file%/*}/.corebrum-record.XXXXXX.mp4")"
+  gain_db="${COREBRUM_RECORD_AUDIO_GAIN_DB:-8}"
+  if [[ "$want_audio" == 1 && "$gain_db" != 0 ]] \
+    && corebrum_record_has_audio_stream "$file"; then
+    if ffmpeg -nostdin -loglevel error -y -i "$file" -c:v copy \
+      -af "volume=${gain_db}dB" -c:a aac -b:a 128k -movflags +faststart "$tmp" 2>/dev/null; then
+      mv -f "$tmp" "$file"
+      return 0
+    fi
+    rm -f "$tmp"
+  fi
+  tmp="$(mktemp "${file%/*}/.corebrum-record.XXXXXX.mp4")"
+  if ffmpeg -nostdin -loglevel error -y -i "$file" -c copy -movflags +faststart "$tmp" 2>/dev/null; then
+    mv -f "$tmp" "$file"
+  else
+    rm -f "$tmp"
+  fi
+  return 0
+}
+
+corebrum_record_place_preview_background() {
+  local geom="$1"
+  (
+    if corebrum_record_place_preview "$geom"; then
+      touch "$(corebrum_record_preview_ok_file)"
+    elif kill -0 "$(cat "$(corebrum_record_runtime)/camera.pid" 2>/dev/null)" 2>/dev/null; then
+      corebrum_record_parse_geom "$geom" || exit 0
+      local px py
+      px=$((COREBRUM_RECORD_X + COREBRUM_RECORD_W - COREBRUM_RECORD_PREVIEW_W - COREBRUM_RECORD_MARGIN))
+      py=$((COREBRUM_RECORD_Y + COREBRUM_RECORD_H - COREBRUM_RECORD_PREVIEW_H - COREBRUM_RECORD_MARGIN))
+      if corebrum_record_sway_camera_present; then
+        corebrum_record_sway_place_camera "$px" "$py" '[app_id="org.corebrum.camera"]' \
+          || corebrum_record_sway_place_camera "$px" "$py" '[title="Camera"]' \
+          || true
+      fi
+      touch "$(corebrum_record_preview_ok_file)"
+    fi
+  ) >/dev/null 2>&1 &
+}
+
+corebrum_record_wf_recorder() {
+  local geom="$1" file="$2" audio="$3" pid rc stopf
+  local -a cmd=(wf-recorder -g "$geom" -f "$file" -c libx264 -x yuv420p)
+  if [[ "$audio" == 1 ]]; then
+    local mic=""
+    mic="$(corebrum_record_mic_device || true)"
+    if [[ -n "$mic" ]]; then
+      cmd=(wf-recorder -a "$mic" --audio-backend=pulse -g "$geom" -f "$file" -c libx264 -x yuv420p)
+      corebrum_record_log "audio device=${mic} backend=pulse"
+    else
+      cmd=(wf-recorder -a --audio-backend=pulse -g "$geom" -f "$file" -c libx264 -x yuv420p)
+      corebrum_record_log "audio device=default backend=pulse"
+    fi
+  fi
+  stopf="$(corebrum_record_stop_request_file)"
+  "${cmd[@]}" &
+  pid=$!
+  printf '%s\n' "$pid" >"$(corebrum_record_wf_pid_file)"
+  touch "$(corebrum_record_capturing_file)"
+  corebrum_record_log "wf-recorder pid=${pid}"
+  set +e
+  while kill -0 "$pid" 2>/dev/null; do
+    if [[ -f "$stopf" ]]; then
+      rm -f "$stopf"
+      kill -INT "$pid" 2>/dev/null || true
+    fi
+    sleep 0.15
+  done
+  wait "$pid" 2>/dev/null || true
+  rc=$?
+  rm -f "$(corebrum_record_wf_pid_file)" "$(corebrum_record_capturing_file)"
+  corebrum_record_log "wf-recorder exit rc=${rc}"
+  return "$rc"
 }
 
 corebrum_record_preview_cmd() {
@@ -158,7 +466,9 @@ corebrum_record_sway() {
 corebrum_record_close_camera_window() {
   local addr
   if corebrum_record_sway; then
+    swaymsg '[app_id="org.corebrum.camera"] kill' >/dev/null 2>&1 || true
     swaymsg '[app_id="corebrum-camera"] kill' >/dev/null 2>&1 || true
+    swaymsg '[title="Camera"] kill' >/dev/null 2>&1 || true
     return 0
   fi
   command -v hyprctl >/dev/null 2>&1 || return 0
@@ -180,6 +490,82 @@ corebrum_record_stop_preview() {
   corebrum_record_close_camera_window
 }
 
+corebrum_record_sway_camera_match() {
+  swaymsg -t get_tree 2>/dev/null | python3 -c 'import json,os,sys
+
+def match(node):
+    if (node.get("type") or "") != "con":
+        for key in ("nodes", "floating_nodes"):
+            for child in node.get(key) or []:
+                hit = match(child)
+                if hit:
+                    return hit
+        return None
+    app_id = node.get("app_id") or ""
+    name = node.get("name") or ""
+    if app_id not in ("org.corebrum.camera", "corebrum-camera") and name != "Camera":
+        for key in ("nodes", "floating_nodes"):
+            for child in node.get(key) or []:
+                hit = match(child)
+                if hit:
+                    return hit
+        return None
+    want_px = os.environ.get("COREBRUM_RECORD_PLACE_PX", "")
+    if want_px:
+        tol = int(os.environ.get("COREBRUM_RECORD_PLACE_TOL", "48"))
+        want_py = int(os.environ["COREBRUM_RECORD_PLACE_PY"])
+        want_px = int(want_px)
+        want_w = int(os.environ.get("COREBRUM_RECORD_PLACE_W", "320"))
+        want_h = int(os.environ.get("COREBRUM_RECORD_PLACE_H", "180"))
+        rect = node.get("rect") or {}
+        x = int(rect.get("x") or 0)
+        y = int(rect.get("y") or 0)
+        w = int(rect.get("width") or 0)
+        h = int(rect.get("height") or 0)
+        if (
+            abs(x - want_px) > tol
+            or abs(y - want_py) > tol
+            or abs(w - want_w) > tol
+            or abs(h - want_h) > tol
+        ):
+            return None
+    return node
+
+try:
+    tree = json.load(sys.stdin)
+except json.JSONDecodeError:
+    sys.exit(1)
+sys.exit(0 if match(tree) else 1)'
+}
+
+corebrum_record_sway_camera_present() {
+  COREBRUM_RECORD_PLACE_PX= COREBRUM_RECORD_PLACE_PY= \
+    COREBRUM_RECORD_PLACE_W= COREBRUM_RECORD_PLACE_H= \
+    corebrum_record_sway_camera_match
+}
+
+corebrum_record_sway_camera_placed() {
+  local px="$1" py="$2"
+  COREBRUM_RECORD_PLACE_PX="$px" \
+    COREBRUM_RECORD_PLACE_PY="$py" \
+    COREBRUM_RECORD_PLACE_W="$COREBRUM_RECORD_PREVIEW_W" \
+    COREBRUM_RECORD_PLACE_H="$COREBRUM_RECORD_PREVIEW_H" \
+    corebrum_record_sway_camera_match
+}
+
+corebrum_record_sway_place_camera() {
+  local px="$1" py="$2" crit="$3"
+  swaymsg "${crit} floating enable, border none, sticky enable, move workspace current, move absolute position ${px} px ${py} px, resize set ${COREBRUM_RECORD_PREVIEW_W} px ${COREBRUM_RECORD_PREVIEW_H} px" >/dev/null 2>&1 || true
+  sleep 0.05
+  if corebrum_record_sway_camera_placed "$px" "$py"; then
+    return 0
+  fi
+  if corebrum_record_sway_camera_present; then
+    return 0
+  fi
+  return 1
+}
+
 corebrum_record_camera_address() {
   hyprctl clients -j | python3 -c 'import json,sys
 try:
@@ -198,8 +584,8 @@ corebrum_record_place_preview() {
   corebrum_record_parse_geom "$geom" || return 1
   px=$((COREBRUM_RECORD_X + COREBRUM_RECORD_W - COREBRUM_RECORD_PREVIEW_W - COREBRUM_RECORD_MARGIN))
   py=$((COREBRUM_RECORD_Y + COREBRUM_RECORD_H - COREBRUM_RECORD_PREVIEW_H - COREBRUM_RECORD_MARGIN))
-  tries="${COREBRUM_RECORD_PLACE_TRIES:-30}"
-  delay="${COREBRUM_RECORD_PLACE_DELAY:-0.1}"
+  tries="${COREBRUM_RECORD_PLACE_TRIES:-20}"
+  delay="${COREBRUM_RECORD_PLACE_DELAY:-0.06}"
   local pidfile pid
   pidfile="$(corebrum_record_runtime)/camera.pid"
   for ((i = 0; i < tries; i++)); do
@@ -208,7 +594,13 @@ corebrum_record_place_preview() {
       return 1
     fi
     if corebrum_record_sway; then
-      if swaymsg "[app_id=\"corebrum-camera\"] floating enable, border none, sticky enable, move absolute position ${px} px ${py} px, resize set ${COREBRUM_RECORD_PREVIEW_W} px ${COREBRUM_RECORD_PREVIEW_H} px" >/dev/null 2>&1; then
+      if corebrum_record_sway_place_camera "$px" "$py" '[app_id="org.corebrum.camera"]'; then
+        return 0
+      fi
+      if corebrum_record_sway_place_camera "$px" "$py" '[app_id="corebrum-camera"]'; then
+        return 0
+      fi
+      if corebrum_record_sway_place_camera "$px" "$py" '[title="Camera"]'; then
         return 0
       fi
     else
@@ -236,29 +628,28 @@ corebrum_record_spawn_preview() {
 }
 
 corebrum_record_open_camera() {
-  local geom="$1" cmd pidfile err
+  local geom="$1" cmd pidfile err px py
   shift
   cmd="$(corebrum_record_preview_cmd)"
   pidfile="$(corebrum_record_runtime)/camera.pid"
   err="$(corebrum_record_runtime)/camera.err"
+  corebrum_record_parse_geom "$geom" || return 1
+  px=$((COREBRUM_RECORD_X + COREBRUM_RECORD_W - COREBRUM_RECORD_PREVIEW_W - COREBRUM_RECORD_MARGIN))
+  py=$((COREBRUM_RECORD_Y + COREBRUM_RECORD_H - COREBRUM_RECORD_PREVIEW_H - COREBRUM_RECORD_MARGIN))
   : >"$err"
-  corebrum_record_spawn_preview "$cmd" "$@" >"$err" 2>&1 &
+  GDK_APPLICATION_NAME=org.corebrum.camera \
+    corebrum_record_spawn_preview "$cmd" "$@" >"$err" 2>&1 &
   printf '%s\n' "$!" >"$pidfile"
-  sleep "${COREBRUM_RECORD_PREVIEW_GRACE:-0.05}"
-  if ! kill -0 "$(cat "$pidfile")" 2>/dev/null; then
-    corebrum_record_notify "The camera is already in use. Recording the screen only."
+  sleep "${COREBRUM_RECORD_PREVIEW_GRACE:-0.2}"
+  if ! kill -0 "$(cat "$pidfile" 2>/dev/null)" 2>/dev/null; then
+    corebrum_record_sway_camera_present && corebrum_record_close_camera_window
     corebrum_record_stop_preview
     return 1
   fi
-  if ! corebrum_record_place_preview "$geom"; then
-    if ! kill -0 "$(cat "$pidfile")" 2>/dev/null; then
-      corebrum_record_notify "The camera is already in use. Recording the screen only."
-    else
-      corebrum_record_notify "The camera preview did not open. Recording the screen only."
-    fi
-    corebrum_record_stop_preview
-    return 1
-  fi
+  corebrum_record_sway_place_camera "$px" "$py" '[app_id="org.corebrum.camera"]' \
+    || corebrum_record_sway_place_camera "$px" "$py" '[title="Camera"]' \
+    || true
+  corebrum_record_place_preview_background "$geom"
   return 0
 }
 
@@ -267,28 +658,53 @@ corebrum_record_output() {
 }
 
 corebrum_record_run() {
-  local geom="$1" audio="$2" file
+  local geom="$1" want_audio="$2" want_video="$3" file
   file="$(corebrum_record_output)"
   mkdir -p "${HOME}/Videos"
-  if [[ "$audio" == 1 ]]; then
-    set +e
-    wf-recorder -a -g "$geom" -f "$file"
-    set -e
-    if [[ -s "$file" ]]; then
-      return 0
+  rm -f "$(corebrum_record_preview_ok_file)"
+  corebrum_record_note_path "$file"
+  corebrum_record_clear_stop_request
+  corebrum_record_notify "Recording. Press $(corebrum_record_stop_keys) to stop."
+  set +e
+  corebrum_record_wf_recorder "$geom" "$file" "$want_audio"
+  set -e
+  if corebrum_record_wait_for_file "$file"; then
+    corebrum_record_finalize_file "$file" "$want_audio" || true
+    if [[ "$want_video" == 1 ]] && [[ ! -f "$(corebrum_record_preview_ok_file)" ]]; then
+      corebrum_record_notify "The camera overlay is not in this recording."
+    elif [[ "$want_audio" == 1 ]] && ! corebrum_record_has_usable_audio "$file"; then
+      corebrum_record_notify "The microphone was not recorded. Check Setup → Voice → Microphone."
     fi
-    rm -f "$file"
-    corebrum_record_notify "The microphone was not recorded."
-    file="$(corebrum_record_output)"
+    if corebrum_record_file_playable "$file"; then
+      corebrum_record_notify "Recording saved in Videos."
+    fi
+  else
+    corebrum_record_notify "The recording was not finalized. Run: corebrum-record stop"
   fi
-  wf-recorder -g "$geom" -f "$file"
+  rm -f "$(corebrum_record_path_file)" "$(corebrum_record_wf_pid_file)" \
+    "$(corebrum_record_preview_ok_file)" "$(corebrum_record_capturing_file)"
+  corebrum_record_clear_stop_request
 }
 
 corebrum_record_start() {
   local choice="" geom="" audio=0 video=""
+  if corebrum_record_capture_active; then
+    corebrum_record_request_stop 1
+    corebrum_record_notify "Stopping the recording. Wait for Recording saved in Videos."
+    return 0
+  fi
+  if corebrum_record_setup_active; then
+    corebrum_record_notify "Recording is still starting."
+    return 0
+  fi
+  corebrum_record_stop_recorder
+  corebrum_record_stop_preview
+  corebrum_record_clear_stop_request
   corebrum_record_discover
   choice="$(corebrum_record_choose)" || return 0
   [[ -n "$choice" ]] || return 0
+  printf '%s\n' "$$" >"$(corebrum_record_start_pid_file)"
+  corebrum_record_log "session pid=$$"
   case "$choice" in
     Screen) ;;
     "Screen and audio") audio=1 ;;
@@ -301,8 +717,8 @@ corebrum_record_start() {
       return 1
       ;;
   esac
-  geom="$(slurp)" || return 0
-  [[ -n "$geom" ]] || return 0
+  geom="$(slurp)" || { corebrum_record_start_session_end; return 0; }
+  [[ -n "$geom" ]] || { corebrum_record_start_session_end; return 0; }
   if [[ -n "$video" ]]; then
     if ! corebrum_record_area_fits "$geom"; then
       corebrum_record_notify "The selected area is too small for the camera. Recording the screen only."
@@ -314,13 +730,14 @@ corebrum_record_start() {
       corebrum_record_open_camera "$geom" || true
     fi
   fi
-  trap corebrum_record_stop_preview EXIT
-  corebrum_record_run "$geom" "$audio"
+  trap 'corebrum_record_on_stop_signal' USR1
+  trap 'corebrum_record_stop_recorder; corebrum_record_stop_preview; corebrum_record_start_session_end' EXIT
+  corebrum_record_log "record start pid=$$ choice=${choice} audio=${audio} video=${video:-none}"
+  corebrum_record_run "$geom" "$audio" "${video:+1}"
 }
 
 corebrum_record_stop() {
-  corebrum_record_stop_preview
-  pkill -INT wf-recorder 2>/dev/null || true
+  corebrum_record_request_stop 1
 }
 
 usage() {

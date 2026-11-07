@@ -10,7 +10,7 @@ Phase 9 and `0054` leave transcription on Ubuntu `pocketsphinx` and the PipeWire
 ## Decision
 
 - Super+Space Setup lists Voice after Password. The row is dynamic. Choosing it opens a Fuzzel list: Test speak, Hear once, Microphone, Install recognition, Enable speech, and Disable speech.
-- Microphone lists PipeWire `Audio/Source` nodes (or `wpctl` Sources) plus PipeWire default. A choice runs `corebrum voice mic set`. Default clears the stored target.
+- Microphone lists PipeWire `Audio/Source` nodes (or `wpctl` Sources) plus PipeWire default. The Fuzzel prompt shows the current choice (`[now: …]`), and the active row is marked with `★`. PipeWire default remains a choice to clear the stored target; it is not always the current mic. A choice runs `corebrum voice mic set`. Default clears the stored target.
 - `corebrum voice mic list|set|clear` stores `mic=` under `speech.conf` in the user state directory. Empty means the PipeWire default. `corebrum voice hear` and Control+Space pass `pw-record --target` when that value is set.
 - Empty or silent recordings tell the operator to check the microphone under Setup → Voice.
 - Speech recognition stays Ubuntu `pocketsphinx` and `pocketsphinx-en-us`. No new apt repository, no cloud STT, no wake word, and no ElevenLabs.
