@@ -18,4 +18,4 @@ Operators asked to save battery on laptops and mobile robots without suspend or 
 
 ## Consequences
 
-Shorter auto dim than autolock blanks the panel before lock; longer auto dim blanks while gtklock is up. Machines without backlight control still get DPMS off. Uninstall removes the new commands with the other desktop paths.
+`corebrum-lock` runs `corebrum-display-dim on` before gtklock so a prior idle dim does not hide the lock screen. While gtklock is up or logind reports the session locked, auto dim does not turn the panel off. Machines without backlight control still get DPMS off. Uninstall removes the new commands with the other desktop paths.

@@ -61,6 +61,13 @@ corebrum_lock_main() {
     printf 'corebrum-lock: missing /etc/corebrum/gtklock/config.ini\n' >&2
     exit 1
   fi
+  dim_cmd="$(command -v corebrum-display-dim 2>/dev/null || true)"
+  if [[ -z "$dim_cmd" && -x /usr/local/bin/corebrum-display-dim ]]; then
+    dim_cmd=/usr/local/bin/corebrum-display-dim
+  fi
+  if [[ -n "$dim_cmd" ]]; then
+    "$dim_cmd" on || true
+  fi
   exec "$bin" --config /etc/corebrum/gtklock/config.ini
 }
 

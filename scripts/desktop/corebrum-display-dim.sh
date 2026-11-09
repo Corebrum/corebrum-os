@@ -6,6 +6,21 @@ COREBRUM_DISPLAY_DIM_STATE="${XDG_STATE_HOME:-${HOME}/.local/state}/corebrum"
 BRIGHTNESS_SAVED="${COREBRUM_DISPLAY_DIM_STATE}/display-brightness-saved"
 DIMMED_MARK="${COREBRUM_DISPLAY_DIM_STATE}/display-dimmed"
 
+corebrum_display_dim_session_locked() {
+  if [[ "${COREBRUM_DISPLAY_DIM_LOCKED:-0}" == 1 ]]; then
+    return 0
+  fi
+  if pgrep -x gtklock >/dev/null 2>&1; then
+    return 0
+  fi
+  if command -v loginctl >/dev/null 2>&1 && [[ -n "${XDG_SESSION_ID:-}" ]]; then
+    case "$(loginctl show-session "$XDG_SESSION_ID" -p Locked --value 2>/dev/null || true)" in
+      yes) return 0 ;;
+    esac
+  fi
+  return 1
+}
+
 corebrum_display_dim_save_brightness() {
   local line pct
   if ! command -v brightnessctl >/dev/null 2>&1; then
@@ -21,11 +36,14 @@ corebrum_display_dim_save_brightness() {
 }
 
 corebrum_display_dim_off() {
-  if [[ "${COREBRUM_DISPLAY_DIM_STUB:-0}" == 1 ]]; then
-    printf 'dim off\n'
+  if [[ -f "$DIMMED_MARK" ]]; then
     return 0
   fi
-  if [[ -f "$DIMMED_MARK" ]]; then
+  if corebrum_display_dim_session_locked; then
+    return 0
+  fi
+  if [[ "${COREBRUM_DISPLAY_DIM_STUB:-0}" == 1 ]]; then
+    printf 'dim off\n'
     return 0
   fi
   corebrum_display_dim_save_brightness
