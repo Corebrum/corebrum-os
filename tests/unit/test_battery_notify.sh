@@ -34,11 +34,17 @@ printf '9\n' >"${bat}/capacity"
 bin="${tmp}/bin"
 mkdir -p "$bin"
 log="${tmp}/notify.log"
+dim_log="${tmp}/dim.log"
 cat >"${bin}/notify-send" <<EOF
 #!/bin/sh
 printf '%s\n' "\$*" >>"$log"
 EOF
 chmod +x "${bin}/notify-send"
+cat >"${bin}/corebrum-display-dim" <<EOF
+#!/bin/sh
+printf '%s\n' "\$*" >>"$dim_log"
+EOF
+chmod +x "${bin}/corebrum-display-dim"
 export PATH="${bin}:${PATH}"
 export COREBRUM_BATTERY_SYSFS="${tmp}"
 export COREBRUM_BATTERY_NOTIFY_INTERVAL=1
@@ -51,6 +57,11 @@ wait $!
 
 if [[ ! -s "$log" ]]; then
   echo "FAIL: expected notify-send to run" >&2
+  exit 1
+fi
+if ! grep -q '^on$' "$dim_log"; then
+  echo "FAIL: expected display wake before the notification" >&2
+  cat "$dim_log" >&2
   exit 1
 fi
 if ! grep -q 'Battery low' "$log"; then

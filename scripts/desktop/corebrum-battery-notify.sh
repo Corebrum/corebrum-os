@@ -12,8 +12,22 @@ state_dir="${XDG_STATE_HOME:-${HOME}/.local/state}/corebrum"
 mkdir -p "$state_dir"
 state_file="${state_dir}/battery-notify-low"
 
+wake_display() {
+  local dim_cmd=""
+  dim_cmd="$(command -v corebrum-display-dim 2>/dev/null || true)"
+  if [[ -z "$dim_cmd" && -x /usr/local/bin/corebrum-display-dim ]]; then
+    dim_cmd=/usr/local/bin/corebrum-display-dim
+  fi
+  if [[ -n "$dim_cmd" ]]; then
+    "$dim_cmd" on || true
+  elif command -v swaymsg >/dev/null 2>&1; then
+    swaymsg output '*' dpms on >/dev/null 2>&1 || true
+  fi
+}
+
 notify_low() {
   local cap="$1"
+  wake_display
   if ! command -v notify-send >/dev/null 2>&1; then
     return 0
   fi

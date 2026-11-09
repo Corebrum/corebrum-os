@@ -18,14 +18,15 @@
       "id": "ai-agents-menu",
       "label": "AI Agents",
       "icon": "/usr/share/corebrum/agents.png",
-      "keywords": "agents;ai;llm;cursor;claude;grok;codex;super+a;default",
-      "navigateAs": "corebrum-agents"
+      "keywords": "agents;ai;llm;cursor;claude;grok;codex;super+a;default;ollama;local",
+      "navigateAs": "corebrum-agents",
+      "children": ["corebrum-ollama"]
     },
     {
       "id": "robot",
       "label": "Robot",
       "icon": "/usr/share/corebrum/icon.png",
-      "keywords": "ros;synapse;ollama;realsense;zenoh;skills",
+      "keywords": "ros;synapse;realsense;zenoh;skills",
       "children": [
         "corebrum-ros",
         "corebrum-zenoh-network",
@@ -33,8 +34,7 @@
         "corebrum-realsense",
         "corebrum-synapse",
         "corebrum-arc",
-        "corebrum-skills",
-        "corebrum-ollama"
+        "corebrum-skills"
       ]
     },
     {
@@ -48,8 +48,8 @@
       "id": "setup",
       "label": "Setup",
       "icon": "preferences-system",
-      "keywords": "settings;autolock;timezone;tz;password;passwd;voice;speech;mic;microphone;transcribe;vnc;remote;wormhole",
-      "children": ["corebrum-autolock", "corebrum-timezone", "corebrum-password", "corebrum-voice", "corebrum-vnc", "corebrum-wormhole"]
+      "keywords": "settings;autolock;autodim;dim;display;timezone;tz;password;passwd;voice;speech;mic;microphone;transcribe;vnc;remote;wormhole",
+      "children": ["corebrum-autolock", "corebrum-autodim", "corebrum-timezone", "corebrum-password", "corebrum-voice", "corebrum-vnc", "corebrum-wormhole"]
     },
     {
       "id": "updates",
@@ -95,6 +95,7 @@
     "corebrum-vnc",
     "corebrum-wormhole",
     "corebrum-autolock",
+    "corebrum-autodim",
     "corebrum-timezone",
     "corebrum-password",
     "corebrum-voice"

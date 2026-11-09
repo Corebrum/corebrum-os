@@ -90,7 +90,7 @@ ec=$?
 set -e
 printf '\n'
 if [ "$ec" -eq 0 ]; then
-  printf '%s\n' "Ollama is installed. Press Super+Space and choose Ollama to run a model."
+  printf '%s\n' "Ollama is installed. Press Super+Space, open AI Agents, and choose Ollama to run a model."
 else
   printf 'Install failed (%s).\n' "$ec"
 fi

@@ -235,7 +235,10 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-edit-keys.sh" /usr/local/bin/corebrum-edit-keys 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-osd.sh" /usr/local/bin/corebrum-osd 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-battery-notify.sh" /usr/local/bin/corebrum-battery-notify 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-display-dim.sh" /usr/local/bin/corebrum-display-dim 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-swayidle.sh" /usr/local/bin/corebrum-swayidle 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-autolock.sh" /usr/local/bin/corebrum-autolock 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-autodim.sh" /usr/local/bin/corebrum-autodim 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-timezone-menu.sh" /usr/local/bin/corebrum-timezone-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-password-menu.sh" /usr/local/bin/corebrum-password-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-voice-menu.sh" /usr/local/bin/corebrum-voice-menu 755
@@ -480,7 +483,10 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-edit-keys
 /usr/local/bin/corebrum-osd
 /usr/local/bin/corebrum-battery-notify
+/usr/local/bin/corebrum-display-dim
+/usr/local/bin/corebrum-swayidle
 /usr/local/bin/corebrum-autolock
+/usr/local/bin/corebrum-autodim
 /usr/local/bin/corebrum-timezone-menu
 /usr/local/bin/corebrum-password-menu
 /usr/local/bin/corebrum-voice-menu

@@ -13,7 +13,7 @@ If that script finds an NVIDIA GPU and `nvidia-smi` does not report a CUDA versi
 
 ## Decision
 
-- Super+Space shows `Ollama   install` until the `ollama` command is on `PATH`.
+- Super+Space AI Agents shows `Ollama   install` until the `ollama` command is on `PATH`. See `docs/decisions/0131-ollama-ai-agents-menu.md`.
 - Choosing it installs Ubuntu `zstd` when that command is missing, then runs `curl -fsSL https://ollama.com/install.sh | sh` as the user. The script asks for sudo itself.
 - After `ollama` is present, the same entry lists models from `ollama list` and a `Run another model` row. Choosing a name runs `ollama run <name>` in a terminal. A name may contain letters, numbers, and `.`, `_`, `:`, `/`, `-`.
 - The desktop profile does not install Ollama. Uninstalling Corebrum removes the menu command and leaves the Ollama binary, user, and service in place.

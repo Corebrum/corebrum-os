@@ -160,30 +160,12 @@ corebrum_autolock_notify() {
 }
 
 corebrum_autolock_start() {
-  local cfg
   if [[ "${COREBRUM_AUTOLOCK_STUB:-0}" == 1 ]]; then
     corebrum_autolock_config_path
     return 0
   fi
   command -v swayidle >/dev/null 2>&1 || return 0
-  cfg="$(corebrum_autolock_config_path)"
-  [[ -f "$cfg" ]] || return 0
-  seconds="$(sed -n 's/^timeout=//p' "$cfg" | head -n 1)"
-  case "$seconds" in
-    '' | *[!0-9]*) return 0 ;;
-  esac
-  if pgrep -x swayidle >/dev/null 2>&1; then
-    pkill -x swayidle || true
-    local _
-    for _ in 1 2 3 4 5 6 7 8 9 10; do
-      pgrep -x swayidle >/dev/null 2>&1 || break
-      sleep 0.1
-    done
-  fi
-  # swayidle honors a systemd idle inhibitor, so Stay awake pauses the timer.
-  setsid --fork -- swayidle -w \
-    timeout "$seconds" /usr/local/bin/corebrum-lock \
-    before-sleep 'loginctl lock-session' </dev/null >/dev/null 2>&1
+  /usr/local/bin/corebrum-swayidle start
 }
 
 corebrum_autolock_set_minutes() {
@@ -260,49 +242,18 @@ corebrum_autolock_toggle() {
   corebrum_autolock_notify "Stay awake" "The screen will not lock by itself."
 }
 
+corebrum_autolock_swayidle_cmd() {
+  local here
+  if [[ -x /usr/local/bin/corebrum-swayidle ]]; then
+    printf '%s\n' /usr/local/bin/corebrum-swayidle
+    return 0
+  fi
+  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  printf '%s\n' "${here}/corebrum-swayidle.sh"
+}
+
 corebrum_autolock_install_script() {
-  cat <<'EOF'
-set +e
-# Both releases lock with gtklock. Noble builds version 4 with the desktop install.
-codename=$(. /etc/os-release && printf '%s' "${VERSION_CODENAME:-}")
-candidate=$(apt-cache policy swayidle | awk '/Candidate:/ { print $2; exit }')
-if [ -z "$candidate" ] || [ "$candidate" = "(none)" ]; then
-  printf '%s\n' "swayidle is not in this Ubuntu archive."
-  printf '\n'
-  read -r -p 'Press Enter to close. '
-  exit 0
-fi
-if [ "$codename" = "noble" ]; then
-  sudo apt-get update && sudo apt-get install -y swayidle
-  ec=$?
-  if [ "$ec" -eq 0 ] && ! /usr/local/bin/gtklock -v 2>/dev/null | grep -q '^gtklock v4\.'; then
-    printf '%s\n' "The lock screen is gtklock 4. Run: sudo corebrum install desktop"
-    ec=1
-  fi
-else
-  locker=$(apt-cache policy gtklock | awk '/Candidate:/ { print $2; exit }')
-  if [ -z "$locker" ] || [ "$locker" = "(none)" ]; then
-    printf '%s\n' "gtklock is not in this Ubuntu archive."
-    printf '\n'
-    read -r -p 'Press Enter to close. '
-    exit 0
-  fi
-  sudo apt-get update && sudo apt-get install -y swayidle gtklock
-  ec=$?
-fi
-if [ "$ec" -eq 0 ]; then
-  /usr/local/bin/corebrum-autolock start
-  ec=$?
-fi
-set -e
-printf '\n'
-if [ "$ec" -eq 0 ]; then
-  printf '%s\n' "Autolock is installed. The screen locks after 10 minutes idle."
-else
-  printf 'Install failed (%s).\n' "$ec"
-fi
-read -r -p 'Press Enter to close. '
-EOF
+  "$(corebrum_autolock_swayidle_cmd)" install-script
 }
 
 corebrum_autolock_terminal() {

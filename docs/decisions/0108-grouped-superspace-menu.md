@@ -9,7 +9,7 @@ Status: Accepted
 
 ## Decision
 
-- Super+Space keeps the GTK launcher. The idle list is eight fixed groups from `/etc/corebrum/menu/corebrum-menu.json`: Apps, Learn, AI Agents, Robot, Appearance, Setup, Updates, and System. The AI Agents root node uses **`navigateAs`: `corebrum-agents`** so one Enter opens the `corebrum-agent-*` list (Super+A default rows and each CLI) without a duplicate “AI Agents” submenu. GTK navigate lists only `corebrum-agent-*` desktop files for that id.
+- Super+Space keeps the GTK launcher. The idle list is eight fixed groups from `/etc/corebrum/menu/corebrum-menu.json`: Apps, Learn, AI Agents, Robot, Appearance, Setup, Updates, and System. The AI Agents root node uses **`navigateAs`: `corebrum-agents`** so one Enter opens the `corebrum-agent-*` list (Super+A default rows and each CLI) without a duplicate “AI Agents” submenu. GTK navigate lists only `corebrum-agent-*` desktop files for that id. See `docs/decisions/0131-ollama-ai-agents-menu.md` for Ollama in that same list.
 - Enter or Right on a group or static parent (ROS, AI Agents, RealSense, Corebrum Synapse, Learn, Updates, System) shows children in the same window. Right only opens a submenu; it does not launch a leaf. Backspace or Left with an empty search box goes up one level. Escape clears a non-empty filter, then quits.
 - Typing searches descendants of the active menu. Nested hits show a short parent path. Empty filter shows only direct children.
 - Updates rows and System power actions are `NoDisplay=true` desktop leaves, the same pattern as agent and ROS tool leaves, so typing `ubuntu` or `reboot` works from root. The Power parent desktop is named System.

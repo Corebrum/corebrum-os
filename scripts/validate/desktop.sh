@@ -92,7 +92,10 @@ for path in \
   /usr/local/bin/corebrum-docs-menu \
   /usr/local/bin/corebrum-osd \
   /usr/local/bin/corebrum-battery-notify \
+  /usr/local/bin/corebrum-display-dim \
+  /usr/local/bin/corebrum-swayidle \
   /usr/local/bin/corebrum-autolock \
+  /usr/local/bin/corebrum-autodim \
   /usr/local/bin/corebrum-timezone-menu \
   /usr/local/bin/corebrum-password-menu \
   /usr/local/bin/corebrum-voice-menu \

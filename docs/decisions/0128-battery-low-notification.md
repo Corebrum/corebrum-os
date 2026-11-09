@@ -10,7 +10,7 @@ Waybar already shows battery percentage and critical styling near empty (`docs/d
 ## Decision
 
 - `/usr/local/bin/corebrum-battery-notify` runs in the graphical session after Mako starts. It polls the first sysfs supply with `type=Battery` under `COREBRUM_BATTERY_SYSFS` (default `/sys/class/power_supply`).
-- While **Discharging** and capacity is **at or below 10%** (default, `COREBRUM_BATTERY_NOTIFY_THRESHOLD`), it runs `notify-send --app-name=Corebrum --urgency=critical` once until the pack is above the threshold again or the machine stops discharging (charging / full / plugged). State is stored under `${XDG_STATE_HOME:-~/.local/state}/corebrum/battery-notify-low`.
+- While **Discharging** and capacity is **at or below 10%** (default, `COREBRUM_BATTERY_NOTIFY_THRESHOLD`), it turns the display on with `/usr/local/bin/corebrum-display-dim on`, then runs `notify-send --app-name=Corebrum --urgency=critical` once until the pack is above the threshold again or the machine stops discharging (charging / full / plugged). State is stored under `${XDG_STATE_HOME:-~/.local/state}/corebrum/battery-notify-low`. See `docs/decisions/0132-autodim-display-battery-wake.md`.
 - Poll interval defaults to 30 seconds (`COREBRUM_BATTERY_NOTIFY_INTERVAL`). Machines without a battery supply exit the loop after each sleep without error.
 - Sway starts this helper after `mako`; Hyprland uses `exec-once` in the same order for sessions that still use that config.
 

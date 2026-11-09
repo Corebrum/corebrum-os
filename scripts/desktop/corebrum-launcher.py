@@ -359,6 +359,32 @@ class MenuModel:
         shown.sort(key=lambda item: item.name.casefold())
         return shown
 
+    def child_rows(self, child_id):
+        if child_id in self.navigate:
+            entry = self.entries.get(child_id)
+            if entry is None:
+                return []
+            return [self.entry_row(entry, kind="menu")]
+        if child_id in self.dynamic:
+            entry = self.entries.get(child_id)
+            if entry is not None:
+                return [self.entry_row(entry, kind="leaf")]
+            return []
+        entry = self.entries.get(child_id)
+        if entry is not None:
+            return [self.entry_row(entry, kind="leaf")]
+        return []
+
+    def merge_navigate_rows(self, rows):
+        def navigate_sort_key(row):
+            name = row.name.casefold()
+            if name.startswith("super+a default:"):
+                return (0, name)
+            return (1, name)
+
+        rows.sort(key=navigate_sort_key)
+        return rows
+
     def children_of(self, menu_id):
         if menu_id in ("", "root", None):
             return [self.group_row(node) for node in self.root_nodes]
@@ -370,23 +396,13 @@ class MenuModel:
             node = self.nodes[menu_id]
             nav_as = node.get("navigateAs")
             if nav_as:
-                return self.children_of(nav_as)
+                rows = list(self.children_of(nav_as))
+                for child_id in node.get("children") or []:
+                    rows.extend(self.child_rows(child_id))
+                return self.merge_navigate_rows(rows)
             rows = []
             for child_id in node.get("children") or []:
-                if child_id in self.navigate:
-                    entry = self.entries.get(child_id)
-                    if entry is None:
-                        continue
-                    rows.append(self.entry_row(entry, kind="menu"))
-                    continue
-                if child_id in self.dynamic:
-                    entry = self.entries.get(child_id)
-                    if entry is not None:
-                        rows.append(self.entry_row(entry, kind="leaf"))
-                    continue
-                entry = self.entries.get(child_id)
-                if entry is not None:
-                    rows.append(self.entry_row(entry, kind="leaf"))
+                rows.extend(self.child_rows(child_id))
             return rows
 
         if menu_id in self.navigate:
@@ -396,14 +412,7 @@ class MenuModel:
                 if entry.app_id.startswith(prefix):
                     rows.append(self.entry_row(entry))
 
-            def navigate_sort_key(row):
-                name = row.name.casefold()
-                if name.startswith("super+a default:"):
-                    return (0, name)
-                return (1, name)
-
-            rows.sort(key=navigate_sort_key)
-            return rows
+            return self.merge_navigate_rows(rows)
 
         return []
 
@@ -421,7 +430,15 @@ class MenuModel:
         if menu_id in self.nodes:
             node = self.nodes[menu_id]
             if node.get("navigateAs"):
-                return bool(self.navigate_children(node["navigateAs"]))
+                if self.navigate_children(node["navigateAs"]):
+                    return True
+                for child_id in node.get("children") or []:
+                    if child_id in self.navigate:
+                        if self.navigate_children(child_id):
+                            return True
+                    elif child_id in self.entries:
+                        return True
+                return False
             return True
         if menu_id == "apps":
             return True

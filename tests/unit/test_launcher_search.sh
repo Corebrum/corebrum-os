@@ -115,6 +115,13 @@ Keywords=gazebo;
 Exec=/usr/local/bin/corebrum-ros-menu launch gazebo
 NoDisplay=true
 EOF
+cat >"${share}/applications/corebrum-ollama.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Ollama   install
+Keywords=ollama;local;llm
+Exec=/usr/local/bin/corebrum-ollama-menu open
+EOF
 cat >"${share}/applications/corebrum-wallpaper.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -284,6 +291,11 @@ if ! grep -qx 'ROS >' <<<"$robot_names"; then
   printf '%s\n' "$robot_names" >&2
   exit 1
 fi
+if grep -qx 'Ollama   install' <<<"$robot_names" || grep -q 'Ollama' <<<"$robot_names"; then
+  echo "FAIL: Robot still lists Ollama; it belongs under AI Agents" >&2
+  printf '%s\n' "$robot_names" >&2
+  exit 1
+fi
 if grep -qx 'AI Agents >' <<<"$robot_names"; then
   echo "FAIL: Robot still nests AI Agents; it should be a top-level group" >&2
   printf '%s\n' "$robot_names" >&2
@@ -301,6 +313,17 @@ ai_first="$(names <<<"$ai" | head -n 1)"
 if [[ "$ai_first" != "Super+A default: Clear" ]]; then
   echo "FAIL: AI Agents top group should list default rows first, not a duplicate AI Agents row" >&2
   printf '%s\n' "$ai" >&2
+  exit 1
+fi
+if ! grep -qx 'Ollama   install' <<<"$(names <<<"$ai")"; then
+  echo "FAIL: AI Agents does not list Ollama" >&2
+  printf '%s\n' "$ai" >&2
+  exit 1
+fi
+ollama="$(COREBRUM_LAUNCHER_QUERY=ollama python3 "$ui")"
+if ! grep -q $'^Ollama   install\tAI Agents$' <<<"$ollama"; then
+  echo "FAIL: typing ollama did not find Ollama under AI Agents" >&2
+  printf '%s\n' "$ollama" >&2
   exit 1
 fi
 if grep -q 'Gazebo' <<<"$grok"; then
