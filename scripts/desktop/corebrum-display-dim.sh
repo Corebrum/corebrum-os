@@ -5,6 +5,7 @@ set -euo pipefail
 COREBRUM_DISPLAY_DIM_STATE="${XDG_STATE_HOME:-${HOME}/.local/state}/corebrum"
 BRIGHTNESS_SAVED="${COREBRUM_DISPLAY_DIM_STATE}/display-brightness-saved"
 DIMMED_MARK="${COREBRUM_DISPLAY_DIM_STATE}/display-dimmed"
+PENDING_AUTOLOCK_MARK="${COREBRUM_DISPLAY_DIM_STATE}/pending-autolock"
 
 corebrum_display_dim_session_locked() {
   if [[ "${COREBRUM_DISPLAY_DIM_LOCKED:-0}" == 1 ]]; then
@@ -57,10 +58,26 @@ corebrum_display_dim_off() {
   fi
 }
 
+corebrum_display_dim_run_pending_autolock() {
+  local lock_cmd
+  if [[ "${COREBRUM_DISPLAY_DIM_SKIP_PENDING_AUTOLOCK:-0}" == 1 ]]; then
+    return 0
+  fi
+  [[ -f "$PENDING_AUTOLOCK_MARK" ]] || return 0
+  rm -f "$PENDING_AUTOLOCK_MARK"
+  lock_cmd="$(command -v corebrum-lock 2>/dev/null || true)"
+  if [[ -z "$lock_cmd" && -x /usr/local/bin/corebrum-lock ]]; then
+    lock_cmd=/usr/local/bin/corebrum-lock
+  fi
+  [[ -n "$lock_cmd" ]] || return 0
+  COREBRUM_LOCK_SKIP_WAKE=1 "$lock_cmd" || true
+}
+
 corebrum_display_dim_on() {
   local pct
   if [[ "${COREBRUM_DISPLAY_DIM_STUB:-0}" == 1 ]]; then
     printf 'dim on\n'
+    corebrum_display_dim_run_pending_autolock
     return 0
   fi
   if command -v swaymsg >/dev/null 2>&1; then
@@ -79,6 +96,7 @@ corebrum_display_dim_on() {
     fi
   fi
   rm -f "$DIMMED_MARK"
+  corebrum_display_dim_run_pending_autolock
 }
 
 usage() {

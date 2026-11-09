@@ -3,7 +3,7 @@
 set -euo pipefail
 
 COREBRUM_SWAYIDLE_SYSTEM_AUTOLOCK=/etc/corebrum/sway/idle.conf
-LOCK_CMD=/usr/local/bin/corebrum-lock
+LOCK_CMD="/usr/local/bin/corebrum-lock idle"
 DIM_OFF_CMD=/usr/local/bin/corebrum-display-dim
 DIM_ON_CMD=/usr/local/bin/corebrum-display-dim
 
