@@ -285,6 +285,16 @@ corebrum_autolock_apply_choice() {
   esac
 }
 
+corebrum_autolock_pick() {
+  local choice="$1"
+  [[ -n "$choice" ]] || return 0
+  if ! corebrum_autolock_ready; then
+    corebrum_autolock_terminal "$(corebrum_autolock_install_script)"
+    return 0
+  fi
+  corebrum_autolock_apply_choice "$choice"
+}
+
 corebrum_autolock_open() {
   local choice lines=5
   if ! corebrum_autolock_ready; then
@@ -313,7 +323,7 @@ corebrum_autolock_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-autolock refresh|open|toggle|start|render MINUTES|entry-name|data-dir|lines
+Usage: corebrum-autolock refresh|open|pick CHOICE|toggle|start|render MINUTES|entry-name|data-dir|lines
 EOF
 }
 
@@ -321,6 +331,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_autolock_refresh ;;
   open) corebrum_autolock_open ;;
+  pick) corebrum_autolock_pick "${2:-}" ;;
   toggle) corebrum_autolock_toggle ;;
   start) corebrum_autolock_start ;;
   hold)

@@ -15,6 +15,7 @@ GTK is unavailable so the shell can fall back to Fuzzel.
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -46,7 +47,20 @@ class Entry:
 
 
 class Row:
-    def __init__(self, name, icon, keywords, comment, kind, menu_id=None, entry=None, path="", depth=0):
+    def __init__(
+        self,
+        name,
+        icon,
+        keywords,
+        comment,
+        kind,
+        menu_id=None,
+        entry=None,
+        path="",
+        depth=0,
+        chooser_parent=None,
+        chooser_choice=None,
+    ):
         self.name = name
         self.icon = icon
         self.keywords = keywords
@@ -56,6 +70,8 @@ class Row:
         self.entry = entry
         self.path = path
         self.depth = depth
+        self.chooser_parent = chooser_parent
+        self.chooser_choice = chooser_choice
         self.app_id = entry.app_id if entry is not None else (menu_id or name)
 
 
@@ -237,7 +253,7 @@ def load_menu_tree():
         with open(path, encoding="utf-8") as handle:
             return json.load(handle)
     except (OSError, json.JSONDecodeError):
-        return {"root": [], "navigate": {}, "dynamic": []}
+        return {"root": [], "navigate": {}, "dynamic": [], "choosers": {}}
 
 
 def load_icon_pixbuf(theme, icon, size):
@@ -275,7 +291,7 @@ def entry_haystack(entry):
 def row_haystack(row):
     if row.entry is not None:
         return entry_haystack(row.entry)
-    return haystack_parts(row.name, row.keywords, row.comment, row.menu_id or "")
+    return haystack_parts(row.name, row.keywords, row.comment, row.menu_id or "", row.chooser_parent or "")
 
 
 def matches(hay, compact):
@@ -291,6 +307,7 @@ class MenuModel:
         self.root_nodes = list(self.tree.get("root") or [])
         self.navigate = dict(self.tree.get("navigate") or {})
         self.dynamic = set(self.tree.get("dynamic") or [])
+        self.choosers = dict(self.tree.get("choosers") or {})
         self.nodes = {node["id"]: node for node in self.root_nodes if "id" in node}
         self.claimed = self._claimed_ids()
 
@@ -304,7 +321,55 @@ class MenuModel:
                 claimed.add(child)
         claimed.update(self.navigate)
         claimed.update(self.dynamic)
+        claimed.update(self.choosers.keys())
         return claimed
+
+    def chooser_bin(self, menu_id):
+        spec = self.choosers.get(menu_id) or {}
+        name = spec.get("cmd") or menu_id
+        for candidate in (f"/usr/local/bin/{name}", shutil.which(name) or ""):
+            if candidate and os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                return candidate
+        return f"/usr/local/bin/{name}"
+
+    def chooser_lines(self, menu_id):
+        spec = self.choosers.get(menu_id)
+        if not spec:
+            return []
+        argv = [self.chooser_bin(menu_id), spec.get("list", "lines")]
+        try:
+            completed = subprocess.run(
+                argv,
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return []
+        if completed.returncode != 0:
+            return []
+        return [line for line in completed.stdout.splitlines() if line.strip()]
+
+    def chooser_child_rows(self, menu_id):
+        entry = self.entries.get(menu_id)
+        if entry is None:
+            return []
+        rows = []
+        for line in self.chooser_lines(menu_id):
+            rows.append(
+                Row(
+                    name=line,
+                    icon=entry.icon,
+                    keywords=entry.keywords,
+                    comment=entry.comment,
+                    kind="leaf",
+                    entry=None,
+                    chooser_parent=menu_id,
+                    chooser_choice=line,
+                )
+            )
+        return rows
 
     def label_for(self, menu_id):
         node = self.nodes.get(menu_id)
@@ -365,6 +430,11 @@ class MenuModel:
             if entry is None:
                 return []
             return [self.entry_row(entry, kind="menu")]
+        if child_id in self.choosers:
+            entry = self.entries.get(child_id)
+            if entry is None:
+                return []
+            return [self.entry_row(entry, kind="menu")]
         if child_id in self.dynamic:
             entry = self.entries.get(child_id)
             if entry is not None:
@@ -391,6 +461,9 @@ class MenuModel:
 
         if menu_id == "apps" or (menu_id in self.nodes and self.nodes[menu_id].get("provider") == "apps"):
             return [self.entry_row(entry) for entry in self.apps_entries()]
+
+        if menu_id in self.choosers:
+            return self.chooser_child_rows(menu_id)
 
         if menu_id in self.nodes:
             node = self.nodes[menu_id]
@@ -427,6 +500,8 @@ class MenuModel:
         ]
 
     def can_navigate(self, menu_id):
+        if menu_id in self.choosers:
+            return bool(self.chooser_lines(menu_id))
         if menu_id in self.nodes:
             node = self.nodes[menu_id]
             if node.get("navigateAs"):
@@ -453,6 +528,18 @@ class MenuModel:
             return self.can_navigate(row.entry.app_id)
         return False
 
+    def pick_chooser(self, menu_id, choice):
+        spec = self.choosers.get(menu_id)
+        if not spec or not choice:
+            return
+        argv = [self.chooser_bin(menu_id), spec.get("pick", "pick"), choice]
+        subprocess.Popen(
+            argv,
+            start_new_session=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
     def display_name(self, row):
         if self.row_navigable(row):
             return f"{row.name} >"
@@ -463,7 +550,13 @@ class MenuModel:
             path_parts = []
         rows = []
         children = self.children_of(menu_id)
-        path = self.path_labels(path_parts)
+        branch = list(path_parts)
+        if menu_id not in ("", "root", None):
+            if path_parts and path_parts[-1] == menu_id:
+                branch = path_parts
+            else:
+                branch = path_parts + [menu_id]
+        path = self.path_labels(branch)
         for child in children:
             child.path = path
             child.depth = depth
@@ -473,8 +566,8 @@ class MenuModel:
                 next_id = child.menu_id
             elif child.kind == "menu" and child.entry is not None:
                 next_id = child.entry.app_id
-            if next_id and self.can_navigate(next_id):
-                nested_parts = path_parts + [next_id]
+            if next_id and (next_id in self.choosers or self.can_navigate(next_id)):
+                nested_parts = branch + [next_id]
                 for nested in self.collect_descendants(next_id, nested_parts, depth + 1):
                     rows.append(nested)
         return rows
@@ -495,6 +588,10 @@ class MenuModel:
 
         shown.sort(key=sort_key)
         return shown
+
+
+def launch_chooser(model, menu_id, choice):
+    model.pick_chooser(menu_id, choice)
 
 
 def launch(entry):
@@ -742,6 +839,12 @@ def run_window():
             enter_menu(menu_id)
             return
         data = row.row_data
+        if data.chooser_parent and data.chooser_choice:
+            try:
+                launch_chooser(model, data.chooser_parent, data.chooser_choice)
+            finally:
+                Gtk.main_quit()
+            return
         if data.kind == "menu" and data.entry is not None:
             try:
                 launch(data.entry)

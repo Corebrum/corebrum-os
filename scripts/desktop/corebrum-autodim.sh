@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Super+Space auto dim timer, independent of Autolock.
+# Super+Space Autodim timer, independent of Autolock.
 set -euo pipefail
 
 COREBRUM_AUTODIM_INSTALL_MARK='   install'
@@ -63,9 +63,9 @@ corebrum_autodim_label() {
 
 corebrum_autodim_entry_name() {
   if corebrum_autodim_ready; then
-    printf 'Auto dim\n'
+    printf 'Autodim\n'
   else
-    printf 'Auto dim%s\n' "$COREBRUM_AUTODIM_INSTALL_MARK"
+    printf 'Autodim%s\n' "$COREBRUM_AUTODIM_INSTALL_MARK"
   fi
 }
 
@@ -123,7 +123,7 @@ corebrum_autodim_set_minutes() {
   local minutes="$1" dir label
   case "$minutes" in
     0 | 5 | 10 | 30 | 60) ;;
-    *) corebrum_autodim_die "auto dim timer must be off or 5, 10, 30, or 60 minutes" ;;
+    *) corebrum_autodim_die "Autodim timer must be off or 5, 10, 30, or 60 minutes" ;;
   esac
   dir="$(corebrum_autodim_state_dir)"
   if [[ "${COREBRUM_AUTODIM_STUB:-0}" == 1 ]]; then
@@ -137,9 +137,9 @@ corebrum_autodim_set_minutes() {
   /usr/local/bin/corebrum-swayidle start
   label="$(corebrum_autodim_label "$minutes")"
   if [[ "$minutes" == 0 ]]; then
-    corebrum_autodim_notify "Auto dim" "Auto dim is off."
+    corebrum_autodim_notify "Autodim" "Autodim is off."
   else
-    corebrum_autodim_notify "Auto dim" "The display turns off after ${label} idle."
+    corebrum_autodim_notify "Autodim" "The display turns off after ${label} idle."
   fi
 }
 
@@ -166,7 +166,7 @@ corebrum_autodim_apply_choice() {
       esac
       ;;
     *)
-      corebrum_autodim_die "unknown auto dim choice"
+      corebrum_autodim_die "unknown Autodim choice"
       ;;
   esac
   corebrum_autodim_set_minutes "$minutes"
@@ -180,6 +180,16 @@ corebrum_autodim_swayidle_cmd() {
   fi
   here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   printf '%s\n' "${here}/corebrum-swayidle.sh"
+}
+
+corebrum_autodim_pick() {
+  local choice="$1"
+  [[ -n "$choice" ]] || return 0
+  if ! corebrum_autodim_ready; then
+    corebrum_autodim_terminal "$("$(corebrum_autodim_swayidle_cmd)" install-script)"
+    return 0
+  fi
+  corebrum_autodim_apply_choice "$choice"
 }
 
 corebrum_autodim_open() {
@@ -201,7 +211,7 @@ corebrum_autodim_open() {
   choice="$(corebrum_autodim_lines | fuzzel \
     --config /etc/corebrum/fuzzel/fuzzel.ini \
     --dmenu \
-    --prompt 'Auto dim  ' \
+    --prompt 'Autodim  ' \
     --width 32 \
     --lines "$lines")" || return 0
   [[ -n "$choice" ]] || return 0
@@ -210,7 +220,7 @@ corebrum_autodim_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-autodim refresh|open|set MINUTES|entry-name|data-dir|lines
+Usage: corebrum-autodim refresh|open|pick CHOICE|set MINUTES|entry-name|data-dir|lines
 EOF
 }
 
@@ -218,6 +228,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_autodim_refresh ;;
   open) corebrum_autodim_open ;;
+  pick) corebrum_autodim_pick "${2:-}" ;;
   set) corebrum_autodim_set_minutes "${2:-}" ;;
   entry-name) corebrum_autodim_entry_name ;;
   data-dir) corebrum_autodim_data_dir ;;

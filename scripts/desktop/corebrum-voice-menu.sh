@@ -230,6 +230,12 @@ EOF
   esac
 }
 
+corebrum_voice_pick() {
+  local choice="$1"
+  [[ -n "$choice" ]] || return 0
+  corebrum_voice_run "$choice"
+}
+
 corebrum_voice_open() {
   local choice
   if [[ "${COREBRUM_VOICE_STUB:-0}" == 1 && -z "${COREBRUM_VOICE_CHOICE:-}" ]]; then
@@ -252,7 +258,7 @@ corebrum_voice_open() {
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-voice-menu refresh|open|labels|data-dir
+Usage: corebrum-voice-menu refresh|open|pick CHOICE|labels|data-dir
 EOF
 }
 
@@ -260,6 +266,7 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_voice_refresh ;;
   open) corebrum_voice_open ;;
+  pick) corebrum_voice_pick "${2:-}" ;;
   labels) corebrum_voice_labels ;;
   data-dir) corebrum_voice_data_dir ;;
   -h | --help | help) usage ;;

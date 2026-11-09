@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Auto dim defers gtklock until wake; gtklock stays visible while locked.
+# Autodim defers gtklock until wake; gtklock stays visible while locked.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

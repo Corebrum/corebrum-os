@@ -48,7 +48,7 @@
       "id": "setup",
       "label": "Setup",
       "icon": "preferences-system",
-      "keywords": "settings;autolock;autodim;dim;display;timezone;tz;password;passwd;voice;speech;mic;microphone;transcribe;vnc;remote;wormhole",
+      "keywords": "settings;autolock;autodim;auto dim;dim;display;timezone;tz;password;passwd;voice;speech;mic;microphone;transcribe;vnc;remote;wormhole",
       "children": ["corebrum-autolock", "corebrum-autodim", "corebrum-timezone", "corebrum-password", "corebrum-voice", "corebrum-vnc", "corebrum-wormhole"]
     },
     {
@@ -87,6 +87,11 @@
     "corebrum-realsense": {"prefix": "corebrum-realsense-tool-"},
     "corebrum-synapse": {"prefix": "corebrum-synapse-action-"},
     "corebrum-arc": {"prefix": "corebrum-arc-action-"}
+  },
+  "choosers": {
+    "corebrum-autolock": {"cmd": "corebrum-autolock", "list": "lines", "pick": "pick"},
+    "corebrum-autodim": {"cmd": "corebrum-autodim", "list": "lines", "pick": "pick"},
+    "corebrum-voice": {"cmd": "corebrum-voice-menu", "list": "labels", "pick": "pick"}
   },
   "dynamic": [
     "corebrum-wallpaper",

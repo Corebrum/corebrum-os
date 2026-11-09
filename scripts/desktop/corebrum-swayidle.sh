@@ -139,7 +139,7 @@ fi
 set -e
 printf '\n'
 if [ "$ec" -eq 0 ]; then
-  printf '%s\n' "swayidle is installed. Autolock still applies. Auto dim follows Setup."
+  printf '%s\n' "swayidle is installed. Autolock still applies. Autodim follows Setup."
 else
   printf 'Install failed (%s).\n' "$ec"
 fi

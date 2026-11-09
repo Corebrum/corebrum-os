@@ -13,7 +13,7 @@ Status: Accepted
 - Enter or Right on a group or static parent (ROS, AI Agents, RealSense, Corebrum Synapse, Learn, Updates, System) shows children in the same window. Right only opens a submenu; it does not launch a leaf. Backspace or Left with an empty search box goes up one level. Escape clears a non-empty filter, then quits.
 - Typing searches descendants of the active menu. Nested hits show a short parent path. Empty filter shows only direct children.
 - Updates rows and System power actions are `NoDisplay=true` desktop leaves, the same pattern as agent and ROS tool leaves, so typing `ubuntu` or `reboot` works from root. The Power parent desktop is named System.
-- Dynamic choosers (Wallpaper, Ollama, Skills, Remote desktop, Wormhole, Autolock) still run their existing `open` path. Fuzzel remains the flat fallback when GTK cannot start.
+- **Choosers** in the menu tree (`Autolock`, `Autodim`, and `Voice`) list their rows with `lines` or `labels` and apply a choice with `pick` so Enter or Right opens the list in the GTK window; Left or Backspace goes back without running a row. Other dynamic parents (Wallpaper, Ollama, Skills, Remote desktop, Wormhole) still run their existing `open` path and Fuzzel. Fuzzel remains the flat fallback when GTK cannot start.
 
 ## Consequences
 
