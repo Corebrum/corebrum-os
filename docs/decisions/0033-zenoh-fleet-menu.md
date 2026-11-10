@@ -3,7 +3,7 @@
 Date: 2026-10-23
 Status: Accepted
 
-The 0.1.6 pin and the apply step are in `docs/decisions/0133-cortex-zenoh-fleet.md`.
+The menu pin and the apply step are in `docs/decisions/0133-cortex-zenoh-fleet.md`.
 
 ## Context
 
