@@ -1,4 +1,3 @@
 # Managed by Corebrum OS. Lets the desktop user sync zenoh-fleet without a password.
-Defaults!/usr/local/bin/corebrum !requiretty
 %sudo ALL=(root) NOPASSWD: /usr/local/bin/corebrum zenoh fleet sync
 %sudo ALL=(root) NOPASSWD: /usr/local/bin/corebrum zenoh fleet sync *
