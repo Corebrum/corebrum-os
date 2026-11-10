@@ -25,7 +25,7 @@ zenoh subscribe -k 'rt/**'</code></pre>
       <h2>Zenoh fleet</h2>
       <p>Zenoh fleet is under Super+Space Robot. It says install until <code>zenoh-fleet</code> is present. Choosing it installs <code>@corebrum/zenoh-fleet</code> 0.1.6 and runs the wizard. The hub keeps <code>corebrum-zenoh-router.service</code>. A member stops the local router and connects ROS and Cortex to that hub. The files land in <code>~/local-fleet/</code> by default, and the menu applies them.</p>
       <h2>Cortex</h2>
-      <p><code>corebrum cortex install</code> builds the Cortex checkout beside this one. <code>corebrum cortex daemon</code> joins the router in <code>/etc/corebrum/zenoh/router</code>. <code>cortex compute-stats</code>, <code>cortex submit</code>, <code>cortex status</code>, and <code>cortex results</code> are the fleet commands. Driving the robot stays on Corebrum Synapse.</p>
+      <p><code>corebrum cortex install</code> clones <code>Corebrum/corebrum-cortex</code> beside this checkout when that directory is missing, then builds it. The repository is private, so this machine needs a GitHub SSH key that can read it. <code>corebrum cortex daemon</code> joins the router in <code>/etc/corebrum/zenoh/router</code>. <code>cortex compute-stats</code>, <code>cortex submit</code>, <code>cortex status</code>, and <code>cortex results</code> are the fleet commands. Driving the robot stays on Corebrum Synapse.</p>
     </main>
   </div>
 </body>

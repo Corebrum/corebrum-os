@@ -5,19 +5,55 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   exit 1
 fi
 
-corebrum_cortex_checkout() {
-  local parent candidate
+# Private repository. A machine needs a GitHub SSH key that can read it.
+COREBRUM_CORTEX_URL="${COREBRUM_CORTEX_URL:-git@github.com:Corebrum/corebrum-cortex.git}"
+
+corebrum_cortex_dest() {
+  local parent
   if [[ -n "${COREBRUM_CORTEX_ROOT:-}" ]]; then
     printf '%s\n' "$COREBRUM_CORTEX_ROOT"
     return 0
   fi
   parent="$(dirname "$COREBRUM_ROOT")"
-  candidate="${parent}/corebrum-cortex"
-  if [[ -f "${candidate}/Cargo.toml" ]]; then
-    printf '%s\n' "$candidate"
+  if [[ -d "$parent" && -w "$parent" ]]; then
+    printf '%s\n' "${parent}/corebrum-cortex"
     return 0
   fi
-  corebrum_die "Corebrum Cortex checkout is missing at ${candidate}"
+  if [[ -n "${HOME:-}" && -d "$HOME" && -w "$HOME" ]]; then
+    printf '%s\n' "${HOME}/corebrum-cortex"
+    return 0
+  fi
+  printf '%s\n' "${parent}/corebrum-cortex"
+}
+
+corebrum_cortex_prepare() {
+  local root parent
+  root="$(corebrum_cortex_dest)"
+  if [[ -f "${root}/Cargo.toml" ]]; then
+    printf '%s\n' "$root"
+    return 0
+  fi
+  if [[ -e "$root" ]]; then
+    corebrum_die "Corebrum Cortex path exists but is not a checkout: ${root}"
+  fi
+  parent="$(dirname "$root")"
+  if [[ ! -d "$parent" || ! -w "$parent" ]]; then
+    corebrum_die "cannot clone Corebrum Cortex into ${root}"
+  fi
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: git clone --depth 1 ${COREBRUM_CORTEX_URL} ${root}"
+    printf '%s\n' "$root"
+    return 0
+  fi
+  command -v git >/dev/null 2>&1 || corebrum_die "git is not installed"
+  corebrum_log "Cloning Corebrum Cortex into ${root}"
+  if ! GIT_TERMINAL_PROMPT=0 git clone --depth 1 "$COREBRUM_CORTEX_URL" "$root"; then
+    corebrum_die "could not clone ${COREBRUM_CORTEX_URL}. The repository is private, so this machine needs a GitHub SSH key that can read Corebrum/corebrum-cortex."
+  fi
+  if [[ ! -f "${root}/Cargo.toml" ]]; then
+    corebrum_die "cloned Corebrum Cortex has no Cargo.toml at ${root}"
+  fi
+  printf '%s\n' "$root"
 }
 
 corebrum_cortex_router_url() {
@@ -34,12 +70,13 @@ corebrum_cortex_router_url() {
 
 corebrum_cmd_cortex_install() {
   local root bin
-  root="$(corebrum_cortex_checkout)"
+  root="$(corebrum_cortex_prepare)"
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: cargo build --release --manifest-path ${root}/Cargo.toml"
     corebrum_log "dry-run: install ${root}/target/release/cortex /usr/local/bin/cortex"
     return 0
   fi
+  command -v cargo >/dev/null 2>&1 || corebrum_die "cargo is not installed. Install Rust, then run corebrum cortex install again."
   corebrum_log "run: cargo build --release --manifest-path ${root}/Cargo.toml"
   cargo build --release --manifest-path "${root}/Cargo.toml"
   bin="${root}/target/release/cortex"
@@ -58,7 +95,7 @@ corebrum_cmd_cortex_daemon() {
   if [[ -x /usr/local/bin/cortex ]]; then
     bin=/usr/local/bin/cortex
   else
-    bin="$(corebrum_cortex_checkout)/target/release/cortex"
+    bin="$(corebrum_cortex_dest)/target/release/cortex"
   fi
   [[ -x "$bin" ]] || corebrum_die "cortex is not installed; run corebrum cortex install"
   exec "$bin" daemon --zenoh-router "$url" "$@"
@@ -73,7 +110,7 @@ corebrum_cmd_cortex_elect() {
   if [[ -x /usr/local/bin/cortex ]]; then
     bin=/usr/local/bin/cortex
   else
-    bin="$(corebrum_cortex_checkout)/target/release/cortex"
+    bin="$(corebrum_cortex_dest)/target/release/cortex"
   fi
   [[ -x "$bin" ]] || corebrum_die "cortex is not installed; run corebrum cortex install"
   winner="$("$bin" supernode elect --file "$file")"
@@ -115,7 +152,7 @@ corebrum_cmd_cortex() {
       cat <<'EOF'
 Usage: corebrum cortex install|daemon|elect <workers.json>
 
-  install    Build the sibling corebrum-cortex checkout and install cortex
+  install    Clone Corebrum/corebrum-cortex when it is missing, then install cortex
   daemon     Run cortex daemon against /etc/corebrum/zenoh/router
   elect      Pick a supernode from a worker JSON list and apply zenoh-fleet
 
