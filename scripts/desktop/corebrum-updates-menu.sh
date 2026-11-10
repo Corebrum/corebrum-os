@@ -107,14 +107,6 @@ corebrum_updates_synapse_ready() {
   [[ -s /etc/corebrum/synapse.root && -x /usr/local/bin/synapse ]]
 }
 
-corebrum_updates_fleet_ready() {
-  if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
-    [[ "${COREBRUM_UPDATES_ZENOH_FLEET:-0}" == 1 ]]
-    return
-  fi
-  command -v zenoh-fleet >/dev/null 2>&1
-}
-
 # .mcp.json is tracked with a relative command. synapse mcp setup, which
 # init runs, rewrites it with this machine's ROS wrapper. That is not an edit
 # the operator made.
@@ -301,17 +293,13 @@ corebrum_updates_apply_zenoh() {
   else
     printf 'ROS 2 is not installed, so the Zenoh client stays as it is.\n'
   fi
-  if corebrum_updates_fleet_ready; then
-    fleet_menu="$(corebrum_updates_tool "${COREBRUM_UPDATES_FLEET_MENU:-}" corebrum-zenoh-fleet-menu.sh /usr/local/bin/corebrum-zenoh-fleet-menu)"
-    if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
-      line="$(COREBRUM_ZENOH_FLEET_STUB=1 "$fleet_menu" command)"
-      printf 'run: %s\n' "$line"
-    else
-      line="$("$fleet_menu" command)"
-      bash -c "$line"
-    fi
+  fleet_menu="$(corebrum_updates_tool "${COREBRUM_UPDATES_FLEET_MENU:-}" corebrum-zenoh-fleet-menu.sh /usr/local/bin/corebrum-zenoh-fleet-menu)"
+  if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
+    line="$(COREBRUM_ZENOH_FLEET_STUB=1 "$fleet_menu" command)"
+    printf 'run: %s\n' "$line"
   else
-    printf 'Zenoh fleet is not installed. Skipped.\n'
+    line="$("$fleet_menu" command)"
+    bash -c "$line"
   fi
 }
 
