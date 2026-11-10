@@ -148,7 +148,7 @@ printf '\n'
 dir="$(sed -n 's/^corebrum-fleet-dir: //p' "$log" | head -n 1)"
 rm -f "$log"
 if [ "$ec" -eq 0 ] && [ -n "$dir" ] && [ -f "$dir/fleet.json" ]; then
-  sudo corebrum zenoh fleet apply "$dir" || printf 'Could not apply %s.\n' "$dir"
+  sudo corebrum zenoh fleet sync "$dir" || printf 'Could not apply %s.\n' "$dir"
 elif [ "$ec" -ne 0 ]; then
   printf 'zenoh-fleet exited (%s).\n' "$ec"
 fi

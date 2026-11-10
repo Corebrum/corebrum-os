@@ -1,0 +1,12 @@
+# Managed by Corebrum OS. Apply zenoh-fleet when the wizard rewrites files.
+[Unit]
+Description=Watch zenoh-fleet configuration in the home directory
+
+[Path]
+PathChanged=%h/local-fleet/fleet.json
+PathChanged=%h/local-fleet/rmw-zenoh-session.json5
+Unit=corebrum-zenoh-fleet.service
+MakeDirectory=no
+
+[Install]
+WantedBy=default.target

@@ -19,7 +19,7 @@ assert_grep() {
 assert_grep 'corebrum-zenoh-fleet-menu refresh' "$launcher" "launcher does not refresh Zenoh fleet"
 assert_grep 'corebrum-zenoh-fleet-menu.sh' "$desktop_lib" "desktop install does not ship the Zenoh fleet menu"
 assert_grep '@corebrum/zenoh-fleet@0\.1\.6' "$menu" "installer does not pin zenoh-fleet 0.1.6"
-assert_grep 'corebrum zenoh fleet apply' "$menu" "wizard does not apply the fleet directory"
+assert_grep 'corebrum zenoh fleet sync' "$menu" "wizard does not sync the fleet directory"
 if grep -q 'zenoh-fleet' "${ROOT}/manifests/packages/desktop.txt"; then
   echo "FAIL: desktop profile preinstalls Zenoh fleet" >&2
   fail=1

@@ -266,6 +266,37 @@ corebrum_ros_require_single_router() {
   fi
 }
 
+corebrum_ros_install_fleet_sync() {
+  local unit=corebrum-zenoh-fleet-sync.service
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    corebrum_log "dry-run: install ${unit}, zenoh-fleet sync helper, and sudoers"
+    return 0
+  fi
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/systemd/${unit}" \
+    "/etc/systemd/system/${unit}" \
+    644
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/scripts/desktop/corebrum-zenoh-fleet-sync.sh" \
+    /usr/local/bin/corebrum-zenoh-fleet-sync \
+    755
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/sudoers.d/corebrum-zenoh-fleet" \
+    /etc/sudoers.d/corebrum-zenoh-fleet \
+    440
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/systemd/user/corebrum-zenoh-fleet.path" \
+    /etc/systemd/user/corebrum-zenoh-fleet.path \
+    644
+  corebrum_install_file \
+    "${COREBRUM_ROOT}/config/systemd/user/corebrum-zenoh-fleet.service" \
+    /etc/systemd/user/corebrum-zenoh-fleet.service \
+    644
+  systemctl daemon-reload
+  systemctl enable "${unit}"
+  corebrum_log "enabled ${unit} for boot-time zenoh-fleet sync"
+}
+
 corebrum_ros_enable_router() {
   local state count
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
@@ -420,6 +451,7 @@ corebrum_phase_ros() {
     "${COREBRUM_ROOT}/config/systemd/corebrum-zenoh-router.service" \
     "/etc/systemd/system/${COREBRUM_ROS_UNIT}" \
     644
+  corebrum_ros_install_fleet_sync
   if [[ -e /usr/local/bin/corebrum-session ]]; then
     corebrum_install_file \
       "${COREBRUM_ROOT}/scripts/desktop/corebrum-session.sh" \
@@ -583,18 +615,22 @@ corebrum_cmd_zenoh() {
         apply)
           corebrum_cmd_zenoh_fleet_apply "${3:-}"
           ;;
+        sync)
+          corebrum_cmd_zenoh_fleet_sync "${3:-}"
+          ;;
         *)
-          corebrum_die "expected: corebrum zenoh fleet apply [directory]"
+          corebrum_die "expected: corebrum zenoh fleet apply|sync [directory]"
           ;;
       esac
       ;;
     "" | -h | --help | help)
       cat <<'EOF'
-Usage: corebrum zenoh status|peers|fleet apply [directory]
+Usage: corebrum zenoh status|peers|fleet apply|sync [directory]
 
   status    Show the Corebrum Zenoh router service
   peers     Show the router listen address and this machine's IPv4 addresses
   fleet     Apply a zenoh-fleet directory (hub keeps rmw_zenohd, member connects)
+  sync      Apply when fleet.json changed (idempotent; used by automation)
 
 The router address for Cortex is /etc/corebrum/zenoh/router. See docs/installation/ros.md.
 EOF

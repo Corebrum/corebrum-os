@@ -90,7 +90,13 @@ corebrum_cmd_cortex_install() {
 }
 
 corebrum_cmd_cortex_daemon() {
-  local url bin
+  local url bin fleet_dir
+  fleet_dir="${HOME:-.}/local-fleet"
+  if [[ -f "${fleet_dir}/fleet.json" ]]; then
+    sudo -n corebrum zenoh fleet sync "$fleet_dir" 2>/dev/null \
+      || sudo corebrum zenoh fleet sync "$fleet_dir" 2>/dev/null \
+      || true
+  fi
   url="$(corebrum_cortex_router_url)"
   if [[ -x /usr/local/bin/cortex ]]; then
     bin=/usr/local/bin/cortex

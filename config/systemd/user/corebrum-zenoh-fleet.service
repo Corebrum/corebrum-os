@@ -1,0 +1,8 @@
+# Managed by Corebrum OS.
+[Unit]
+Description=Apply changed zenoh-fleet configuration
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/corebrum-zenoh-fleet-sync sync

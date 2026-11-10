@@ -1,0 +1,13 @@
+# Managed by Corebrum OS. Apply zenoh-fleet when fleet.json changes (e.g. after reboot).
+[Unit]
+Description=Sync Corebrum zenoh-fleet configuration
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/corebrum zenoh fleet sync
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

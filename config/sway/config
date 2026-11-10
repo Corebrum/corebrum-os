@@ -99,6 +99,7 @@ exec mako --config /etc/corebrum/mako/config
 exec /usr/local/bin/corebrum-battery-notify
 # Weekly reminder. This does not run apt or git. The pause lets Mako start first.
 exec sh -c 'sleep 2; exec /usr/local/bin/corebrum-updates-menu remind'
+exec /usr/local/bin/corebrum-zenoh-fleet-sync start
 exec /usr/local/bin/corebrum-autolock start
 exec /usr/local/bin/corebrum-autotile
 # First graphical login. RealSense and Corebrum Synapse need ROS 2, so the wizard

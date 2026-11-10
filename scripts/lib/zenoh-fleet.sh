@@ -94,18 +94,115 @@ corebrum_zenoh_clear_member_session() {
   rm -f "$session" "$profile"
 }
 
+corebrum_zenoh_fleet_default_dir() {
+  if [[ -n "${COREBRUM_ZENOH_FLEET_DIR:-}" ]]; then
+    printf '%s\n' "$COREBRUM_ZENOH_FLEET_DIR"
+    return 0
+  fi
+  if [[ "$(id -u)" -eq 0 ]]; then
+    local recorded home_fleet
+    recorded="$(corebrum_zenoh_etc_root)/corebrum/zenoh/fleet-dir"
+    if [[ -f "$recorded" ]]; then
+      tr -d '[:space:]' <"$recorded"
+      return 0
+    fi
+    for home_fleet in /home/*/local-fleet; do
+      if [[ -f "${home_fleet}/fleet.json" ]]; then
+        printf '%s\n' "$home_fleet"
+        return 0
+      fi
+    done
+  fi
+  printf '%s\n' "${HOME:-.}/local-fleet"
+}
+
+corebrum_zenoh_fleet_fingerprint() {
+  local dir="$1"
+  python3 - "${dir}/fleet.json" "${dir}/rmw-zenoh-session.json5" <<'PY'
+import hashlib, pathlib, sys
+h = hashlib.sha256()
+found = False
+for p in sys.argv[1:]:
+    path = pathlib.Path(p)
+    if path.is_file():
+        h.update(path.read_bytes())
+        found = True
+if not found:
+    sys.exit(1)
+print(h.hexdigest())
+PY
+}
+
+corebrum_zenoh_fleet_applied_fingerprint() {
+  local stamp
+  stamp="$(corebrum_zenoh_etc_root)/corebrum/zenoh/fleet-applied.sha256"
+  if [[ -f "$stamp" ]]; then
+    tr -d '[:space:]' <"$stamp"
+  fi
+}
+
+corebrum_zenoh_fleet_write_stamp() {
+  local dir="$1" root fp work dest recorded
+  fp="$(corebrum_zenoh_fleet_fingerprint "$dir")" || return 1
+  root="$(corebrum_zenoh_etc_root)"
+  dest="${root}/corebrum/zenoh/fleet-applied.sha256"
+  recorded="${root}/corebrum/zenoh/fleet-dir"
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    printf 'dry-run: write %s and %s\n' "$dest" "$recorded"
+    return 0
+  fi
+  mkdir -p "${root}/corebrum/zenoh"
+  work="$(mktemp)"
+  printf '%s\n' "$fp" >"$work"
+  if [[ "$root" == /etc ]]; then
+    corebrum_install_file "$work" "$dest" 644
+    printf '%s\n' "$(readlink -f "$dir")" >"$work"
+    corebrum_install_file "$work" "$recorded" 644
+  else
+    cp "$work" "$dest"
+    printf '%s\n' "$(readlink -f "$dir")" >"$work"
+    cp "$work" "$recorded"
+  fi
+  rm -f "$work"
+}
+
+corebrum_cmd_zenoh_fleet_sync() {
+  local dir="${1:-}" fleet_json fp applied
+  if [[ -z "$dir" ]]; then
+    dir="$(corebrum_zenoh_fleet_default_dir)"
+  fi
+  fleet_json="${dir}/fleet.json"
+  if [[ ! -f "$fleet_json" ]]; then
+    return 0
+  fi
+  fp="$(corebrum_zenoh_fleet_fingerprint "$dir")" || corebrum_die "could not fingerprint ${dir}"
+  applied="$(corebrum_zenoh_fleet_applied_fingerprint)"
+  if [[ -n "$applied" && "$fp" == "$applied" ]]; then
+    return 0
+  fi
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    printf 'dry-run: zenoh fleet apply %s\n' "$dir"
+    return 0
+  fi
+  if [[ "$(id -u)" -ne 0 && -z "${COREBRUM_ZENOH_ETC:-}" ]]; then
+    corebrum_die "zenoh fleet sync requires root (use sudo)"
+  fi
+  corebrum_cmd_zenoh_fleet_apply "$dir"
+  printf 'zenoh fleet: applied %s\n' "$dir"
+}
+
 corebrum_cmd_zenoh_fleet_apply() {
-  local dir="${1:-}" fleet role endpoint url root session
+  local dir="${1:-}" fleet_json role endpoint url root session
   if [[ -z "$dir" ]]; then
     dir="${HOME:-.}/local-fleet"
   fi
-  fleet="${dir}/fleet.json"
-  [[ -f "$fleet" ]] || corebrum_die "fleet.json is missing in ${dir}"
+  fleet_json="${dir}/fleet.json"
+  [[ -f "$fleet_json" ]] || corebrum_die "fleet.json is missing in ${dir}"
   if [[ "${DRY_RUN:-0}" != 1 && "$(id -u)" -ne 0 && -z "${COREBRUM_ZENOH_ETC:-}" ]]; then
     corebrum_die "applying a Zenoh fleet requires root"
   fi
-  role="$(corebrum_zenoh_fleet_fields "$fleet" | sed -n '1p')"
-  endpoint="$(corebrum_zenoh_fleet_fields "$fleet" | sed -n '2p')"
+  role="$(corebrum_zenoh_fleet_fields "$fleet_json" | sed -n '1p')"
+  endpoint="$(corebrum_zenoh_fleet_fields "$fleet_json" | sed -n '2p')"
   if [[ -z "$role" ]]; then
     if [[ -f "${dir}/rmw-zenoh-session.json5" ]]; then
       role=member
@@ -149,4 +246,7 @@ corebrum_cmd_zenoh_fleet_apply() {
       corebrum_die "unknown fleet role: ${role}"
       ;;
   esac
+  if [[ "${DRY_RUN:-0}" != 1 ]]; then
+    corebrum_zenoh_fleet_write_stamp "$dir"
+  fi
 }
