@@ -18,7 +18,7 @@ assert_grep() {
 
 assert_grep 'corebrum-zenoh-fleet-menu refresh' "$launcher" "launcher does not refresh Zenoh fleet"
 assert_grep 'corebrum-zenoh-fleet-menu.sh' "$desktop_lib" "desktop install does not ship the Zenoh fleet menu"
-assert_grep '@corebrum/zenoh-fleet@0\.1\.7' "$menu" "installer does not pin zenoh-fleet 0.1.7"
+assert_grep '@corebrum/zenoh-fleet@0\.1\.8' "$menu" "installer does not pin zenoh-fleet 0.1.8"
 assert_grep 'corebrum zenoh fleet sync' "$menu" "wizard does not sync the fleet directory"
 if grep -q 'zenoh-fleet' "${ROOT}/manifests/packages/desktop.txt"; then
   echo "FAIL: desktop profile preinstalls Zenoh fleet" >&2
@@ -64,7 +64,7 @@ if grep -q '^NoDisplay=true$' "$desktop"; then
 fi
 
 output="$(COREBRUM_ZENOH_FLEET_READY=0 bash "$menu" open)"
-if [[ "$output" != *'npm install -g --allow-scripts=@corebrum/zenoh-fleet @corebrum/zenoh-fleet@0.1.7'* ]]; then
+if [[ "$output" != *'npm install -g --allow-scripts=@corebrum/zenoh-fleet @corebrum/zenoh-fleet@0.1.8'* ]]; then
   echo "FAIL: selecting Zenoh fleet did not install the npm package (got ${output})" >&2
   fail=1
 fi

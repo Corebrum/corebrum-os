@@ -166,8 +166,22 @@ corebrum_zenoh_fleet_write_stamp() {
   rm -f "$work"
 }
 
+corebrum_zenoh_config_home() {
+  local sudo_home=""
+  if [[ "$(id -u)" -eq 0 && -n "${SUDO_USER:-}" && "$SUDO_USER" != root ]]; then
+    sudo_home="$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6 || true)"
+    if [[ -n "$sudo_home" && -d "$sudo_home" ]]; then
+      printf '%s\n' "$sudo_home"
+      return 0
+    fi
+  fi
+  printf '%s\n' "${HOME:-.}"
+}
+
 corebrum_zenoh_read_api_token() {
-  python3 - <<'PY'
+  local config_home
+  config_home="$(corebrum_zenoh_config_home)"
+  HOME="$config_home" python3 - <<'PY'
 import json, pathlib, os
 home = pathlib.Path(os.environ.get("HOME") or ".")
 for name in ("synapse", "agenticros", "robotics"):
@@ -186,22 +200,47 @@ raise SystemExit(1)
 PY
 }
 
+corebrum_zenoh_fleet_prepare_path() {
+  local helper="/usr/local/lib/corebrum/node-path.sh"
+  if [[ -f "${COREBRUM_ROOT}/scripts/desktop/corebrum-node-path.sh" ]]; then
+    helper="${COREBRUM_ROOT}/scripts/desktop/corebrum-node-path.sh"
+  fi
+  if [[ -f "$helper" ]]; then
+    # shellcheck disable=SC1090
+    source "$helper"
+    corebrum_node_prepare_path
+  fi
+}
+
 corebrum_zenoh_fleet_require_cli() {
+  corebrum_zenoh_fleet_prepare_path
   command -v zenoh-fleet >/dev/null 2>&1 || corebrum_die "zenoh-fleet is not installed (Super+Space Zenoh fleet)"
 }
 
+corebrum_zenoh_fleet_run() {
+  local config_home
+  config_home="$(corebrum_zenoh_config_home)"
+  HOME="$config_home" zenoh-fleet "$@"
+}
+
 corebrum_cmd_zenoh_fleet_pull() {
-  local dir="${1:-${HOME:-.}/local-fleet}"
+  local dir="${1:-}"
+  if [[ -z "$dir" ]]; then
+    dir="$(corebrum_zenoh_fleet_default_dir)"
+  fi
   corebrum_zenoh_fleet_require_cli
   if ! corebrum_zenoh_read_api_token >/dev/null 2>&1; then
     corebrum_die "run synapse login, then corebrum zenoh fleet pull"
   fi
-  zenoh-fleet pull --out "$dir" || corebrum_die "zenoh-fleet pull failed"
+  corebrum_zenoh_fleet_run pull --out "$dir" || corebrum_die "zenoh-fleet pull failed"
   printf 'pulled fleet into %s\n' "$dir"
 }
 
 corebrum_cmd_zenoh_fleet_join() {
-  local dir="${1:-${HOME:-.}/local-fleet}"
+  local dir="${1:-}"
+  if [[ -z "$dir" ]]; then
+    dir="$(corebrum_zenoh_fleet_default_dir)"
+  fi
   corebrum_cmd_zenoh_fleet_pull "$dir"
   if [[ "$(id -u)" -eq 0 ]]; then
     corebrum_cmd_zenoh_fleet_sync "$dir"
@@ -217,9 +256,9 @@ corebrum_cmd_zenoh_fleet_publish() {
     corebrum_die "run synapse login, then corebrum zenoh fleet publish"
   fi
   if [[ -n "$fleet" ]]; then
-    zenoh-fleet publish "$fleet"
+    corebrum_zenoh_fleet_run publish "$fleet"
   else
-    zenoh-fleet publish
+    corebrum_zenoh_fleet_run publish
   fi
 }
 
