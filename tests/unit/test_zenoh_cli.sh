@@ -5,8 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ros="${ROOT}/scripts/lib/ros.sh"
 wrapper="${ROOT}/scripts/ros/zenoh-cli.sh"
 
-if ! grep -q 'eclipse-zenoh==1.9.0' "$ros"; then
-  echo "FAIL: ROS install does not pin eclipse-zenoh 1.9.0" >&2
+if ! grep -q 'eclipse-zenoh==1.10.2' "$ros"; then
+  echo "FAIL: ROS install does not pin eclipse-zenoh 1.10.2" >&2
   exit 1
 fi
 if ! grep -q 'zenoh-cli==0.7.0' "$ros"; then

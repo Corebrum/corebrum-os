@@ -19,10 +19,20 @@ for arg in "$@"; do
   esac
 done
 
+connect="tcp/127.0.0.1:7447"
+router_file="${COREBRUM_ZENOH_ROUTER_FILE:-/etc/corebrum/zenoh/router}"
+if [[ -f "$router_file" ]]; then
+  raw="$(tr -d '[:space:]' <"$router_file")"
+  if [[ -n "$raw" ]]; then
+    connect="${raw#tcp://}"
+    connect="tcp/${connect#tcp/}"
+  fi
+fi
+
 if [[ "$inject" -eq 1 ]]; then
   exec "$bin" \
     --mode client \
-    --connect tcp/127.0.0.1:7447 \
+    --connect "$connect" \
     --cfg 'scouting/multicast/enabled:false' \
     "$@"
 fi

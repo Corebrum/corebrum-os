@@ -17,6 +17,8 @@ source "${COREBRUM_ROOT}/scripts/lib/manifest.sh"
 source "${COREBRUM_ROOT}/scripts/lib/preflight.sh"
 # shellcheck source=../ros/ros-env.sh
 source "${COREBRUM_ROOT}/scripts/ros/ros-env.sh"
+# shellcheck source=zenoh-fleet.sh
+source "${COREBRUM_ROOT}/scripts/lib/zenoh-fleet.sh"
 
 # Open Robotics key shipped in ros2-apt-source 1.3.0. The same key signs Noble and Resolute.
 COREBRUM_ROS_KEY_FINGERPRINT="C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654"
@@ -31,11 +33,10 @@ COREBRUM_ROS_RMW="/etc/corebrum/ros/rmw"
 COREBRUM_ROS_PROFILE="/etc/profile.d/corebrum-ros.sh"
 COREBRUM_ROS_UNIT="corebrum-zenoh-router.service"
 COREBRUM_ROS_TILE='ROS|kitty /usr/local/bin/corebrum-ros-shell'
-# eclipse-zenoh 1.8.0 matches the vendored library but publishes only a Python 3.8 wheel.
-# 1.9.0 is the oldest abi3 wheel, and Zenoh 1.x sessions stay compatible with that library.
+# Eclipse Zenoh 1.10.2 is the client pin shared with Cortex and Synapse.
 COREBRUM_ZENOH_CLI_ROOT="/opt/corebrum/zenoh-cli"
 COREBRUM_ZENOH_CLI_BIN="/usr/local/bin/zenoh"
-COREBRUM_ZENOH_CLI_LIB="eclipse-zenoh==1.9.0"
+COREBRUM_ZENOH_CLI_LIB="eclipse-zenoh==1.10.2"
 COREBRUM_ZENOH_CLI_TOOL="zenoh-cli==0.7.0"
 
 corebrum_ros_distro_for_codename() {
@@ -366,7 +367,7 @@ corebrum_ros_zenoh_cli_ready() {
   [[ -x "$pip" ]] || return 1
   lib="$("$pip" show eclipse-zenoh 2>/dev/null | awk '/^Version:/{ print $2; exit }')"
   tool="$("$pip" show zenoh-cli 2>/dev/null | awk '/^Version:/{ print $2; exit }')"
-  [[ "$lib" == "1.9.0" && "$tool" == "0.7.0" ]]
+  [[ "$lib" == "1.10.2" && "$tool" == "0.7.0" ]]
 }
 
 corebrum_ros_install_zenoh_cli() {
@@ -577,15 +578,25 @@ corebrum_cmd_zenoh() {
     peers)
       corebrum_cmd_zenoh_peers
       ;;
+    fleet)
+      case "${2:-}" in
+        apply)
+          corebrum_cmd_zenoh_fleet_apply "${3:-}"
+          ;;
+        *)
+          corebrum_die "expected: corebrum zenoh fleet apply [directory]"
+          ;;
+      esac
+      ;;
     "" | -h | --help | help)
       cat <<'EOF'
-Usage: corebrum zenoh status|peers
+Usage: corebrum zenoh status|peers|fleet apply [directory]
 
   status    Show the Corebrum Zenoh router service
   peers     Show the router listen address and this machine's IPv4 addresses
+  fleet     Apply a zenoh-fleet directory (hub keeps rmw_zenohd, member connects)
 
-Local ROS sessions connect to tcp/localhost:7447. Another machine connects
-its sessions to tcp/<this-address>:7447. See docs/installation/ros.md.
+The router address for Cortex is /etc/corebrum/zenoh/router. See docs/installation/ros.md.
 EOF
       [[ -n "$sub" ]] || return 1
       ;;

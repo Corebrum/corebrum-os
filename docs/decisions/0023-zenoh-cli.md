@@ -11,7 +11,7 @@ On this machine the ROS library is Zenoh 1.8.0 under `/opt/ros/lyrical/opt/zenoh
 
 ## Decision
 
-- `corebrum install ros` installs `zenoh-cli` 0.7.0 and `eclipse-zenoh` 1.9.0 into `/opt/corebrum/zenoh-cli`. It installs `python3-venv` from Ubuntu when that package is missing. It does not install the Eclipse `zenoh` or `zenohd` packages.
+- `corebrum install ros` installs `zenoh-cli` 0.7.0 and `eclipse-zenoh` 1.10.2 into `/opt/corebrum/zenoh-cli`. The 1.9.0 pin is replaced by `docs/decisions/0133-cortex-zenoh-fleet.md`. It installs `python3-venv` from Ubuntu when that package is missing. It does not install the Eclipse `zenoh` or `zenohd` packages.
 - `/usr/local/bin/zenoh` runs that client. With no `--mode`, `--connect`, `--listen`, or `--config`, it connects to `tcp/127.0.0.1:7447` and disables multicast scouting. Those flags leave the session configuration to the caller.
 - The same command on a machine that already has ROS is `sudo corebrum install ros`. The profile install is idempotent. It still runs the existing graph check, which restarts the router once.
 - Uninstall removes `/usr/local/bin/zenoh` and `/opt/corebrum/zenoh-cli`. It leaves the ROS apt packages installed.

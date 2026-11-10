@@ -78,7 +78,7 @@ printf '%s\n' "$full" | grep -F -- '--only-upgrade ros-<distro>-*' >/dev/null ||
 printf '%s\n' "$full" | grep -F "$lib_pin" >/dev/null || fail "Zenoh client library pin was not reinstalled"
 printf '%s\n' "$full" | grep -F "$tool_pin" >/dev/null || fail "Zenoh client tool pin was not reinstalled"
 printf '%s\n' "$full" | grep -F 'scripts/ros/zenoh-cli.sh' >/dev/null || fail "Zenoh client wrapper was not copied"
-printf '%s\n' "$full" | grep -F '@corebrum/zenoh-fleet@0.1.4' >/dev/null || fail "installed Zenoh fleet was not reinstalled"
+printf '%s\n' "$full" | grep -F '@corebrum/zenoh-fleet@0.1.6' >/dev/null || fail "installed Zenoh fleet was not reinstalled"
 printf '%s\n' "$full" | grep -F 'git -C synapse checkout -- .mcp.json' >/dev/null || fail "Corebrum Synapse did not restore .mcp.json"
 printf '%s\n' "$full" | grep -F 'git -C synapse fetch origin main' >/dev/null || fail "Corebrum Synapse was not fetched"
 mcp_at="$(line_of 'checkout -- .mcp.json' <(printf '%s\n' "$full"))"

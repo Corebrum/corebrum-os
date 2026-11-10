@@ -19,4 +19,8 @@ if [[ -f /usr/local/lib/corebrum/ros-env.sh ]]; then
 fi
 export RMW_IMPLEMENTATION=rmw_zenoh_cpp
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
+if [[ -f /etc/profile.d/corebrum-zenoh-session.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/corebrum-zenoh-session.sh
+fi
 exec "$@"

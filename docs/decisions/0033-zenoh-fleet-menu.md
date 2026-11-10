@@ -3,6 +3,8 @@
 Date: 2026-10-23
 Status: Accepted
 
+The 0.1.6 pin and the apply step are in `docs/decisions/0133-cortex-zenoh-fleet.md`.
+
 ## Context
 
 The operator asked to add the Zenoh network configuration tool from `https://github.com/synapse/zenoh-fleet`. That repository publishes the npm package `@corebrum/zenoh-fleet`. On 2026-10-23 the registry listed 0.1.4 as the current version. The package needs Node.js 20 or newer, which the desktop profile already installs. Its command is `zenoh-fleet`. With no arguments it runs an enter-to-accept wizard and writes fleet files in the current directory. It does not install `zenohd` and it does not edit the running router.

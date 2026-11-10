@@ -3,7 +3,7 @@
 set -euo pipefail
 
 COREBRUM_ZENOH_FLEET_INSTALL_MARK='   install'
-COREBRUM_ZENOH_FLEET_PACKAGE='@corebrum/zenoh-fleet@0.1.4'
+COREBRUM_ZENOH_FLEET_PACKAGE='@corebrum/zenoh-fleet@0.1.6'
 COREBRUM_ZENOH_FLEET_ALLOW='@corebrum/zenoh-fleet'
 
 corebrum_zenoh_fleet_prepare_path() {
@@ -140,11 +140,16 @@ corebrum_zenoh_fleet_launch() {
   corebrum_zenoh_fleet_terminal "$(cat <<'EOF'
 set +e
 cd "${HOME:-.}"
-zenoh-fleet
-ec=$?
+log="$(mktemp)"
+zenoh-fleet 2>&1 | tee "$log"
+ec=${PIPESTATUS[0]}
 set -e
 printf '\n'
-if [ "$ec" -ne 0 ]; then
+dir="$(sed -n 's/^corebrum-fleet-dir: //p' "$log" | head -n 1)"
+rm -f "$log"
+if [ "$ec" -eq 0 ] && [ -n "$dir" ] && [ -f "$dir/fleet.json" ]; then
+  sudo corebrum zenoh fleet apply "$dir" || printf 'Could not apply %s.\n' "$dir"
+elif [ "$ec" -ne 0 ]; then
   printf 'zenoh-fleet exited (%s).\n' "$ec"
 fi
 read -r -p 'Press Enter to close. '
