@@ -3,7 +3,7 @@
 set -euo pipefail
 
 COREBRUM_ZENOH_FLEET_INSTALL_MARK='   install'
-COREBRUM_ZENOH_FLEET_PACKAGE='@corebrum/zenoh-fleet@0.1.6'
+COREBRUM_ZENOH_FLEET_PACKAGE='@corebrum/zenoh-fleet@0.1.7'
 COREBRUM_ZENOH_FLEET_ALLOW='@corebrum/zenoh-fleet'
 
 corebrum_zenoh_fleet_prepare_path() {

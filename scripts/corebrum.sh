@@ -27,7 +27,7 @@ Usage: corebrum <command> [arguments]
   install <profile>        Install base (headless), desktop, or ros
   uninstall <profile>      Remove Corebrum desktop or ROS files
   ros status|topics|rmw    Inspect ROS 2 or select Zenoh or Fast DDS
-  zenoh status|peers|fleet  Inspect the router; sync applies zenoh-fleet automatically
+  zenoh status|peers|fleet  Router status; fleet join|pull|sync|publish for the mesh
   cortex install|daemon|elect  Build Cortex and join the Zenoh router
   camera list              List RealSense devices, or point at Super+Space
   agents list|update       Show agent CLIs or point at Super+Space Updates

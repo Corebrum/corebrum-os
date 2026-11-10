@@ -618,19 +618,31 @@ corebrum_cmd_zenoh() {
         sync)
           corebrum_cmd_zenoh_fleet_sync "${3:-}"
           ;;
+        pull)
+          corebrum_cmd_zenoh_fleet_pull "${3:-}"
+          ;;
+        join)
+          corebrum_cmd_zenoh_fleet_join "${3:-}"
+          ;;
+        publish)
+          corebrum_cmd_zenoh_fleet_publish "${3:-}"
+          ;;
         *)
-          corebrum_die "expected: corebrum zenoh fleet apply|sync [directory]"
+          corebrum_die "expected: corebrum zenoh fleet apply|sync|pull|join|publish [directory]"
           ;;
       esac
       ;;
     "" | -h | --help | help)
       cat <<'EOF'
-Usage: corebrum zenoh status|peers|fleet apply|sync [directory]
+Usage: corebrum zenoh status|peers|fleet <command> [directory]
 
   status    Show the Corebrum Zenoh router service
   peers     Show the router listen address and this machine's IPv4 addresses
-  fleet     Apply a zenoh-fleet directory (hub keeps rmw_zenohd, member connects)
+  apply     Apply a zenoh-fleet directory (hub keeps rmw_zenohd, member connects)
   sync      Apply when fleet.json changed (idempotent; used by automation)
+  pull      Pull org hub endpoints from Corebrum Cloud into ~/local-fleet (synapse login)
+  join      pull + sync — onboard a member robot in one step
+  publish   Push local hub fleet.json to Corebrum Cloud (synapse login)
 
 The router address for Cortex is /etc/corebrum/zenoh/router. See docs/installation/ros.md.
 EOF

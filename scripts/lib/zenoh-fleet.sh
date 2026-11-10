@@ -166,6 +166,63 @@ corebrum_zenoh_fleet_write_stamp() {
   rm -f "$work"
 }
 
+corebrum_zenoh_read_api_token() {
+  python3 - <<'PY'
+import json, pathlib, os
+home = pathlib.Path(os.environ.get("HOME") or ".")
+for name in ("synapse", "agenticros", "robotics"):
+    path = home / ".config" / "configstore" / f"{name}.json"
+    if not path.is_file():
+        continue
+    try:
+        token = json.loads(path.read_text(encoding="utf-8")).get("API_TOKEN") or ""
+    except (OSError, json.JSONDecodeError):
+        continue
+    token = str(token).strip()
+    if token:
+        print(token)
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+corebrum_zenoh_fleet_require_cli() {
+  command -v zenoh-fleet >/dev/null 2>&1 || corebrum_die "zenoh-fleet is not installed (Super+Space Zenoh fleet)"
+}
+
+corebrum_cmd_zenoh_fleet_pull() {
+  local dir="${1:-${HOME:-.}/local-fleet}"
+  corebrum_zenoh_fleet_require_cli
+  if ! corebrum_zenoh_read_api_token >/dev/null 2>&1; then
+    corebrum_die "run synapse login, then corebrum zenoh fleet pull"
+  fi
+  zenoh-fleet pull --out "$dir" || corebrum_die "zenoh-fleet pull failed"
+  printf 'pulled fleet into %s\n' "$dir"
+}
+
+corebrum_cmd_zenoh_fleet_join() {
+  local dir="${1:-${HOME:-.}/local-fleet}"
+  corebrum_cmd_zenoh_fleet_pull "$dir"
+  if [[ "$(id -u)" -eq 0 ]]; then
+    corebrum_cmd_zenoh_fleet_sync "$dir"
+  else
+    sudo corebrum zenoh fleet sync "$dir"
+  fi
+}
+
+corebrum_cmd_zenoh_fleet_publish() {
+  local fleet="${1:-}"
+  corebrum_zenoh_fleet_require_cli
+  if ! corebrum_zenoh_read_api_token >/dev/null 2>&1; then
+    corebrum_die "run synapse login, then corebrum zenoh fleet publish"
+  fi
+  if [[ -n "$fleet" ]]; then
+    zenoh-fleet publish "$fleet"
+  else
+    zenoh-fleet publish
+  fi
+}
+
 corebrum_cmd_zenoh_fleet_sync() {
   local dir="${1:-}" fleet_json fp applied
   if [[ -z "$dir" ]]; then
