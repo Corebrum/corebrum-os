@@ -54,7 +54,9 @@ require_line "Super+Shift+Print      Stop recording"
 require_line "Super+P                Copy a selected area"
 require_line "Super+Shift+P          Copy the whole screen"
 require_line "Super+Alt+P            Record the area, camera, or audio"
-require_line "Super+Alt+Shift+P      Stop recording"
+require_line "Super+Alt+Shift+P      Stop recording (after the Recording message; Option+Shift on Mac)"
+require_line "BrightnessUp / Down    Display brightness and a Mako popup"
+require_line "Shift+BrightnessUp/Down Touch Bar brightness when the Mac Touch Bar is present"
 require_line "Super+Arrows           Move focus to the tile in that direction"
 require_line "Super+Shift+Arrows     Swap with the tile in that direction"
 require_line "Super+1 … Super+5      Switch to that workspace"
@@ -80,11 +82,11 @@ require_bind 'bindsym $mod+Shift+Escape exec /usr/local/bin/corebrum-autolock to
 require_bind 'bindsym $mod+Shift+e exit'
 require_bind 'bindsym $mod+Shift+c exec'
 require_bind 'bindsym $mod+Print exec /usr/local/bin/corebrum-record start'
-require_bind 'bindsym $mod+Shift+Print exec /usr/local/bin/corebrum-record stop'
+require_bind "bindsym \$mod+Shift+Print exec sh -c '/usr/local/bin/corebrum-record stop; true'"
 require_bind 'bindsym $mod+p exec'
 require_bind 'bindsym $mod+Shift+p exec'
 require_bind 'bindsym $mod+Mod1+p exec /usr/local/bin/corebrum-record start'
-require_bind 'bindsym $mod+Mod1+Shift+p exec /usr/local/bin/corebrum-record stop'
+require_bind "bindsym \$mod+Mod1+Shift+p exec sh -c '/usr/local/bin/corebrum-record stop; true'"
 require_bind 'bindsym $mod+Left exec /usr/local/bin/corebrum-tile focus left'
 require_bind 'bindsym $mod+Down exec /usr/local/bin/corebrum-tile focus down'
 require_bind 'bindsym $mod+k exec /usr/local/bin/corebrum-edit-keys clear'

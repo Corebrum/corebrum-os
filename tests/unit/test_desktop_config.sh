@@ -21,11 +21,11 @@ require "bindsym \$mod+Shift+Return exec firefox"
 require "bindsym \$mod+Shift+f exec thunar"
 require "bindsym \$mod+Shift+n exec gnome-text-editor"
 require "bindsym \$mod+Print exec /usr/local/bin/corebrum-record start"
-require "bindsym \$mod+Shift+Print exec /usr/local/bin/corebrum-record stop"
+require "bindsym \$mod+Shift+Print exec sh -c '/usr/local/bin/corebrum-record stop; true'"
 require "bindsym \$mod+p exec"
 require "bindsym \$mod+Shift+p exec"
 require "bindsym \$mod+Mod1+p exec /usr/local/bin/corebrum-record start"
-require "bindsym \$mod+Mod1+Shift+p exec /usr/local/bin/corebrum-record stop"
+require "bindsym \$mod+Mod1+Shift+p exec sh -c '/usr/local/bin/corebrum-record stop; true'"
 if grep -q 'wf-recorder' "$conf"; then
   echo "FAIL: recording still calls wf-recorder from the sway config" >&2
   exit 1

@@ -74,7 +74,7 @@ fi
 
 services=()
 corebrum_load_manifest "${ROOT}/manifests/packages/services.txt" services
-assert_eq "${#services[@]}" "27" "services package count"
+assert_eq "${#services[@]}" "28" "services package count"
 for pkg in "${services[@]}"; do
   case "$pkg" in
     grimshot | pulseaudio | tlp | hyprpolkitagent | xdg-desktop-portal-hyprland)
