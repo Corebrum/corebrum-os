@@ -34,8 +34,12 @@ if ! grep -q 'layer=overlay' "$mako"; then
   echo "FAIL: notifications can sit under the bar or a fullscreen window" >&2
   fail=1
 fi
-if ! grep -q 'brightnessctl -c backlight' "$osd"; then
-  echo "FAIL: brightness keys can change a keyboard LED" >&2
+if ! grep -q 'corebrum_backlight_display_device' "$osd"; then
+  echo "FAIL: brightness keys do not target the display panel" >&2
+  fail=1
+fi
+if ! grep -q 'touchbar-brightness-down' "$conf"; then
+  echo "FAIL: sway config missing Touch Bar brightness down" >&2
   fail=1
 fi
 if ! grep -q 'progress-color=over #3d9a8b' "$mako"; then

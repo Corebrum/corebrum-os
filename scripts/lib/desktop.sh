@@ -199,6 +199,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/config/menu/corebrum-menu.json" /etc/corebrum/menu/corebrum-menu.json 644
   corebrum_install_file "${root}/apps/dashboard/tiles.conf" /etc/corebrum/dashboard/tiles.conf 644
   corebrum_install_file "${root}/scripts/lib/grid.sh" /usr/local/lib/corebrum/grid.sh 644
+  corebrum_install_file "${root}/scripts/lib/backlight.sh" /usr/local/lib/corebrum/backlight.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-node-path.sh" /usr/local/lib/corebrum/node-path.sh 644
   corebrum_install_file "${root}/scripts/lib/vc4.sh" /usr/local/lib/corebrum/vc4.sh 644
   corebrum_install_file "${root}/scripts/desktop/corebrum-drm.sh" /usr/local/lib/corebrum/drm.sh 644
@@ -373,6 +374,33 @@ corebrum_restore_display_manager() {
 # render, and the NVIDIA nodes have no logind uaccess tag. _greetd is created
 # with only its own group, so Sway cannot open the GPU. A later login picks
 # up the new groups; the running greeter does not.
+# brightness-udev grants the video and input groups write access to sysfs.
+# Keys work only after the logged-in user is in those groups and signs in again.
+corebrum_desktop_user_groups() {
+  local user="${SUDO_USER:-}" groups group
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    if [[ -n "$user" ]]; then
+      corebrum_log "dry-run: add ${user} to video and input when those groups exist"
+    fi
+    return 0
+  fi
+  [[ -n "$user" ]] || return 0
+  if ! id "$user" >/dev/null 2>&1; then
+    return 0
+  fi
+  groups="$(id -nG "$user")"
+  for group in video input; do
+    if ! getent group "$group" >/dev/null 2>&1; then
+      continue
+    fi
+    if [[ " $groups " == *" $group "* ]]; then
+      continue
+    fi
+    corebrum_log "run: usermod -aG ${group} ${user}"
+    usermod -aG "$group" "$user"
+  done
+}
+
 corebrum_greetd_gpu_groups() {
   local user="${COREBRUM_GREETD_USER:-_greetd}"
   local group groups
@@ -400,6 +428,7 @@ corebrum_greetd_gpu_groups() {
 corebrum_enable_desktop_login() {
   local current
   corebrum_greetd_gpu_groups
+  corebrum_desktop_user_groups
   corebrum_release_other_display_manager
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: systemctl enable greetd.service"

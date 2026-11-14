@@ -2,6 +2,20 @@
 # Turn the panel off for idle power saving, or restore it on input or low battery.
 set -euo pipefail
 
+corebrum_display_dim_lib() {
+  if [[ -f /usr/local/lib/corebrum/backlight.sh ]]; then
+    # shellcheck source=/dev/null
+    source /usr/local/lib/corebrum/backlight.sh
+    return 0
+  fi
+  local here
+  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  # shellcheck source=/dev/null
+  source "${here}/../lib/backlight.sh"
+}
+
+corebrum_display_dim_lib
+
 COREBRUM_DISPLAY_DIM_STATE="${XDG_STATE_HOME:-${HOME}/.local/state}/corebrum"
 BRIGHTNESS_SAVED="${COREBRUM_DISPLAY_DIM_STATE}/display-brightness-saved"
 DIMMED_MARK="${COREBRUM_DISPLAY_DIM_STATE}/display-dimmed"
@@ -22,12 +36,22 @@ corebrum_display_dim_session_locked() {
   return 1
 }
 
+corebrum_display_dim_backlight_device() {
+  local device="${COREBRUM_DISPLAY_BACKLIGHT_DEVICE:-}"
+  if [[ -n "$device" ]]; then
+    printf '%s\n' "$device"
+    return 0
+  fi
+  corebrum_backlight_display_device 2>/dev/null || return 1
+}
+
 corebrum_display_dim_save_brightness() {
-  local line pct
+  local line pct device
   if ! command -v brightnessctl >/dev/null 2>&1; then
     return 0
   fi
-  line="$(brightnessctl -c backlight --machine-readable 2>/dev/null || true)"
+  device="$(corebrum_display_dim_backlight_device)" || return 0
+  line="$(brightnessctl -d "$device" --machine-readable 2>/dev/null || true)"
   pct="$(awk -F, '{
     for (i = 1; i <= NF; i++) if ($i ~ /%$/) { gsub("%", "", $i); print $i; exit }
   }' <<<"$line")"
@@ -54,7 +78,10 @@ corebrum_display_dim_off() {
     swaymsg output '*' dpms off >/dev/null 2>&1 || true
   fi
   if command -v brightnessctl >/dev/null 2>&1; then
-    brightnessctl -c backlight set 0 >/dev/null 2>&1 || true
+    device="$(corebrum_display_dim_backlight_device)" || device=""
+    if [[ -n "$device" ]]; then
+      brightnessctl -d "$device" set 0 >/dev/null 2>&1 || true
+    fi
   fi
 }
 
@@ -84,15 +111,18 @@ corebrum_display_dim_on() {
     swaymsg output '*' dpms on >/dev/null 2>&1 || true
   fi
   if command -v brightnessctl >/dev/null 2>&1; then
-    if [[ -f "$BRIGHTNESS_SAVED" ]]; then
-      read -r pct <"$BRIGHTNESS_SAVED" || pct=""
-      if [[ -n "$pct" && "$pct" =~ ^[0-9]+$ ]]; then
-        brightnessctl -c backlight set "${pct}%" >/dev/null 2>&1 || true
+    device="$(corebrum_display_dim_backlight_device)" || device=""
+    if [[ -n "$device" ]]; then
+      if [[ -f "$BRIGHTNESS_SAVED" ]]; then
+        read -r pct <"$BRIGHTNESS_SAVED" || pct=""
+        if [[ -n "$pct" && "$pct" =~ ^[0-9]+$ ]]; then
+          brightnessctl -d "$device" set "${pct}%" >/dev/null 2>&1 || true
+        else
+          brightnessctl -d "$device" set 100% >/dev/null 2>&1 || true
+        fi
       else
-        brightnessctl -c backlight set 100% >/dev/null 2>&1 || true
+        brightnessctl -d "$device" set 100% >/dev/null 2>&1 || true
       fi
-    else
-      brightnessctl -c backlight set 100% >/dev/null 2>&1 || true
     fi
   fi
   rm -f "$DIMMED_MARK"

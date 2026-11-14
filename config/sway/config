@@ -55,6 +55,10 @@ bindsym XF86AudioMute exec /usr/local/bin/corebrum-osd volume-mute
 bindsym XF86AudioMicMute exec /usr/local/bin/corebrum-osd mic-mute
 bindsym XF86MonBrightnessUp exec /usr/local/bin/corebrum-osd brightness-up
 bindsym XF86MonBrightnessDown exec /usr/local/bin/corebrum-osd brightness-down
+bindsym Shift+XF86MonBrightnessUp exec /usr/local/bin/corebrum-osd touchbar-brightness-up
+bindsym Shift+XF86MonBrightnessDown exec /usr/local/bin/corebrum-osd touchbar-brightness-down
+bindsym XF86KbdBrightnessUp exec /usr/local/bin/corebrum-osd touchbar-brightness-up
+bindsym XF86KbdBrightnessDown exec /usr/local/bin/corebrum-osd touchbar-brightness-down
 
 bindsym $mod+Left exec /usr/local/bin/corebrum-tile focus left
 bindsym $mod+Right exec /usr/local/bin/corebrum-tile focus right

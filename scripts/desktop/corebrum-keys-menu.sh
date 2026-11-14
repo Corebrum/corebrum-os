@@ -35,6 +35,8 @@ Super+Arrows           Move focus to the tile in that direction
 Super+Shift+Arrows     Swap with the tile in that direction
 Super+1 … Super+5      Switch to that workspace
 Super+Shift+1 … 5      Move the focused window to that workspace
+BrightnessUp / Down    Display brightness and a Mako popup
+Shift+BrightnessUp/Down Touch Bar brightness when the Mac Touch Bar is present
 EOF
 }
 

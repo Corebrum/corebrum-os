@@ -37,3 +37,4 @@ grim
 slurp
 wf-recorder
 brightnessctl
+brightness-udev
