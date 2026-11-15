@@ -21,16 +21,18 @@ source "${COREBRUM_ROOT}/scripts/lib/cli.sh"
 
 DRY_RUN=0
 ENABLE_SSH=0
+ROS_MAPPING=0
 PROFILE=""
-export DRY_RUN ENABLE_SSH
+export DRY_RUN ENABLE_SSH ROS_MAPPING
 
 usage() {
   cat <<'EOF'
-Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh]
+Usage: scripts/install.sh --profile base|desktop|ros [--dry-run] [--enable-ssh] [--mapping]
 
   --profile base      Install the Ubuntu Server foundation
   --profile desktop   Install the base profile, the Sway desktop, and workstation services
   --profile ros       Install the base profile, ROS 2, and the Zenoh router
+  --mapping           With ros: also install navigation2, nav2-bringup, and rtabmap-ros
   --dry-run           Print intended actions without changing the system
   --enable-ssh        Also install and enable OpenSSH server
   -h, --help          Show this help
@@ -62,6 +64,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --enable-ssh)
       ENABLE_SSH=1
+      shift
+      ;;
+    --mapping)
+      ROS_MAPPING=1
       shift
       ;;
     -h | --help)
@@ -124,6 +130,9 @@ if [[ "$PROFILE" == "desktop" ]]; then
 fi
 
 if [[ "$PROFILE" == "ros" ]]; then
+  if [[ "$ROS_MAPPING" -eq 1 ]]; then
+    export COREBRUM_ROS_MAPPING=1
+  fi
   # shellcheck source=phases/05-ros.sh
   source "${COREBRUM_ROOT}/scripts/phases/05-ros.sh"
   corebrum_phase_ros

@@ -266,6 +266,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-install.sh" /usr/local/lib/corebrum/realsense-install.sh 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-install.sh" /usr/local/lib/corebrum/synapse-install.sh 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-with-ros.sh" /usr/local/lib/corebrum/synapse-with-ros.sh 755
+  corebrum_install_file "${root}/scripts/robot/install-jetgpio.sh" /usr/local/lib/corebrum/install-jetgpio.sh 755
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644

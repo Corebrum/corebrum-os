@@ -1,0 +1,10 @@
+id: raspberry-pi-5-2wd
+label: Raspberry Pi 5 2WD
+detect: raspberry_pi
+cloud_compute_default: Raspberry Pi
+cloud_motor_backend: rpi
+synapse_motors_args: "-b rpi -p 27,22,17,18 --odom"
+mapping_odom: visual
+default_wheel_diameter_mm: 64
+default_wheel_between_mm: 135
+hardware_doc: https://github.com/Corebrum/corebrum-synapse/blob/main/docs/hardware.md

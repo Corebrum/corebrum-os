@@ -60,7 +60,7 @@ corebrum_skills_dep_hints() {
     hints+=("This skill needs OpenNav docking. Bring that stack up yourself. The skill does not start it.")
   fi
   if [[ "$text" =~ start_slam|stop_slam|save_map|load_map|rtab ]]; then
-    hints+=("This skill needs RTAB-Map. Bring mapping up yourself. The skill does not start that stack.")
+    hints+=("Install mapping packages: sudo corebrum install ros --mapping. Then Super+Space Synapse → Mapping: Start, or synapse up real --map.")
   fi
   if [[ "$text" =~ follow_person|follow.me|follow_me ]]; then
     hints+=("This skill needs the on-robot follow node. Bring it up yourself. The skill does not start it.")
@@ -207,7 +207,7 @@ print(" ".join(parts))
   esac
   case "$lower" in
     *start_slam*|*stop_slam*|*save_map*|*load_map*|*rtab*)
-      printf '%s\n' "This skill needs RTAB-Map. Bring mapping up yourself. The skill does not start that stack."
+      printf '%s\n' "Install mapping: sudo corebrum install ros --mapping. Start mapping from Super+Space Synapse or synapse up real --map."
       ;;
   esac
   case "$lower" in

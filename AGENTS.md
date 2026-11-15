@@ -23,6 +23,8 @@ Corebrum OS is an open-source Ubuntu Server 24.04 and 26.04 environment for Phys
 15. Do not claim success only because an installer exited successfully. Validate runtime behavior.
 16. When a change adds or changes an operator-facing desktop feature, a shortcut in `scripts/desktop/corebrum-keys-menu.sh`, or a `corebrum` or `synapse` command the operator runs, update the matching page under `config/getting-started/` in that same change. A new section also adds its link to `config/getting-started/nav.html`.
 
+**Embodiment boundary:** Motor drivers, odometry, mapping bringup, and Cloud bridge logic live in **Corebrum Synapse** and **Corebrum Cloud**. corebrum-os installs ROS/mapping packages, detects Tegra (`scripts/lib/hardware.sh`), surfaces menus and doctor hints, and documents the Jetson reference kit (`docs/installation/jetson-robot.md`, `manifests/hardware/`).
+
 ## Workflow
 
 Plan, implement, test, document, review, then commit.

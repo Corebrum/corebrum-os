@@ -311,6 +311,9 @@ corebrum_ros_menu_open_tools() {
     line="$(corebrum_ros_menu_choice_label "$i")"
     lines+=("$line")
   done
+  if ! corebrum_pkg_installed ros-jazzy-navigation2 && ! corebrum_pkg_installed ros-lyrical-navigation2; then
+    lines+=("Mapping stack   install")
+  fi
   if [[ "${COREBRUM_ROS_MENU_STUB:-0}" == 1 ]]; then
     printf '%s\n' "${lines[@]}"
     return 0
@@ -322,8 +325,13 @@ corebrum_ros_menu_open_tools() {
     --width 48 \
     --lines 8)" || return 0
   [[ -n "$choice" ]] || return 0
-  for i in "${!lines[@]}"; do
-    if [[ "$choice" == "${lines[$i]}" ]]; then
+  if [[ "$choice" == "Mapping stack   install" ]]; then
+    corebrum_ros_menu_terminal "sudo corebrum install ros --mapping"
+    return 0
+  fi
+  for i in "${!ROS_MENU_IDS[@]}"; do
+    line="$(corebrum_ros_menu_choice_label "$i")"
+    if [[ "$choice" == "$line" ]]; then
       if corebrum_ros_menu_tool_ready "$i"; then
         corebrum_ros_menu_launch "${ROS_MENU_CMDS[$i]}"
       else

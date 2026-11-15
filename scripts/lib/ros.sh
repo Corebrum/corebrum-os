@@ -79,6 +79,39 @@ corebrum_ros_manifest_path() {
   esac
 }
 
+corebrum_ros_mapping_manifest_path() {
+  case "$1" in
+    jazzy) printf '%s\n' "${COREBRUM_ROOT}/manifests/packages/ros-mapping-jazzy.txt" ;;
+    lyrical) printf '%s\n' "${COREBRUM_ROOT}/manifests/packages/ros-mapping-lyrical.txt" ;;
+    *) return 1 ;;
+  esac
+}
+
+corebrum_ros_mapping_packages_installed() {
+  local distro="$1"
+  local nav2="ros-${distro}-navigation2"
+  corebrum_ros_select_release 2>/dev/null || return 1
+  distro="${COREBRUM_ROS_DISTRO:-$distro}"
+  nav2="ros-${distro}-navigation2"
+  if command -v dpkg-query >/dev/null 2>&1; then
+    dpkg-query -W -f='${Status}' "$nav2" 2>/dev/null | grep -q 'install ok installed'
+    return $?
+  fi
+  return 1
+}
+
+corebrum_ros_install_mapping_stack() {
+  local manifest
+  local -a packages=()
+  corebrum_ros_select_release
+  manifest="$(corebrum_ros_mapping_manifest_path "$COREBRUM_ROS_DISTRO")"
+  [[ -f "$manifest" ]] || corebrum_die "missing mapping manifest ${manifest}"
+  corebrum_log "installing RTAB-Map + Nav2 mapping stack for ${COREBRUM_ROS_DISTRO}"
+  corebrum_load_manifest "$manifest" packages
+  corebrum_apt_install "${packages[@]}"
+  corebrum_log "mapping stack packages installed"
+}
+
 corebrum_ros_require_fingerprint() {
   local key="$1" fingerprint
   [[ -f "$key" ]] || corebrum_die "missing ROS keyring ${key}"
@@ -461,6 +494,9 @@ corebrum_phase_ros() {
   corebrum_ros_init_rosdep
   corebrum_ros_enable_router
   corebrum_ros_install_tile
+  if [[ "${COREBRUM_ROS_MAPPING:-0}" -eq 1 ]]; then
+    corebrum_ros_install_mapping_stack
+  fi
   if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
     corebrum_log "dry-run: exercise ROS topics, services, and actions through the Zenoh router, then restart it"
     corebrum_log "ros profile dry-run complete"

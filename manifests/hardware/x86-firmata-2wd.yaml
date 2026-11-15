@@ -1,0 +1,8 @@
+id: x86-firmata-2wd
+label: x86/ARM + Arduino Firmata 2WD
+detect: default_firmata
+cloud_compute_default: Radxa
+cloud_motor_backend: firmata
+synapse_motors_args: "-b firmata -d /dev/ttyACM0 -p 3,4,5,7,8,9 --odom"
+mapping_odom: visual_or_wheel
+hardware_doc: https://github.com/Corebrum/corebrum-synapse/blob/main/docs/hardware.md

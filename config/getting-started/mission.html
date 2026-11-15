@@ -12,7 +12,16 @@
     <main>
       <h1>A mission</h1>
       <p>Install ROS 2, then RealSense, then Corebrum Synapse, then an agent. The camera sees. The agent decides. Corebrum Synapse reaches ROS. ROS moves or speaks.</p>
-      <p>Creep or Treat is one skill that does this. It greets one visitor from the RealSense depth image and does not drive. Approve it from the agent, or install it from Corebrum Skills with <code>synapse skills install</code>. After install, start the agent again so the new skill tools appear. Skills that need Nav2 or other stacks do not start those stacks for you.</p>
+      <h2>Reference path (Jetson + drive)</h2>
+      <ol>
+        <li>Install JETGPIO and run <code>synapse doctor</code> on the Orin.</li>
+        <li><code>sudo corebrum install ros</code>, then RealSense and Synapse from Super+Space.</li>
+        <li><code>synapse up real</code> — RealSense and motors (Jetson GPIO on Tegra).</li>
+        <li>Optional: <code>sudo corebrum install ros --mapping</code>, then Super+Space Synapse → <strong>Stack: Real robot (with mapping)</strong> or <code>synapse up real --map</code>.</li>
+        <li><code>synapse login</code>, <code>synapse register</code>, <code>synapse connect</code> for Cloud teleop and maps.</li>
+        <li>Install a skill with Super+Space Corebrum Skills; restart the agent so MCP tools reload.</li>
+      </ol>
+      <p>Creep or Treat greets a visitor from depth and does not drive. Skills that need Nav2 or RTAB-Map point you at the mapping stack above; they do not start those services for you.</p>
     </main>
   </div>
 </body>

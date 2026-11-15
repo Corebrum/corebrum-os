@@ -184,9 +184,26 @@ corebrum_cmd_doctor() {
       "sudo corebrum install ros"; then
       failed=1
     fi
+    if ! corebrum_pkg_installed ros-jazzy-navigation2 && ! corebrum_pkg_installed ros-lyrical-navigation2; then
+      corebrum_log "doctor: Nav2/RTAB-Map mapping stack is not installed"
+      corebrum_log "next: sudo corebrum install ros --mapping"
+    fi
   else
     corebrum_log "doctor: ros is not installed"
     corebrum_log "optional: sudo corebrum install ros"
+  fi
+  # shellcheck source=hardware.sh
+  source "${COREBRUM_ROOT}/scripts/lib/hardware.sh"
+  if corebrum_detect_jetson; then
+    hw_id="$(corebrum_reference_hardware_id 2>/dev/null || true)"
+    if [[ -n "$hw_id" ]]; then
+      corebrum_log "doctor: reference hardware profile ${hw_id} (Jetson GPIO motors)"
+    fi
+    if command -v synapse >/dev/null 2>&1; then
+      corebrum_log "next: synapse doctor --live (JETGPIO and motors)"
+    else
+      corebrum_log "optional: Super+Space Corebrum Synapse, then synapse doctor"
+    fi
   fi
   if corebrum_realsense_installed; then
     corebrum_log "doctor: realsense is installed"
@@ -241,7 +258,7 @@ corebrum_cmd_doctor() {
 }
 
 corebrum_cmd_install() {
-  local profile="" dry=0 ssh=0
+  local profile="" dry=0 ssh=0 mapping=0
   local -a args=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -258,15 +275,22 @@ corebrum_cmd_install() {
       --enable-ssh)
         ssh=1
         ;;
+      --mapping)
+        mapping=1
+        ;;
       -h | --help)
         cat <<'EOF'
-Usage: corebrum install base|headless|desktop|ros [--dry-run] [--enable-ssh]
+Usage: corebrum install base|headless|desktop|ros [--dry-run] [--enable-ssh] [--mapping]
 
   base, headless   Ubuntu Server foundation. headless is the base profile
   desktop          Base, Hyprland session, and workstation services
   ros              Base, ROS 2, and the Zenoh router. Jazzy on noble, Lyrical on resolute. Not the desktop
+  --mapping        With ros: install Nav2 + RTAB-Map packages (synapse up real --map)
   --dry-run        Print the plan without changing the system
   --enable-ssh     Optional OpenSSH server
+
+When ROS is already installed, `corebrum install ros --mapping` installs only the
+mapping apt packages.
 
 A real install must be run as root. It does not write ~/.config and it does
 not edit existing Netplan files.
@@ -280,12 +304,28 @@ EOF
     shift
   done
   [[ -n "$profile" ]] || corebrum_die "missing profile (expected: base, headless, desktop, or ros)"
+  if [[ "$mapping" -eq 1 && "$profile" != "ros" ]]; then
+    corebrum_die "--mapping applies only to the ros profile"
+  fi
+  if [[ "$profile" == "ros" && "$mapping" -eq 1 && -f /etc/profile.d/corebrum-ros.sh ]]; then
+    if [[ "$dry" -eq 0 && "$(id -u)" -ne 0 ]]; then
+      corebrum_die "installing the mapping stack requires root"
+    fi
+    # shellcheck source=ros.sh
+    source "${COREBRUM_ROOT}/scripts/lib/ros.sh"
+    export DRY_RUN="$dry"
+    corebrum_ros_install_mapping_stack
+    return 0
+  fi
   args=(--profile "$profile")
   if [[ "$dry" -eq 1 ]]; then
     args+=(--dry-run)
   fi
   if [[ "$ssh" -eq 1 ]]; then
     args+=(--enable-ssh)
+  fi
+  if [[ "$mapping" -eq 1 ]]; then
+    args+=(--mapping)
   fi
   if "${COREBRUM_ROOT}/scripts/install.sh" "${args[@]}"; then
     return 0

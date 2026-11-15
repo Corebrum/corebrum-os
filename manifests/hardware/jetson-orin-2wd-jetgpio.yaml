@@ -1,0 +1,12 @@
+# Reference differential-drive kit: Jetson Orin + L298N + JETGPIO (no Arduino).
+id: jetson-orin-2wd-jetgpio
+label: Jetson Orin 2WD (native GPIO)
+detect: tegra
+cloud_compute_default: Jetson Orin Nano
+cloud_motor_backend: jetson
+synapse_motors_args: "-b jetson -p 16,18,22,26 --odom"
+mapping_odom: visual
+default_wheel_diameter_mm: 64
+default_wheel_between_mm: 135
+hardware_doc: https://github.com/Corebrum/corebrum-synapse/blob/main/docs/hardware.md
+mapping_doc: https://github.com/Corebrum/corebrum-synapse/blob/main/docs/mapping.md

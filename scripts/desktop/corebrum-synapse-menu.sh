@@ -117,10 +117,15 @@ camera-stop-2d|Camera: Stop 2D
 battery-start|Battery: Start reporting
 battery-stop|Battery: Stop reporting
 motors-start|Motors: Start
+motors-jetson-start|Motors: Start (Jetson GPIO)
 motors-stop|Motors: Stop
+mapping-start|Mapping: Start
+mapping-stop|Mapping: Stop
+skills-mapping-bundle|Skills: Install mapping bundle
 eyes-start|Eyes: Start
 eyes-stop|Eyes: Stop
 stack-real|Stack: Real robot
+stack-real-map|Stack: Real robot (with mapping)
 stack-sim-amr|Stack: Sim AMR
 stack-sim-arm|Stack: Sim arm
 stack-stop|Stack: Stop
@@ -235,8 +240,20 @@ corebrum_synapse_menu_run() {
     "Motors: Start")
       corebrum_synapse_menu_terminal "synapse start motors"
       ;;
+    "Motors: Start (Jetson GPIO)")
+      corebrum_synapse_menu_terminal "synapse start motors -b jetson -p 16,18,22,26 --odom"
+      ;;
     "Motors: Stop")
       corebrum_synapse_menu_terminal "synapse stop motors"
+      ;;
+    "Mapping: Start")
+      corebrum_synapse_menu_terminal "synapse start mapping"
+      ;;
+    "Mapping: Stop")
+      corebrum_synapse_menu_terminal "synapse stop mapping"
+      ;;
+    "Skills: Install mapping bundle")
+      corebrum_synapse_menu_terminal "synapse skills install --bundle mapping"
       ;;
     "Eyes: Start")
       corebrum_synapse_menu_terminal "synapse eyes"
@@ -246,6 +263,9 @@ corebrum_synapse_menu_run() {
       ;;
     "Stack: Real robot")
       corebrum_synapse_menu_terminal "synapse up real"
+      ;;
+    "Stack: Real robot (with mapping)")
+      corebrum_synapse_menu_terminal "synapse up real --map"
       ;;
     "Stack: Sim AMR")
       corebrum_synapse_menu_terminal "synapse up sim-amr"

@@ -1,0 +1,4 @@
+# Optional mapping stack for synapse up real --map (Ubuntu 26.04 / Lyrical).
+ros-lyrical-navigation2
+ros-lyrical-nav2-bringup
+ros-lyrical-rtabmap-ros

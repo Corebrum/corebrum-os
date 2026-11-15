@@ -1,0 +1,4 @@
+# Optional mapping stack for synapse up real --map (Ubuntu 24.04 / Jazzy).
+ros-jazzy-navigation2
+ros-jazzy-nav2-bringup
+ros-jazzy-rtabmap-ros

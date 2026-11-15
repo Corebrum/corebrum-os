@@ -12,7 +12,9 @@
     <main>
       <h1>Physical AI</h1>
       <p>Physical AI is an AI that can use a body. The body is the robot. RealSense is how it sees. ROS 2 is how motors, sensors, and tools talk. Corebrum Synapse connects an AI agent to that ROS graph so the agent can take a mission: look, decide, and act.</p>
-      <p>The pieces stay separate until you install them. ROS 2 comes first. RealSense and Corebrum Synapse need that install. An AI agent can be installed before or after Corebrum Synapse. Once Corebrum Synapse is installed, that agent uses it for ROS on this machine.</p>
+      <p>The reference kit is a <strong>Jetson Orin</strong> with native GPIO to an L298N motor driver (no Arduino), a RealSense camera, and Corebrum Synapse on <code>rmw_zenoh_cpp</code>. On Tegra, <code>synapse start motors</code> uses JETGPIO when it is installed. Alternates: Raspberry Pi (<code>-b rpi</code>) or x86/ARM with Arduino Firmata (<code>-b firmata</code>).</p>
+      <p>Install ROS 2 first, then RealSense and Corebrum Synapse. For room mapping and Nav2, install the optional mapping stack with <code>sudo corebrum install ros --mapping</code> or Super+Space <strong>ROS</strong> → <strong>Mapping stack install</strong>. Remote drive and live maps use <code>synapse connect</code> and <a class="out" href="https://cloud.corebrum.com">Corebrum Cloud</a>.</p>
+      <p>Jetson wiring and JETGPIO: see <code>docs/installation/jetson-robot.md</code> on this machine and <a class="out" href="https://github.com/Corebrum/corebrum-synapse/blob/main/docs/hardware.md">Synapse hardware.md</a>.</p>
     </main>
   </div>
 </body>
