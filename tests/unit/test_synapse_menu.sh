@@ -286,7 +286,8 @@ fi
 assert_eq "$("$menu" launch embodiment-setup)" "synapse embodiment setup" "drive setup uses embodiment wizard"
 assert_eq "$("$menu" launch arc-connect)" "synapse connect" "typing arc connect uses the CLI"
 assert_eq "$("$menu" launch arc-register)" "synapse register" "typing arc register uses the CLI"
-assert_eq "$("$menu" launch arc-setup)" "corebrum-arc-menu launch setup" "typing Cloud Set up uses the Cloud wizard"
+assert_eq "$("$menu" launch arc-setup)" "synapse cloud setup" "Cloud Set up runs synapse cloud setup"
+assert_eq "$("$menu" launch cloud-link)" "synapse cloud link" "Cloud link uses synapse cloud link"
 register_entry="${runtime}/corebrum/applications/corebrum-synapse-action-arc-register.desktop"
 if ! grep -q '^Name=Cloud: Register$' "$register_entry"; then
   echo "FAIL: Super+Space does not list Cloud: Register for search" >&2
@@ -302,7 +303,7 @@ assert_eq "$("$menu" open)" "synapse connect" "ARC connect uses the CLI"
 export COREBRUM_SYNAPSE_CHOICE="Cloud: Register"
 assert_eq "$("$menu" open)" "synapse register" "ARC register uses the CLI"
 export COREBRUM_SYNAPSE_CHOICE="Cloud: Set up"
-assert_eq "$("$menu" open)" "corebrum-arc-menu launch setup" "ARC set up uses the Cloud wizard"
+assert_eq "$("$menu" open)" "synapse cloud setup" "Cloud set up uses synapse cloud setup"
 export COREBRUM_SYNAPSE_CHOICE="Camera: Start RealSense"
 assert_eq "$("$menu" open)" "synapse start realsense" "RealSense start uses the CLI"
 export COREBRUM_SYNAPSE_CHOICE="Stack: Real robot"

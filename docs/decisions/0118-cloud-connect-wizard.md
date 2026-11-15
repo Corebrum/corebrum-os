@@ -11,7 +11,7 @@ Decision 0076 and 0079 made Super+Space Corebrum Cloud open https://cloud.corebr
 
 - Choosing Corebrum Cloud drills into Cloud actions in the GTK launcher (`Corebrum Cloud >`), or opens a Fuzzel list when Waybar Cloud is clicked or the Fuzzel fallback runs `open`.
 - The Fuzzel list starts with a local Status line. It reports Synapse not installed, needs sign-in (no `API_TOKEN` in the Synapse configstore), signed in but not connected, or connected when `synapse status` shows `comms` running. It does not print the token. When Synapse is missing, Fuzzel also offers Install Corebrum Synapse.
-- Set up opens a terminal and runs `synapse login`, then `synapse register`, then `synapse connect`, then `synapse whoami`.
+- Set up opens a terminal and runs `synapse cloud setup` (optional embodiment, login, register or link to an existing account robot, connect, whoami).
 - Open website still runs `firefox https://cloud.corebrum.com`. The row does not call `xdg-open` and does not install a browser.
 - Super+Space search lists the Cloud actions as `Cloud: …` NoDisplay rows from `corebrum-arc-menu` (`Cloud: Set up`, and so on). The Synapse menu adds Cloud: Set up and Cloud: Register and keeps the other Cloud rows. Waybar Cloud click runs `corebrum-arc-menu open`.
 

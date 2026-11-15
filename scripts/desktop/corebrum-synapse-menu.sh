@@ -107,6 +107,7 @@ corebrum_synapse_menu_actions() {
   cat <<'EOF'
 embodiment-setup|Robot: Drive setup
 arc-setup|Cloud: Set up
+cloud-link|Cloud: Link robot
 arc-connect|Cloud: Connect
 arc-disconnect|Cloud: Disconnect
 arc-sign-in|Cloud: Sign in
@@ -215,13 +216,13 @@ corebrum_synapse_menu_run() {
       ;;
     "Cloud: Set up")
       if [[ "${COREBRUM_SYNAPSE_STUB:-0}" == 1 ]]; then
-        printf 'corebrum-arc-menu launch setup\n'
+        printf 'synapse cloud setup\n'
         return 0
       fi
-      if [[ -x /usr/local/bin/corebrum-arc-menu ]]; then
-        exec /usr/local/bin/corebrum-arc-menu launch setup
-      fi
-      corebrum_synapse_menu_die "the Corebrum Cloud menu is not installed"
+      corebrum_synapse_menu_terminal "synapse cloud setup"
+      ;;
+    "Cloud: Link robot")
+      corebrum_synapse_menu_terminal "synapse cloud link"
       ;;
     "Camera: Start RealSense")
       corebrum_synapse_menu_terminal "synapse start realsense"

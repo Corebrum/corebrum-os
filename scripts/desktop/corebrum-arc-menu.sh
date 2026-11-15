@@ -233,41 +233,14 @@ if [ ! -x /usr/local/bin/synapse ] || [ ! -f "$HOME/.synapse/config.json" ]; the
   read -r -p 'Press Enter to close. '
   exit 0
 fi
-printf '%s\n' "Corebrum Cloud setup"
-printf '%s\n' "This walks Sign in, then Register this robot, then Connect."
-printf '%s\n' "A browser-only sign-in on cloud.corebrum.com does not put a token on this robot."
-printf '\n'
-printf '%s\n' "=== Sign in ==="
-synapse login
-ec=$?
-if [ "$ec" -ne 0 ]; then
-  printf '\nSign in failed (%s).\n' "$ec"
-  read -r -p 'Press Enter to close. '
-  exit "$ec"
-fi
-printf '\n'
-printf '%s\n' "=== Register this robot ==="
-synapse register
-ec=$?
-if [ "$ec" -ne 0 ]; then
-  printf '\nRegister failed (%s).\n' "$ec"
-  read -r -p 'Press Enter to close. '
-  exit "$ec"
-fi
-printf '\n'
-printf '%s\n' "=== Connect ==="
-synapse connect
+synapse cloud setup
 ec=$?
 printf '\n'
 if [ "$ec" -eq 0 ]; then
-  printf '%s\n' "Connected. The Waybar Cloud chip should show connected."
-  printf '%s\n' "Open website still opens cloud.corebrum.com in Firefox."
+  printf '%s\n' "Cloud setup finished. The Waybar chip shows connected when comms is running."
 else
-  printf 'Connect failed (%s).\n' "$ec"
+  printf 'Cloud setup exited (%s).\n' "$ec"
 fi
-printf '\n'
-synapse whoami || true
-printf '\n'
 read -r -p 'Press Enter to close. '
 EOF
 }

@@ -34,9 +34,7 @@ assert_grep 'https://cloud.corebrum.com' "$menu" "menu does not keep the Corebru
 assert_grep 'corebrum-arc-action-' "$launcher_py" "launcher search does not include Cloud actions"
 assert_grep '"corebrum-arc"' "$menu_json" "menu tree does not list Corebrum Cloud"
 assert_grep 'corebrum-arc-action-' "$menu_json" "menu tree does not navigate into Cloud actions"
-assert_grep 'synapse login' "$menu" "Set up Cloud does not run synapse login"
-assert_grep 'synapse register' "$menu" "Set up Cloud does not run synapse register"
-assert_grep 'synapse connect' "$menu" "Set up Cloud does not run synapse connect"
+assert_grep 'synapse cloud setup' "$menu" "Set up Cloud does not run synapse cloud setup"
 assert_grep 'Corebrum Cloud opens a connect wizard' "$decision" "decision file is missing or mistitled"
 assert_grep 'synapse login' "$decision" "decision does not describe the login step"
 
@@ -113,18 +111,15 @@ assert_eq "$output" "synapse login" "Sign in does not use the CLI"
 output="$(COREBRUM_ARC_CHOICE='Register this robot' bash "$menu" open)"
 assert_eq "$output" "synapse register" "Register does not use the CLI"
 output="$(COREBRUM_ARC_CHOICE='Set up' bash "$menu" open)"
-if ! grep -q 'synapse login' <<<"$output" || ! grep -q 'synapse register' <<<"$output" || ! grep -q 'synapse connect' <<<"$output"; then
-  echo "FAIL: Set up does not walk login, register, and connect" >&2
+if ! grep -q 'synapse cloud setup' <<<"$output"; then
+  echo "FAIL: Set up does not run synapse cloud setup" >&2
   printf '%s\n' "$output" >&2
   fail=1
 fi
 output="$(bash "$menu" launch website)"
 assert_eq "$output" "firefox https://cloud.corebrum.com" "launch website did not open Firefox"
 output="$(bash "$menu" launch setup)"
-if ! grep -q 'synapse whoami' <<<"$output"; then
-  echo "FAIL: Set up does not show whoami after connect" >&2
-  fail=1
-fi
+assert_grep 'synapse cloud setup' <(printf '%s\n' "$output") "launch setup does not run synapse cloud setup"
 if ! grep -q '^Name=Cloud: Register this robot$' \
   "${runtime}/corebrum/applications/corebrum-arc-action-register.desktop"; then
   echo "FAIL: Super+Space search does not list Register this robot" >&2
