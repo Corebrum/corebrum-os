@@ -105,6 +105,7 @@ corebrum_synapse_menu_terminal() {
 
 corebrum_synapse_menu_actions() {
   cat <<'EOF'
+embodiment-setup|Robot: Drive setup
 arc-setup|Cloud: Set up
 arc-connect|Cloud: Connect
 arc-disconnect|Cloud: Disconnect
@@ -208,6 +209,9 @@ corebrum_synapse_menu_run() {
       ;;
     "Cloud: Register")
       corebrum_synapse_menu_terminal "synapse register"
+      ;;
+    "Robot: Drive setup")
+      corebrum_synapse_menu_terminal "synapse embodiment setup"
       ;;
     "Cloud: Set up")
       if [[ "${COREBRUM_SYNAPSE_STUB:-0}" == 1 ]]; then

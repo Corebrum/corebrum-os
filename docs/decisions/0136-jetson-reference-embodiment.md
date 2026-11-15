@@ -21,3 +21,4 @@ Corebrum OS integrates ROS 2, RealSense, Corebrum Synapse, and Corebrum Cloud. S
 - Website copy may say “designed for” until B-ref is recorded; then update to “validated on” the reference Orin.
 - Encoder odom stays Firmata-only; Jetson mapping uses RTAB-Map visual odom unless `--wheel-odom` is validated later.
 - Embodiment logic remains in Synapse; corebrum-os installs packages and exposes menus/doctor hints.
+- Super+Space Synapse **Robot: Drive setup** runs `synapse embodiment setup` (local configstore + optional Cloud PATCH).

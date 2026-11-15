@@ -283,6 +283,7 @@ if ! grep -q '^NoDisplay=true$' "$motors_entry"; then
   echo "FAIL: Motors: Start is listed in the idle Super+Space menu" >&2
   exit 1
 fi
+assert_eq "$("$menu" launch embodiment-setup)" "synapse embodiment setup" "drive setup uses embodiment wizard"
 assert_eq "$("$menu" launch arc-connect)" "synapse connect" "typing arc connect uses the CLI"
 assert_eq "$("$menu" launch arc-register)" "synapse register" "typing arc register uses the CLI"
 assert_eq "$("$menu" launch arc-setup)" "corebrum-arc-menu launch setup" "typing Cloud Set up uses the Cloud wizard"
