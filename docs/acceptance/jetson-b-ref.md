@@ -1,6 +1,8 @@
 # Jetson B-ref acceptance (corebrum-os)
 
-Cross-repo software for the reference embodiment ships in Synapse, Cloud, corebrum-os, and corebrum.com. **Motion B-ref** still runs only on a physical Orin kit with motors wired.
+Cross-repo software for the reference embodiment ships in Synapse, Cloud, corebrum-os, and corebrum.com.
+
+**Hardware (2026-11-16):** B-ref and C-ref passed on operator Jetson Orin kit (GPIO → L298N, Cloud teleop). See `docs/decisions/0136-jetson-reference-embodiment.md`. D-ref mapping still optional.
 
 ## Automated pre-checks (no motion)
 
@@ -16,4 +18,4 @@ On Tegra without `COREBRUM_B_REF_MOTION=1`, the script runs `synapse doctor` and
 
 [corebrum-synapse `docs/acceptance/jetson-b-ref.md`](https://github.com/Corebrum/corebrum-synapse/blob/main/docs/acceptance/jetson-b-ref.md)
 
-When B-ref passes on hardware, update `docs/decisions/0136-jetson-reference-embodiment.md` with the date and machine details, then adjust corebrum.com copy from “designed for” to “validated on” the reference kit.
+B-ref/C-ref results live in ADR 0136 and Synapse `docs/acceptance/jetson-b-ref.md` / `jetson-c-ref.md`.
