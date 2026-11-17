@@ -61,6 +61,7 @@
         "corebrum-update-ubuntu",
         "corebrum-update-corebrum",
         "corebrum-update-ros",
+        "corebrum-update-realsense",
         "corebrum-update-zenoh",
         "corebrum-update-synapse",
         "corebrum-update-agents",
