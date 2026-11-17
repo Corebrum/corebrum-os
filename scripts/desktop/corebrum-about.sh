@@ -4,6 +4,12 @@
 # the same card and exits.
 set -euo pipefail
 
+# Box widths count characters, so make sure bash measures UTF-8, not bytes.
+case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+  *UTF-8* | *utf8*) ;;
+  *) export LC_ALL=C.UTF-8 ;;
+esac
+
 corebrum_about_die() {
   printf 'corebrum-about: %s\n' "$1" >&2
   exit 1
@@ -19,30 +25,45 @@ corebrum_about_banner() {
 EOF
 }
 
+# Each box is COREBRUM_ABOUT_BOX columns wide, borders included, so two boxes
+# can sit side by side in the About window.
+COREBRUM_ABOUT_BOX=58
+COREBRUM_ABOUT_GAP=2
+
+corebrum_about_repeat() {
+  local n="$1"
+  local ch="$2"
+  local out=""
+  while (( n-- > 0 )); do
+    out+="$ch"
+  done
+  printf '%s' "$out"
+}
+
 corebrum_about_heading() {
   local title="$1"
-  local width=52
-  local title_w left right
-  title_w="$(printf '%s' "$title" | wc -L)"
-  left=$(( (width - title_w + 1) / 2 ))
-  right=$(( width - title_w - left ))
+  local width=$(( COREBRUM_ABOUT_BOX - 2 ))
+  local left right
+  left=$(( (width - ${#title} + 1) / 2 ))
+  right=$(( width - ${#title} - left ))
   (( left > 0 )) || left=1
   (( right > 0 )) || right=1
-  printf '┌'
-  printf '─%.0s' $(seq "$left")
-  printf '%s' "$title"
-  printf '─%.0s' $(seq "$right")
-  printf '┐\n'
+  printf '┌%s%s%s┐\n' "$(corebrum_about_repeat "$left" '─')" "$title" "$(corebrum_about_repeat "$right" '─')"
 }
 
 corebrum_about_footer() {
-  printf '└────────────────────────────────────────────────────┘\n'
+  printf '└%s┘\n' "$(corebrum_about_repeat $(( COREBRUM_ABOUT_BOX - 2 )) '─')"
 }
 
 corebrum_about_row() {
   local key="$1"
   local value="$2"
-  printf '%-12s %s\n' "$key" "$value"
+  # Border, space, 12-column key, space, value, space, border.
+  local room=$(( COREBRUM_ABOUT_BOX - 17 ))
+  if (( ${#value} > room )); then
+    value="${value:0:room-1}…"
+  fi
+  printf '│ %-12s %s%s │\n' "$key" "$value" "$(corebrum_about_repeat $(( room - ${#value} )) ' ')"
 }
 
 corebrum_about_corebrum_version() {
@@ -326,12 +347,8 @@ corebrum_about_last_update() {
   printf '%s\n' "${stamp:-unknown}"
 }
 
-corebrum_about_print() {
-  local value synapse
-
-  printf '\n'
-  corebrum_about_banner
-  printf '\n'
+corebrum_about_hardware() {
+  local value
   corebrum_about_heading "Hardware"
   corebrum_about_row "PC" "$(corebrum_about_pc)"
   corebrum_about_row "CPU" "$(corebrum_about_cpu)"
@@ -345,8 +362,10 @@ corebrum_about_print() {
     corebrum_about_row "Swap" "$value"
   fi
   corebrum_about_footer
-  printf '\n'
+}
 
+corebrum_about_software() {
+  local synapse
   corebrum_about_heading "Software"
   corebrum_about_row "Corebrum" "Corebrum $(corebrum_about_corebrum_version)"
   synapse="$(corebrum_about_synapse_version)"
@@ -360,47 +379,134 @@ corebrum_about_print() {
   corebrum_about_row "WM" "$(corebrum_about_wm)"
   corebrum_about_row "Terminal" "$(corebrum_about_terminal)"
   corebrum_about_footer
-  printf '\n'
+}
 
+corebrum_about_age() {
   corebrum_about_heading "Age / Uptime / Update"
   corebrum_about_row "OS Age" "$(corebrum_about_os_age)"
   corebrum_about_row "Uptime" "$(corebrum_about_uptime)"
   corebrum_about_row "Update" "$(corebrum_about_last_update)"
   corebrum_about_footer
+}
+
+# One column: Hardware, Software, then Age stacked. corebrum about uses this.
+corebrum_about_print() {
+  printf '\n'
+  corebrum_about_banner
+  printf '\n'
+  corebrum_about_hardware
+  printf '\n'
+  corebrum_about_software
+  printf '\n'
+  corebrum_about_age
   printf '\n'
 }
 
+# Two columns: Hardware beside Software, then Age centered under both. The About
+# window is sized for this so the card fits without scrolling.
+corebrum_about_print_columns() {
+  local -a left right
+  local i n gap blank indent
+  mapfile -t left < <(corebrum_about_hardware)
+  mapfile -t right < <(corebrum_about_software)
+  n=${#left[@]}
+  (( ${#right[@]} > n )) && n=${#right[@]}
+  gap="$(corebrum_about_repeat "$COREBRUM_ABOUT_GAP" ' ')"
+  blank="$(corebrum_about_repeat "$COREBRUM_ABOUT_BOX" ' ')"
+  # Center the 57-column banner and the Age box over both columns.
+  indent="$(corebrum_about_repeat $(( COREBRUM_ABOUT_BOX + COREBRUM_ABOUT_GAP / 2 - 28 )) ' ')"
+  printf '\n'
+  corebrum_about_banner | sed "s/^/${indent}/"
+  printf '\n'
+  for (( i = 0; i < n; i++ )); do
+    if [[ -n "${right[i]:-}" ]]; then
+      printf '%s%s%s\n' "${left[i]:-$blank}" "$gap" "${right[i]}"
+    else
+      printf '%s\n' "${left[i]:-}"
+    fi
+  done
+  printf '\n'
+  corebrum_about_age | sed "s/^/$(corebrum_about_repeat $(( (COREBRUM_ABOUT_BOX + COREBRUM_ABOUT_GAP) / 2 )) ' ')/"
+  printf '\n'
+}
+
+corebrum_about_columns_fit() {
+  local cols
+  cols="$(tput cols 2>/dev/null || printf '%s' "${COLUMNS:-0}")"
+  (( cols >= COREBRUM_ABOUT_BOX * 2 + COREBRUM_ABOUT_GAP ))
+}
+
+corebrum_about_rows() {
+  tput lines 2>/dev/null || printf '%s' "${LINES:-0}"
+}
+
+# The About window. Kitty opens it at the two-column size. A smaller window
+# gets one column, and a window too short for that drops the banner, so the
+# card does not scroll. A resize redraws without re-reading the machine.
+# Bash restarts read after SIGWINCH, so the size is polled instead.
 corebrum_about_render() {
+  local wide narrow bare fit last="" card rows
+  wide="$(corebrum_about_print_columns)"
+  narrow="$(corebrum_about_print)"
+  # The one-column card without the banner and the blank rows around it.
+  bare="$(sed '1,7d' <<<"$narrow")"
   printf '\e[?25l'
-  corebrum_about_print
-  printf 'Press any key to close.\n'
-  # shellcheck disable=SC2162
-  read -n 1 -s || true
+  while true; do
+    rows="$(corebrum_about_rows)"
+    if corebrum_about_columns_fit; then
+      card="$wide"
+    else
+      card="$narrow"
+      if (( $(wc -l <<<"$narrow") + 2 > rows )); then
+        card="$bare"
+      fi
+    fi
+    fit="$(tput cols 2>/dev/null)x${rows}"
+    if [[ "$fit" != "$last" ]]; then
+      printf '\e[H\e[2J%s\n\n' "$card"
+      printf 'Press any key to close.'
+      last="$fit"
+    fi
+    # A timeout returns above 128. Any key or end of input closes the card.
+    # shellcheck disable=SC2162
+    read -n 1 -s -t 0.3 && break
+    (( $? > 128 )) || break
+  done
   printf '\e[?25h'
+}
+
+# Kitty sizes the window in cells, so the two-column card fits whatever the
+# font measures. Kitty otherwise reopens at the last size it saved, and Sway
+# keeps a floating window at the size the client asks for.
+corebrum_about_kitty_size() {
+  printf -- '-o remember_window_size=no -o initial_window_width=%sc -o initial_window_height=%sc\n' \
+    $(( COREBRUM_ABOUT_BOX * 2 + COREBRUM_ABOUT_GAP + 2 )) 26
 }
 
 corebrum_about_open() {
   local term about
   if [[ "${COREBRUM_ABOUT_STUB:-0}" == 1 ]]; then
-    printf 'corebrum-terminal --class org.corebrum.about corebrum-about --render\n'
+    printf 'corebrum-terminal --class org.corebrum.about %s corebrum-about --render\n' "$(corebrum_about_kitty_size)"
     return 0
   fi
   term="$(command -v corebrum-terminal 2>/dev/null || true)"
   about="$(command -v corebrum-about 2>/dev/null || true)"
   [[ -n "$term" ]] || corebrum_about_die "corebrum-terminal is not installed"
   [[ -n "$about" ]] || about="$0"
-  exec "$term" --class org.corebrum.about "$about" --render
+  # shellcheck disable=SC2046
+  exec "$term" --class org.corebrum.about $(corebrum_about_kitty_size) "$about" --render
 }
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-about print|open|--render
+Usage: corebrum-about print|columns|open|--render
 EOF
 }
 
 cmd="${1:-print}"
 case "$cmd" in
   print) corebrum_about_print ;;
+  columns) corebrum_about_print_columns ;;
   open) corebrum_about_open ;;
   --render | render) corebrum_about_render ;;
   -h | --help | help) usage ;;
