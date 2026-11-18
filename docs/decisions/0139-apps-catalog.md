@@ -3,17 +3,17 @@
 See [Build and publish a Corebrum App](../development/corebrum-apps.md) for a
 worked packaging and submission example.
 
-Corebrum OS owns the app lifecycle. The marketplace serves the reviewed
+Corebrum OS owns the app lifecycle. The marketplace serves the
 catalog at `/apps/v1/catalog.json`. Synapse on Thor resolves to
 `/home/nvidia/synapse` via `/etc/corebrum/synapse.root` and retains its Skills
 integration.
 
 A developer attaches `corebrum-app.json` and the target archives to a public
-GitHub release. Open a pull request against
-[`Corebrum/corebrum-skills`](https://github.com/Corebrum/corebrum-skills) with the
-release URL and test results. Add the manifest's app record to
-`public/apps/v1/catalog.json`. The maintainer reviews the source, artifacts,
-license, dependencies, and compatibility evidence before merging.
+GitHub release, then submits its URL on the marketplace. The server checks
+GitHub push access, validates the manifest, and matches the declared SHA-256
+against the release asset digest. Valid releases go live immediately.
+Signed-in users can give each app one star. The API serves the versioned
+catalog from the original pilot entries and self-published records.
 
 ```json
 {
@@ -67,10 +67,9 @@ operator's account permissions.
 Hardware compatibility requires a tested release on the named Ubuntu,
 architecture, and device combination.
 
-Before merging, run the marketplace build and exercise the proposed catalog
-on each declared host. Point `COREBRUM_APPS_CATALOG` at the local candidate
-catalog and use `corebrum apps search`, `info`, `install`, `run`, and `remove`
-to check the release.
+Before publishing, exercise the proposed catalog on each declared host.
+Point `COREBRUM_APPS_CATALOG` at the local candidate catalog and use
+`corebrum apps search`, `info`, `install`, `run`, and `remove` to check the release.
 
 ## Verification
 
@@ -78,7 +77,9 @@ The Apps unit tests exercise compatibility selection, archive path validation,
 install, reinstall, update, rollback on a corrupt artifact or missing entry
 point, offline launch, and removal. The existing CLI unit and smoke checks
 and production builds for the marketplace and website passed on Thor.
-Synapse's local Skills listing also ran.
+Synapse's local Skills listing also ran. The marketplace backend tests cover
+repository permissions, release checksum validation, preservation of existing
+versions, and idempotent star and unstar operations.
 
 The three MIT-licensed pilots publish version 1.0.0 archives with a launch
 script and a manifest in their source repositories. The catalog declares

@@ -2,7 +2,7 @@
 
 Corebrum Apps are standalone tools that operators install and launch on
 Corebrum OS. This guide takes a small terminal app from an executable
-launcher to a reviewed [Marketplace listing](https://marketplace.corebrum.com/apps).
+launcher to a published [Marketplace listing](https://marketplace.corebrum.com/apps).
 
 ## 1. Package your app
 
@@ -117,14 +117,16 @@ architecture, attached hardware, and runtime versions. For releases with
 external prerequisites, check the launch error on a host where those are
 missing.
 
-## 4. Submit the listing
+## 4. Publish the listing
 
-Open a pull request in
-[Corebrum/corebrum-skills](https://github.com/Corebrum/corebrum-skills) and
-add your app record to `public/apps/v1/catalog.json`. Include the public
-GitHub release URL and target test results in the pull request. For an
-existing app, add the new release to its existing record.
+Open [Publish an app](https://marketplace.corebrum.com/publish/app), sign in
+with GitHub, and paste the public release URL. The account must have push
+access to the repository. The marketplace reads the manifest from that
+release and verifies the archive URLs and GitHub-reported SHA-256 digests.
+After those checks pass, the listing is immediately visible in the catalog.
 
-The maintainer reviews the source, release archive, checksum, license,
-dependencies, and compatibility evidence. After the change is merged and
-deployed, search for your app in the [Marketplace](https://marketplace.corebrum.com/apps).
+To update an existing app, attach a manifest for one new
+`MAJOR.MINOR.PATCH` version to its GitHub release. Keep the same app ID and
+repository and submit the new release URL. Previously published versions
+stay available. Signed-in users can star your app from its listing, and
+operators can sort the catalog by stars.
