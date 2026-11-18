@@ -57,6 +57,10 @@ sudo ./scripts/install.sh --profile desktop --enable-ssh
 
 The Cursor agent install, `agent login`, and a `PATH` line in `~/.bashrc` stay on your account. The installer does not write a home directory and does not install Cursor. The editor in the base profile is `nano`.
 
+### Local AI models
+
+Super+Space **AI Agents** installs Ollama. Claude Code, Codex, Hermes, OpenClaw, and Corebrum Synapse can then run on a model on this computer, with no cloud API key. See [Local AI models](docs/local-models.md).
+
 ### Updates
 
 Super+Space **Updates** upgrades Ubuntu, this checkout, ROS 2, Zenoh, Corebrum Synapse, and the AI agents already installed. **All** runs those six steps in order. A login reminder once a week points at that menu and does not apply upgrades. The row-by-row commands are in `docs/installation/desktop.md` and `docs/decisions/0045-software-updates.md`.
