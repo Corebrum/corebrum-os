@@ -77,10 +77,12 @@ point, offline launch, and removal. The existing CLI unit and smoke checks
 and production builds for the marketplace and website passed on Thor.
 Synapse's local Skills listing also ran.
 
-The catalog starts empty. The source code for `realsense-ascii`, `boxes`, and
-`realsense-vlm` uses the same MIT license as Corebrum OS. Third-party models
-and dependencies retain their own terms. Pilot acceptance still requires
-versioned release artifacts and testing on each declared target. Boxes needs
-its model and CUDA Python stack packaged or documented as host requirements.
-The CUDA VLM also needs the Jetson-specific PyTorch and zero-copy RealSense
-builds.
+The three MIT-licensed pilots publish version 1.0.0 archives with a launch
+script and a manifest in their source repositories. The catalog declares
+Ubuntu 24.04 arm64 on the Jetson AGX Thor Developer Kit with a RealSense D456
+over USB 3. On that configuration RealSense ASCII rendered live depth, Boxes
+processed 20 frames using cached model weights, and the CUDA VLM produced
+headless captions. The tests used the existing Python, CUDA, and RealSense
+runtimes on Thor. The release instructions describe how to select those
+runtimes. Third-party models and dependencies are obtained separately and
+retain their own terms.
