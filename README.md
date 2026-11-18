@@ -20,6 +20,14 @@ Original Corebrum code in this repository is under the MIT license in `LICENSE`.
 
 Supported hosts are Ubuntu Server 24.04 and 26.04 on x86-64 and ARM64. On 2026-10-28 the install and the running system were confirmed on both releases. The desktop, ROS 2, RealSense, Corebrum Synapse, and the AI agents run on both, including a Raspberry Pi. Ubuntu 24.04 installs ROS 2 Jazzy. Ubuntu 26.04 installs ROS 2 Lyrical. Both lock with gtklock. See `docs/decisions/0089-noble-gtklock.md`. The phase record is in `COREBRUM_BUILD_PLAN.md`. Other Ubuntu releases are rejected before any package is installed. See `docs/decisions/0088-ubuntu-2404.md`.
 
+## Corebrum Apps
+
+[Browse Corebrum Apps](https://marketplace.corebrum.com/apps) for standalone
+robotics tools. Developers can [publish an app](https://marketplace.corebrum.com/publish/app)
+by submitting a public GitHub release. Valid releases publish immediately
+after automated checks. See the [app developer guide](docs/development/corebrum-apps.md)
+for packaging and testing.
+
 ## Install
 
 [Ubuntu Server installation](docs/installation/ubuntu-server-install.md) walks through installing Ubuntu Server 24.04 or 26.04, opening SSH from a Mac, adding a GitHub key on the server, and cloning this repository. After that, return here for the Corebrum OS install.
