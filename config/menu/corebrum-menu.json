@@ -34,7 +34,8 @@
         "corebrum-realsense",
         "corebrum-synapse",
         "corebrum-arc",
-        "corebrum-skills"
+        "corebrum-skills",
+        "corebrum-apps"
       ]
     },
     {

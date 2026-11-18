@@ -56,6 +56,7 @@ tmp="$(mktemp -d)"
 home="${tmp}/home"
 share="${tmp}/share"
 mkdir -p "${home}/applications" "${share}/applications"
+cp "${ROOT}/apps/corebrum-apps.desktop" "${share}/applications/"
 cat >"${share}/applications/corebrum-agents.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -289,6 +290,14 @@ robot_names="$(names <<<"$robot")"
 if ! grep -qx 'ROS >' <<<"$robot_names"; then
   echo "FAIL: Robot dropped the ROS submenu marker" >&2
   printf '%s\n' "$robot_names" >&2
+  exit 1
+fi
+if ! grep -qx 'Corebrum Apps' <<<"$robot_names"; then
+  echo "FAIL: Robot does not list Corebrum Apps" >&2
+  exit 1
+fi
+if grep -qx 'Corebrum Apps' <<<"$apps_names"; then
+  echo "FAIL: Corebrum Apps is duplicated in the generic Apps group" >&2
   exit 1
 fi
 if grep -qx 'Ollama   install' <<<"$robot_names" || grep -q 'Ollama' <<<"$robot_names"; then

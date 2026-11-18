@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Corebrum Apps
+Comment=Search the marketplace and install or run robotics apps
+Keywords=marketplace;realsense;ros;install;robotics;
+Exec=/usr/local/bin/corebrum-apps-menu
+TryExec=/usr/local/bin/corebrum-apps-menu
+Icon=/usr/share/corebrum/icon.png
+Terminal=false
+Categories=Utility;

@@ -220,6 +220,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/desktop/corebrum-ros-menu.sh" /usr/local/bin/corebrum-ros-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-realsense-menu.sh" /usr/local/bin/corebrum-realsense-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-synapse-menu.sh" /usr/local/bin/corebrum-synapse-menu 755
+  corebrum_install_file "${root}/scripts/desktop/corebrum-apps-menu.sh" /usr/local/bin/corebrum-apps-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-skills-menu.sh" /usr/local/bin/corebrum-skills-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-arc-menu.sh" /usr/local/bin/corebrum-arc-menu 755
   corebrum_install_file "${root}/scripts/desktop/corebrum-skills-approve.sh" /usr/local/bin/corebrum-skills-approve 755
@@ -269,6 +270,7 @@ corebrum_install_desktop_files() {
   corebrum_install_file "${root}/scripts/robot/install-jetgpio.sh" /usr/local/lib/corebrum/install-jetgpio.sh 755
   corebrum_install_file "${root}/manifests/packages/ros-tools.conf" /etc/corebrum/ros-tools.conf 644
   corebrum_install_file "${root}/scripts/ros/corebrum-ros-shell.sh" /usr/local/bin/corebrum-ros-shell 755
+  corebrum_install_file "${root}/apps/corebrum-apps.desktop" /usr/local/share/applications/corebrum-apps.desktop 644
   corebrum_install_file "${root}/apps/corebrum-grid.desktop" /usr/local/share/applications/corebrum-grid.desktop 644
   corebrum_install_file "${root}/config/brand/logo.png" /usr/share/corebrum/logo.png 644
   corebrum_install_file "${root}/config/brand/icon.png" /usr/share/corebrum/icon.png 644
@@ -496,6 +498,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/bin/corebrum-ros-menu
 /usr/local/bin/corebrum-realsense-menu
 /usr/local/bin/corebrum-synapse-menu
+/usr/local/bin/corebrum-apps-menu
 /usr/local/bin/corebrum-skills-menu
 /usr/local/bin/corebrum-arc-menu
 /usr/local/bin/corebrum-skills-approve
@@ -536,6 +539,7 @@ corebrum_desktop_managed_paths() {
 /usr/local/lib/corebrum/synapse-with-ros.sh
 /etc/corebrum/ros-tools.conf
 /usr/local/bin/corebrum-ros-shell
+/usr/local/share/applications/corebrum-apps.desktop
 /usr/local/share/applications/corebrum-grid.desktop
 /usr/share/corebrum/logo.png
 /usr/share/corebrum/icon.png
