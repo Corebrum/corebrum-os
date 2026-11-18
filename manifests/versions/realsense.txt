@@ -1,22 +1,22 @@
 component: realsense
 ubuntu: 24.04 noble and 26.04 resolute
 arch: x86_64
-librealsense: 2.59.1 from https://librealsense.realsenseai.com/Debian/apt-repo
-librealsense_noble: 2.59.1-0~realsense.20270
-librealsense_resolute: 2.59.1-0~realsense.20271
+librealsense: 2.59.2 from https://librealsense.realsenseai.com/Debian/apt-repo
+librealsense_noble: 2.59.2-0~realsense.20561
+librealsense_resolute: 2.59.2-0~realsense.20562
 librealsense_key: 5381411D24E659FB18195FA5FB0B24895113F120
 viewer: /usr/bin/realsense-viewer from librealsense2-utils
 realsense_ros_noble: ros-jazzy-librealsense2 2.58.4-1noble.20260831.015923 and ros-jazzy-realsense2-camera 4.58.4-1noble.20260920.235447
 realsense_ros_resolute: ros-lyrical-librealsense2 2.58.4-1resolute.20260830.174711 and ros-lyrical-realsense2-camera 4.58.4-1resolute.20260915.142707
-pyrealsense2: 2.59.1.11053 from https://pypi.org/project/pyrealsense2/
+pyrealsense2: 2.59.2.11152 from https://pypi.org/project/pyrealsense2/
 python: system python3 when it is 3.10, 3.11, 3.12, 3.13, or 3.14
 python_verified: Ubuntu 26.04 python3 3.14.4 and the cp314 manylinux1_x86_64 wheel, 2026-10-22
-notes: The ROS librealsense deb does not ship realsense-viewer. noble also installs librealsense2-dkms 1.3.33-noble. resolute does not publish that dkms package. These packages are not part of corebrum install ros.
+notes: The ROS librealsense deb does not ship realsense-viewer. noble also installs librealsense2-dkms 1.3.33-noble. resolute does not publish that dkms package. These packages are not part of corebrum install ros. /etc/apt/preferences.d/corebrum-librealsense holds the SDK packages at these pins (priority 990), so apt-get upgrade does not move them. See docs/decisions/0137-updates-realsense.md.
 ---
 component: realsense
 ubuntu: 26.04 resolute
 arch: aarch64
-librealsense: 2.59.1-0~realsense.9166 from the noble suite of https://librealsense.realsenseai.com/Debian/apt-repo
-librealsense_note: The resolute suite of that archive publishes amd64 and i386 only. The arm64 2.59.1 packages are in the noble suite. x86_64 resolute stays on 2.59.1-0~realsense.20271.
-pyrealsense2: 2.59.1.11053 wheels for aarch64 exist for Python 3.10 and 3.12. Python 3.14 builds librealsense tag v2.59.1 commit 625279aa1fe903528a818f48746ee47c1b5fefd3.
+librealsense: 2.59.2-0~realsense.9377 from the noble suite of https://librealsense.realsenseai.com/Debian/apt-repo
+librealsense_note: The resolute suite of that archive publishes amd64 and i386 only. The arm64 2.59.2 packages are in the noble suite. x86_64 resolute stays on 2.59.2-0~realsense.20562.
+pyrealsense2: 2.59.2.11152 wheels for aarch64 exist for Python 3.10 and 3.12. Python 3.14 builds librealsense tag v2.59.2 commit e535e2445cfd00c31f67761ec13e0f99cb31c2dc.
 notes: See docs/decisions/0062-realsense-arm64.md. The x86_64 record above is unchanged.

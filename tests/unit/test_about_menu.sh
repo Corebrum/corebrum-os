@@ -168,6 +168,62 @@ if ! grep -Fq 'Update       2026-10-30  09:40:35' <<<"$stamp"; then
   fail=1
 fi
 
+# The About window shows Hardware beside Software so the card fits without
+# scrolling. Every box is the same width and long values are cut short.
+if grep -q 'app_id="org.corebrum.about"\].*resize set' "${ROOT}/config/sway/config"; then
+  echo "FAIL: Sway still sizes About in pixels; Kitty sizes it in cells" >&2
+  fail=1
+fi
+open_cmd="$(COREBRUM_ABOUT_STUB=1 bash "$about" open)"
+for needle in 'remember_window_size=no' 'initial_window_width=120c' 'initial_window_height=26c'; do
+  if ! grep -Fq -- "$needle" <<<"$open_cmd"; then
+    echo "FAIL: About window does not set ${needle}" >&2
+    fail=1
+  fi
+done
+columns="$(
+  COREBRUM_ABOUT_VERSION=0.5.0 \
+  COREBRUM_ABOUT_SYNAPSE=0.7.41 \
+  COREBRUM_ABOUT_PC='Test PC' \
+  COREBRUM_ABOUT_CPU='Test CPU (4)' \
+  COREBRUM_ABOUT_GPU='NVIDIA Corporation AD104 [GeForce RTX 4070 SUPER] (rev a1) with a long tail' \
+  COREBRUM_ABOUT_DISPLAY='HDMI-A-1 1920x1080' \
+  COREBRUM_ABOUT_DISK=disk \
+  COREBRUM_ABOUT_MEMORY=mem \
+  COREBRUM_ABOUT_SWAP='1Gi / 4Gi' \
+  COREBRUM_ABOUT_OS=os \
+  COREBRUM_ABOUT_KERNEL=k \
+  COREBRUM_ABOUT_WM=Sway \
+  COREBRUM_ABOUT_TERMINAL=Kitty \
+  COREBRUM_ABOUT_OS_AGE=age \
+  COREBRUM_ABOUT_UPTIME=up \
+  COREBRUM_ABOUT_UPDATE=unknown \
+  LC_ALL=C.UTF-8 bash "$about" columns
+)"
+if ! grep -q 'Hardware.*┐  ┌.*Software' <<<"$columns"; then
+  echo "FAIL: columns does not put Hardware beside Software" >&2
+  fail=1
+fi
+if ! grep -Fq 'GPU          NVIDIA Corporation AD104 [GeForce RTX 40… │' <<<"$columns"; then
+  echo "FAIL: a long GPU value was not cut to the box" >&2
+  fail=1
+fi
+widths="$(
+  export LC_ALL=C.UTF-8
+  grep -E '^[┌│└]' <<<"$columns" | while IFS= read -r line; do
+    printf '%s\n' "${#line}"
+  done | sort -u | tr '\n' ' '
+)"
+if [[ "$widths" != "118 58 " ]]; then
+  echo "FAIL: About box widths were ${widths}" >&2
+  fail=1
+fi
+rows="$(wc -l <<<"$columns")"
+if (( rows > 24 )); then
+  echo "FAIL: two-column About is ${rows} rows" >&2
+  fail=1
+fi
+
 stub="$(COREBRUM_ABOUT_STUB=1 bash "$menu" open)"
 if [[ "$stub" != "corebrum-about open" ]]; then
   echo "FAIL: About open stub was ${stub}" >&2

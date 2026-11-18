@@ -1,0 +1,24 @@
+# 0137. Super+Space Updates lists RealSense
+
+Date: 2026-11-17
+Status: Accepted
+
+## Context
+
+The RealSense installer pins librealsense, the ROS driver packages, and pyrealsense2. Intel publishes new SDK releases in the RealSense apt repository. Super+Space already installs RealSense from Robot → RealSense and from the setup wizard. Updates had no row that reapplied those pins after the operator bumped them in `corebrum-realsense-install.sh`.
+
+## Decision
+
+- Super+Space Updates lists RealSense after ROS 2 and before Zenoh. `corebrum update status` lists the same row.
+- Choosing RealSense runs `sudo /usr/local/lib/corebrum/realsense-install.sh`. The row is skipped when librealsense is not installed.
+- All runs RealSense in that position among the seven steps. Operator-owned librealsense builds stay outside this row.
+- The same change moves the pins to librealsense 2.59.2. The RealSense archive publishes `2.59.2-0~realsense.20561` for noble amd64, `2.59.2-0~realsense.20562` for resolute amd64, and `2.59.2-0~realsense.9377` for noble arm64, each with `librealsense2`, `-gl`, `-utils`, and `-udev-rules`. noble still installs `librealsense2-dkms` 1.3.33-noble. PyPI `pyrealsense2` 2.59.2.11152 has the same wheel coverage as 2.59.1.11053: x86-64 Python 3.10 through 3.14 and aarch64 Python 3.9, 3.10, and 3.12. Tag `v2.59.2` is commit `e535e2445cfd00c31f67761ec13e0f99cb31c2dc` for the aarch64 source build. These were checked on 2026-11-17 and recorded in `manifests/versions/realsense.txt`.
+- `/etc/apt/preferences.d/corebrum-librealsense` holds `librealsense2`, `-gl`, `-utils`, and `-udev-rules` at the installer's SDK version with priority 990, and `librealsense2-dkms` at its pin when that target installs it. Every other package and version from the RealSense archive stays at priority 100. Before this, those four packages were at priority 500 with no version, so Updates → Ubuntu (`apt-get upgrade`) moved them to each new release while `pyrealsense2` stayed at its PyPI pin. On this Jetson, with 2.59.1 installed and 2.59.2 published, `apt-get -s upgrade` listed all four for upgrade without the hold and none with it, and `apt-cache policy` chose 2.59.2 once the hold named 2.59.2. Priority 990 does not downgrade a newer installed copy.
+- The installer rewrites that file each run, so Updates → RealSense moves the hold with the pins. A future release is a pin change in `scripts/desktop/corebrum-realsense-install.sh` and `manifests/versions/realsense.txt`. Updates → All then copies the new installer in the Corebrum step and applies it in the RealSense step.
+- When another file in `/etc/apt/sources.list` or `/etc/apt/sources.list.d/` already lists the RealSense archive, the installer uses it and does not write `corebrum-librealsense.sources`. Intel's install steps write `librealsense.list` with `signed-by=/etc/apt/keyrings/librealsenseai.gpg`, and apt stops every command with `Conflicting values set for option Signed-By` when a second entry names another keyring. The first Updates → RealSense run on the Jetson reference kit hit that on 2026-11-17. The existing entry must carry the suite this install needs, and its Signed-By keyring must hold key `5381411D24E659FB18195FA5FB0B24895113F120`; otherwise the installer stops and names the file. A Corebrum source left beside it by an earlier run is removed. The version hold is written either way. Uninstall leaves the operator's entry in place.
+- After it installs, the installer checks which `realsense-viewer` is on `PATH` and which `librealsense2.so` `/usr/bin/realsense-viewer` loads. When either is not the package's, it prints a warning that names the path and version, says that build belongs to the operator, and points at `build/install_manifest.txt`. It does not fail and does not touch that build. On the Jetson reference kit on 2026-11-17, apt held 2.59.2 but a CUDA build of 2.59.1 in `/usr/local` (from 2026-10-13) was first on `PATH` and first in the loader search with the same soname `librealsense2.so.2.59`, so both viewers and the ROS camera node still ran 2.59.1. pyrealsense2 2.59.2 ships its own library and was unaffected.
+- `ros-<distro>-librealsense2` and `ros-<distro>-realsense2-camera` come from the ROS repository and still move with the ROS 2 row.
+
+## Consequences
+
+Bumping RealSense pins in the repository and choosing Updates → RealSense, or All after a Corebrum checkout update, upgrades a Corebrum-managed camera stack. A dirty Corebrum checkout still blocks the Corebrum row first. A machine installed before this change floats until the RealSense row or the installer runs once and writes the hold.

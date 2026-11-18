@@ -8,15 +8,15 @@ COREBRUM_REALSENSE_ORIGIN="librealsense.realsenseai.com"
 COREBRUM_REALSENSE_KEYRING="/usr/share/keyrings/corebrum-librealsense.gpg"
 COREBRUM_REALSENSE_SOURCE="/etc/apt/sources.list.d/corebrum-librealsense.sources"
 COREBRUM_REALSENSE_PIN="/etc/apt/preferences.d/corebrum-librealsense"
-COREBRUM_REALSENSE_PY="2.59.1.11053"
-# arm64 2.59.1 is published in the noble suite. The resolute suite is amd64 and i386.
+COREBRUM_REALSENSE_PY="2.59.2.11152"
+# arm64 2.59.2 is published in the noble suite. The resolute suite is amd64 and i386.
 # x86_64 keeps the codename pins in realsense_versions.
-COREBRUM_REALSENSE_ARM64_SDK_VERSION="2.59.1-0~realsense.9166"
+COREBRUM_REALSENSE_ARM64_SDK_VERSION="2.59.2-0~realsense.9377"
 COREBRUM_REALSENSE_ARM64_SUITE="noble"
-# Tag v2.59.1. PyPI has no cp314 aarch64 wheel for 2.59.1.11053.
+# Tag v2.59.2. PyPI has no cp314 aarch64 wheel for 2.59.2.11152.
 COREBRUM_REALSENSE_SRC_URL="https://github.com/realsenseai/librealsense.git"
-COREBRUM_REALSENSE_SRC_TAG="v2.59.1"
-COREBRUM_REALSENSE_SRC_COMMIT="625279aa1fe903528a818f48746ee47c1b5fefd3"
+COREBRUM_REALSENSE_SRC_TAG="v2.59.2"
+COREBRUM_REALSENSE_SRC_COMMIT="e535e2445cfd00c31f67761ec13e0f99cb31c2dc"
 
 realsense_die() {
   printf 'realsense-install: %s\n' "$1" >&2
@@ -41,12 +41,12 @@ realsense_versions() {
   local codename="$1"
   case "$codename" in
     noble)
-      REALSENSE_SDK_VERSION="2.59.1-0~realsense.20270"
+      REALSENSE_SDK_VERSION="2.59.2-0~realsense.20561"
       REALSENSE_DKMS_VERSION="1.3.33-noble"
       REALSENSE_ROS_DISTRO="jazzy"
       ;;
     resolute)
-      REALSENSE_SDK_VERSION="2.59.1-0~realsense.20271"
+      REALSENSE_SDK_VERSION="2.59.2-0~realsense.20562"
       REALSENSE_DKMS_VERSION=""
       REALSENSE_ROS_DISTRO="lyrical"
       ;;
@@ -83,8 +83,97 @@ realsense_require_archive_version() {
   fi
 }
 
+# Hold the SDK packages at the Corebrum pin. apt-get upgrade (Updates → Ubuntu)
+# then keeps them there even when the RealSense archive publishes a newer build.
+# Only this installer, run again with new pins (Updates → RealSense), moves them.
+# 990 keeps the pin as the candidate without downgrading a newer installed copy.
+realsense_pin_text() {
+  local sdk="$1" dkms="${2:-}"
+  cat <<EOF
+# Managed by Corebrum OS. Rewritten by /usr/local/lib/corebrum/realsense-install.sh.
+# The RealSense SDK packages stay at the Corebrum pin. Super+Space Updates →
+# RealSense moves that pin. Everything else from ${COREBRUM_REALSENSE_ORIGIN}
+# stays below Ubuntu.
+Package: librealsense2 librealsense2-gl librealsense2-utils librealsense2-udev-rules
+Pin: version ${sdk}
+Pin-Priority: 990
+EOF
+  if [[ -n "$dkms" ]]; then
+    cat <<EOF
+
+Package: librealsense2-dkms
+Pin: version ${dkms}
+Pin-Priority: 990
+EOF
+  fi
+  cat <<EOF
+
+Package: *
+Pin: origin ${COREBRUM_REALSENSE_ORIGIN}
+Pin-Priority: 100
+EOF
+}
+
+# Print apt source files, other than Corebrum's, that already list the
+# RealSense archive. Intel's install steps write librealsense.list with its own
+# keyring. apt rejects a second entry for the same archive with another
+# Signed-By, so Corebrum uses that entry instead of adding one.
+realsense_foreign_sources() {
+  local apt_dir="${1:-/etc/apt}" file repo
+  repo="${COREBRUM_REALSENSE_REPO%/}"
+  for file in "${apt_dir}/sources.list" "${apt_dir}"/sources.list.d/*.list "${apt_dir}"/sources.list.d/*.sources; do
+    [[ -f "$file" ]] || continue
+    [[ "$(basename "$file")" == "$(basename "$COREBRUM_REALSENSE_SOURCE")" ]] && continue
+    if grep -v '^[[:space:]]*#' "$file" | grep -qF "$repo"; then
+      printf '%s\n' "$file"
+    fi
+  done
+}
+
+# Check an operator's RealSense source before relying on it: it must carry the
+# suite this install needs, and a Signed-By keyring must hold the RealSense key.
+realsense_check_foreign_source() {
+  local file="$1" suite="$2" keyring fingerprint
+  if ! grep -v '^[[:space:]]*#' "$file" | grep -qw -- "$suite"; then
+    realsense_die "${file} lists the RealSense archive without the ${suite} suite. Add ${suite} to it or remove it, then run this again."
+  fi
+  keyring="$(grep -v '^[[:space:]]*#' "$file" | grep -oiE 'signed-by[=:][[:space:]]*[^] [:space:]]+' | head -n 1 | sed -E 's/^[^=:]*[=:][[:space:]]*//')"
+  if [[ -z "$keyring" ]]; then
+    realsense_log "${file} has no Signed-By; apt checks it against the system keyrings"
+    return 0
+  fi
+  [[ -r "$keyring" ]] || realsense_die "${file} names keyring ${keyring}, which is missing"
+  fingerprint="$(gpg --batch --no-default-keyring --show-keys --with-colons "$keyring" 2>/dev/null | awk -F: '/^fpr:/ { print $10 }')"
+  grep -qx "$COREBRUM_REALSENSE_KEY_FINGERPRINT" <<<"$fingerprint" \
+    || realsense_die "${keyring} from ${file} does not hold RealSense key ${COREBRUM_REALSENSE_KEY_FINGERPRINT}"
+}
+
+realsense_write_pin() {
+  local work
+  work="$(mktemp -d)"
+  realsense_pin_text "$REALSENSE_SDK_VERSION" "${REALSENSE_DKMS_VERSION:-}" >"${work}/realsense.pin"
+  realsense_install_owned_file "${work}/realsense.pin" "$COREBRUM_REALSENSE_PIN" 644
+  rm -rf "$work"
+}
+
 realsense_add_repo() {
-  local codename="$1" work fingerprint source_file pin_file
+  local codename="$1" work fingerprint source_file foreign file
+  command -v gpg >/dev/null 2>&1 || realsense_die "gpg is required to check the RealSense signing key"
+  foreign="$(realsense_foreign_sources /etc/apt)"
+  if [[ -n "$foreign" ]]; then
+    while IFS= read -r file; do
+      realsense_check_foreign_source "$file" "$codename"
+      realsense_log "using the existing RealSense source ${file}; not adding ${COREBRUM_REALSENSE_SOURCE}"
+    done <<<"$foreign"
+    # An earlier run may have added Corebrum's entry next to it. apt cannot read
+    # both, so take ours out. The keyring stays for uninstall to remove.
+    if [[ -e "$COREBRUM_REALSENSE_SOURCE" ]]; then
+      rm -f "$COREBRUM_REALSENSE_SOURCE"
+      realsense_log "removed ${COREBRUM_REALSENSE_SOURCE}; it duplicated the existing RealSense source"
+    fi
+    realsense_write_pin
+    return 0
+  fi
   command -v curl >/dev/null 2>&1 || realsense_die "curl is required to fetch the RealSense signing key"
   command -v gpg >/dev/null 2>&1 || realsense_die "gpg is required to check the RealSense signing key"
   work="$(mktemp -d)"
@@ -105,7 +194,6 @@ realsense_add_repo() {
   fi
   realsense_install_owned_file "${work}/key.gpg" "$COREBRUM_REALSENSE_KEYRING" 644
   source_file="${work}/realsense.sources"
-  pin_file="${work}/realsense.pin"
   cat >"$source_file" <<EOF
 # Managed by Corebrum OS. RealSense SDK packages for realsense-viewer.
 Types: deb
@@ -114,21 +202,9 @@ Suites: ${codename}
 Components: main
 Signed-By: ${COREBRUM_REALSENSE_KEYRING}
 EOF
-  cat >"$pin_file" <<EOF
-# Managed by Corebrum OS.
-# Only the RealSense SDK packages used by the Super+Space installer come from
-# ${COREBRUM_REALSENSE_ORIGIN}. Everything else there stays below Ubuntu.
-Package: librealsense2 librealsense2-gl librealsense2-utils librealsense2-udev-rules librealsense2-dkms
-Pin: origin ${COREBRUM_REALSENSE_ORIGIN}
-Pin-Priority: 500
-
-Package: *
-Pin: origin ${COREBRUM_REALSENSE_ORIGIN}
-Pin-Priority: 100
-EOF
   realsense_install_owned_file "$source_file" "$COREBRUM_REALSENSE_SOURCE" 644
-  realsense_install_owned_file "$pin_file" "$COREBRUM_REALSENSE_PIN" 644
   rm -rf "$work"
+  realsense_write_pin
 }
 
 realsense_install_python_wheel() {
@@ -246,6 +322,48 @@ realsense_apply_arch_packages() {
   esac
 }
 
+# Warn when an operator-owned build shadows the packages this run installed.
+# A source install in /usr/local puts realsense-viewer earlier on PATH and
+# librealsense2.so.<major.minor> earlier in the loader search, with the same
+# soname as the package. Every viewer and the ROS camera node then load it.
+# Corebrum does not touch that build (docs/decisions/0112-operator-owned-replacements.md).
+# Arguments: viewer on PATH, packaged viewer, library the packaged viewer loads,
+# packaged library directory, pinned SDK version (upstream part, e.g. 2.59.2).
+realsense_shadow_report() {
+  local viewer="$1" packaged_viewer="$2" lib="$3" packaged_dir="$4" want="$5" lib_real have shadowed=0
+  if [[ -n "$viewer" && "$(readlink -f "$viewer")" != "$(readlink -f "$packaged_viewer")" ]]; then
+    realsense_log "warning: realsense-viewer on PATH is ${viewer}, not the ${want} package viewer ${packaged_viewer}"
+    shadowed=1
+  fi
+  if [[ -n "$lib" ]]; then
+    lib_real="$(readlink -f "$lib")"
+    if [[ "$(dirname "$lib_real")" != "$(readlink -f "$packaged_dir")" ]]; then
+      have="${lib_real##*.so.}"
+      [[ "$have" == "$lib_real" ]] && have="unknown version"
+      realsense_log "warning: programs load librealsense ${have} from ${lib_real}, not ${want} from ${packaged_dir}. That includes the ROS camera node."
+      shadowed=1
+    fi
+  fi
+  if [[ "$shadowed" -eq 1 ]]; then
+    realsense_log "That build was installed outside Corebrum and is yours to update or remove. Rebuild it at v${want}, or remove it to use the ${want} packages."
+    if [[ -n "${lib_real:-}" ]]; then
+      realsense_log "A CMake build records its files in build/install_manifest.txt."
+    fi
+    return 1
+  fi
+  return 0
+}
+
+realsense_check_shadow() {
+  local packaged_lib packaged_dir lib
+  packaged_lib="$(dpkg -L librealsense2 2>/dev/null | grep -E '/librealsense2\.so\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+  [[ -n "$packaged_lib" ]] || return 0
+  packaged_dir="$(dirname "$(readlink -f "$packaged_lib")")"
+  lib="$(ldd /usr/bin/realsense-viewer 2>/dev/null | awk '$1 ~ /^librealsense2\.so\./ { print $3; exit }')"
+  realsense_shadow_report "$(command -v realsense-viewer || true)" /usr/bin/realsense-viewer \
+    "$lib" "$packaged_dir" "${REALSENSE_SDK_VERSION%%-*}" || true
+}
+
 realsense_install_main() {
   local codename
   [[ "$(id -u)" -eq 0 ]] || realsense_die "RealSense install requires root"
@@ -282,6 +400,7 @@ realsense_install_main() {
   realsense_install_python
   command -v realsense-viewer >/dev/null 2>&1 || realsense_die "realsense-viewer is not on PATH"
   realsense_log "RealSense is installed"
+  realsense_check_shadow
 }
 
 realsense_remove_repo() {

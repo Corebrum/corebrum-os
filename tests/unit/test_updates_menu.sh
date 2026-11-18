@@ -33,7 +33,7 @@ tool_pin="$(sed -n 's/^COREBRUM_ZENOH_CLI_TOOL="\(.*\)"/\1/p' "$ros_lib")"
 [[ -n "$lib_pin" && -n "$tool_pin" ]] || fail "Zenoh client pins are missing from ros.sh"
 
 labels="$(run_menu labels)"
-for row in Ubuntu Corebrum "ROS 2" Zenoh "Corebrum Synapse" "AI Agents" All; do
+for row in Ubuntu Corebrum "ROS 2" RealSense Zenoh "Corebrum Synapse" "AI Agents" All; do
   printf '%s\n' "$labels" | grep -F -x -- "$row" >/dev/null || fail "missing row ${row}"
 done
 
@@ -57,6 +57,7 @@ printf '%s\n' "$dirty" | grep -F '== ROS 2 ==' >/dev/null && fail "All continued
 
 skipped="$(run_menu apply All)"
 printf '%s\n' "$skipped" | grep -F 'ROS 2 is not installed. Skipped.' >/dev/null || fail "missing ROS was not skipped"
+printf '%s\n' "$skipped" | grep -F 'RealSense is not installed. Skipped.' >/dev/null || fail "RealSense was not skipped"
 printf '%s\n' "$skipped" | grep -F 'Zenoh client stays as it is' >/dev/null || fail "Zenoh client was not skipped"
 printf '%s\n' "$skipped" | grep -F '@corebrum/zenoh-fleet@0.1.8' >/dev/null || fail "Zenoh fleet was not installed"
 printf '%s\n' "$skipped" | grep -F 'Corebrum Synapse is not installed. Skipped.' >/dev/null || fail "Corebrum Synapse was not skipped"
@@ -65,14 +66,16 @@ printf '%s\n' "$skipped" | grep -F "$lib_pin" >/dev/null && fail "Zenoh client w
 ubuntu_at="$(line_of '== Ubuntu ==' <(printf '%s\n' "$skipped"))"
 core_at="$(line_of '== Corebrum ==' <(printf '%s\n' "$skipped"))"
 ros_at="$(line_of '== ROS 2 ==' <(printf '%s\n' "$skipped"))"
+realsense_at="$(line_of '== RealSense ==' <(printf '%s\n' "$skipped"))"
 zenoh_at="$(line_of '== Zenoh ==' <(printf '%s\n' "$skipped"))"
 agentic_at="$(line_of '== Corebrum Synapse ==' <(printf '%s\n' "$skipped"))"
 agents_at="$(line_of '== AI Agents ==' <(printf '%s\n' "$skipped"))"
-[[ "$ubuntu_at" -lt "$core_at" && "$core_at" -lt "$ros_at" && "$ros_at" -lt "$zenoh_at" && "$zenoh_at" -lt "$agentic_at" && "$agentic_at" -lt "$agents_at" ]] \
-  || fail "All did not run the six steps in order"
+[[ "$ubuntu_at" -lt "$core_at" && "$core_at" -lt "$ros_at" && "$ros_at" -lt "$realsense_at" && "$realsense_at" -lt "$zenoh_at" && "$zenoh_at" -lt "$agentic_at" && "$agentic_at" -lt "$agents_at" ]] \
+  || fail "All did not run the seven steps in order"
 
-full="$(COREBRUM_UPDATES_ROS=1 COREBRUM_UPDATES_ZENOH_FLEET=1 COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_AGENTS_INSTALLED=claude run_menu apply All)"
+full="$(COREBRUM_UPDATES_ROS=1 COREBRUM_UPDATES_REALSENSE=1 COREBRUM_UPDATES_ZENOH_FLEET=1 COREBRUM_UPDATES_AGENTICROS=1 COREBRUM_AGENTS_INSTALLED=claude run_menu apply All)"
 printf '%s\n' "$full" | grep -F 'sudo corebrum install ros' >/dev/null || fail "ROS 2 was not reinstalled"
+printf '%s\n' "$full" | grep -F 'run: sudo ' | grep -F 'realsense-install.sh' >/dev/null || fail "RealSense was not reinstalled"
 printf '%s\n' "$full" | grep -F -- '--only-upgrade ros-<distro>-*' >/dev/null || fail "installed ROS packages were not upgraded"
 printf '%s\n' "$full" | grep -F "$lib_pin" >/dev/null || fail "Zenoh client library pin was not reinstalled"
 printf '%s\n' "$full" | grep -F "$tool_pin" >/dev/null || fail "Zenoh client tool pin was not reinstalled"
@@ -123,6 +126,31 @@ grep -F 'Name=Ubuntu' "$ubuntu_leaf" >/dev/null || fail "Ubuntu searchable leaf 
 grep -F 'NoDisplay=true' "$ubuntu_leaf" >/dev/null || fail "Ubuntu leaf is visible in the flat idle list"
 grep -F 'Exec=/usr/local/bin/corebrum-updates-menu launch ubuntu' "$ubuntu_leaf" >/dev/null \
   || fail "Ubuntu leaf does not launch ubuntu"
+
+# Super+Space builds the Updates submenu from config/menu/corebrum-menu.json.
+# Every leaf the script writes must be a child there, in the same order, or the
+# row exists only in the Fuzzel fallback.
+written="$(cd "${runtime}/corebrum/applications" && ls corebrum-update-*.desktop | sed 's/\.desktop$//' | sort)"
+tree_children="$(python3 -I - "${ROOT}/config/menu/corebrum-menu.json" <<'PY'
+import json, sys
+def walk(node):
+    if isinstance(node, dict):
+        if node.get("id") == "updates":
+            print("\n".join(node.get("children", [])))
+            return True
+        return any(walk(v) for v in node.values())
+    if isinstance(node, list):
+        return any(walk(v) for v in node)
+    return False
+sys.exit(0 if walk(json.load(open(sys.argv[1]))) else 1)
+PY
+)" || fail "menu tree has no updates group"
+[[ "$(sort <<<"$tree_children")" == "$written" ]] \
+  || fail "menu tree Updates children ($(tr '\n' ' ' <<<"$tree_children")) differ from the leaves the script writes ($(tr '\n' ' ' <<<"$written"))"
+expected_order="$(run_menu labels | while IFS= read -r label; do
+  printf 'corebrum-update-%s\n' "$(bash -c 'source "$1"; corebrum_updates_leaf_id "$2"' _ "$menu" "$label")"
+done)"
+[[ "$tree_children" == "$expected_order" ]] || fail "menu tree Updates order differs from the script labels"
 
 repo="$(mktemp -d)"
 git -C "$repo" init -q

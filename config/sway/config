@@ -85,7 +85,7 @@ bindsym $mod+Shift+5 move container to workspace number 5
 for_window [app_id="corebrum-launcher"] floating enable
 for_window [app_id="corebrum-setup"] floating enable
 for_window [app_id="org.corebrum.camera"] floating enable, sticky enable, border none
-for_window [app_id="org.corebrum.about"] floating enable, resize set 920 520, move position center
+for_window [app_id="org.corebrum.about"] floating enable, move position center
 for_window [app_id="corebrum-terminal-float"] floating enable, resize set 920 560, move position center
 for_window [app_id="corebrum-agent-float"] floating enable, resize set 920 560, move position center
 

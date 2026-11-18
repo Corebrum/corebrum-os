@@ -63,7 +63,7 @@ Super+Space **AI Agents** installs Ollama. Claude Code, Codex, Hermes, OpenClaw,
 
 ### Updates
 
-Super+Space **Updates** upgrades Ubuntu, this checkout, ROS 2, Zenoh, Corebrum Synapse, and the AI agents already installed. **All** runs those six steps in order. A login reminder once a week points at that menu and does not apply upgrades. The row-by-row commands are in `docs/installation/desktop.md` and `docs/decisions/0045-software-updates.md`.
+Super+Space **Updates** upgrades Ubuntu, this checkout, ROS 2, RealSense, Zenoh, Corebrum Synapse, and the AI agents already installed. **All** runs those seven steps in order. A login reminder once a week points at that menu and does not apply upgrades. The row-by-row commands are in `docs/installation/desktop.md` and `docs/decisions/0045-software-updates.md`.
 
 ### Headless server
 

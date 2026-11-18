@@ -538,6 +538,7 @@ Updates stay in Super+Space. This command does not upgrade anything.
   Ubuntu
   Corebrum
   ROS 2
+  RealSense
   Zenoh
   Corebrum Synapse
   AI Agents

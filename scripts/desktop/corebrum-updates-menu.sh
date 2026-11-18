@@ -107,6 +107,16 @@ corebrum_updates_synapse_ready() {
   [[ -s /etc/corebrum/synapse.root && -x /usr/local/bin/synapse ]]
 }
 
+corebrum_updates_realsense_ready() {
+  local status
+  if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
+    [[ "${COREBRUM_UPDATES_REALSENSE:-0}" == 1 ]]
+    return
+  fi
+  status="$(dpkg-query -W -f='${Status}' librealsense2-utils 2>/dev/null || true)"
+  [[ "$status" == "install ok installed" ]] && command -v rs-enumerate-devices >/dev/null 2>&1
+}
+
 # .mcp.json is tracked with a relative command. synapse mcp setup, which
 # init runs, rewrites it with this machine's ROS wrapper. That is not an edit
 # the operator made.
@@ -164,6 +174,7 @@ corebrum_updates_labels() {
     Ubuntu \
     Corebrum \
     "ROS 2" \
+    RealSense \
     Zenoh \
     "Corebrum Synapse" \
     "AI Agents" \
@@ -175,6 +186,7 @@ corebrum_updates_leaf_id() {
     Ubuntu) printf 'ubuntu\n' ;;
     Corebrum) printf 'corebrum\n' ;;
     "ROS 2") printf 'ros\n' ;;
+    RealSense) printf 'realsense\n' ;;
     Zenoh) printf 'zenoh\n' ;;
     "Corebrum Synapse") printf 'synapse\n' ;;
     "AI Agents") printf 'agents\n' ;;
@@ -192,8 +204,8 @@ corebrum_updates_refresh() {
 Type=Application
 Name=Updates
 GenericName=Updates
-Comment=Upgrade Ubuntu, Corebrum, ROS 2, Zenoh, Corebrum Synapse, and installed AI agents
-Keywords=update;upgrade;apt;ubuntu;ros;zenoh;synapse
+Comment=Upgrade Ubuntu, Corebrum, ROS 2, RealSense, Zenoh, Corebrum Synapse, and installed AI agents
+Keywords=update;upgrade;apt;ubuntu;ros;realsense;zenoh;synapse
 Exec=/usr/local/bin/corebrum-updates-menu open
 Icon=system-software-update
 Terminal=false
@@ -256,6 +268,25 @@ corebrum_updates_apply_corebrum() {
   corebrum_updates_run git -C "$root" pull --ff-only
   corebrum_updates_run sudo corebrum install desktop
   printf 'Log out so the session reloads the copied Hyprland config.\n'
+}
+
+corebrum_updates_apply_realsense() {
+  local script
+  printf '== RealSense ==\n'
+  if ! corebrum_updates_realsense_ready; then
+    printf 'RealSense is not installed. Skipped.\n'
+    return 0
+  fi
+  script="$(corebrum_updates_tool \
+    "${COREBRUM_UPDATES_REALSENSE_INSTALL:-}" \
+    corebrum-realsense-install.sh \
+    /usr/local/lib/corebrum/realsense-install.sh)"
+  if [[ "${COREBRUM_UPDATES_STUB:-0}" == 1 ]]; then
+    printf 'run: sudo %s\n' "$script"
+    return 0
+  fi
+  [[ -x "$script" ]] || corebrum_updates_die "RealSense installer is missing (${script})"
+  corebrum_updates_run sudo "$script"
 }
 
 corebrum_updates_apply_ros() {
@@ -376,6 +407,7 @@ corebrum_updates_apply_all() {
   corebrum_updates_apply_ubuntu
   corebrum_updates_apply_corebrum
   corebrum_updates_apply_ros
+  corebrum_updates_apply_realsense
   corebrum_updates_apply_zenoh
   corebrum_updates_apply_synapse
   corebrum_updates_apply_agents
@@ -397,6 +429,7 @@ corebrum_updates_apply() {
     ubuntu | Ubuntu) corebrum_updates_apply_ubuntu ;;
     corebrum | Corebrum) corebrum_updates_apply_corebrum ;;
     ros | ROS | "ROS 2") corebrum_updates_apply_ros ;;
+    realsense | RealSense) corebrum_updates_apply_realsense ;;
     zenoh | Zenoh) corebrum_updates_apply_zenoh ;;
     synapse | "Corebrum Synapse") corebrum_updates_apply_synapse ;;
     agents | "AI Agents") corebrum_updates_apply_agents ;;
@@ -445,7 +478,7 @@ corebrum_updates_open() {
     --dmenu \
     --prompt 'Updates  ' \
     --width 40 \
-    --lines 8)" || return 0
+    --lines 9)" || return 0
   [[ -n "$choice" ]] || return 0
   corebrum_updates_terminal "$choice"
 }

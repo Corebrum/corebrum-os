@@ -9,11 +9,12 @@ A Corebrum desktop installs Ubuntu packages, a git checkout, ROS 2, a pinned Zen
 
 ## Decision
 
-- Super+Space lists Updates. The idle list is one row. The submenu is Ubuntu, Corebrum, ROS 2, Zenoh, Corebrum Synapse, AI Agents, and All.
-- All runs those six steps in that order in one terminal. A failed step stops the rest. The terminal says when `/var/run/reboot-required` exists. It does not reboot.
-- Ubuntu runs `apt-get update` and `apt-get upgrade` and stays on the current release.
+- Super+Space lists Updates. The idle list is one row. The submenu is Ubuntu, Corebrum, ROS 2, RealSense, Zenoh, Corebrum Synapse, AI Agents, and All.
+- All runs those seven steps in that order in one terminal. A failed step stops the rest. The terminal says when `/var/run/reboot-required` exists. It does not reboot.
+- Ubuntu runs `apt-get update` and `apt-get upgrade` and stays on the current release. It leaves the RealSense SDK packages at their Corebrum pin. See `docs/decisions/0137-updates-realsense.md`.
 - Corebrum resolves the checkout from `/usr/local/bin/corebrum`, fast-forwards it as the logged-in user, then runs `sudo corebrum install desktop`. A dirty checkout or a pull that is not fast-forward stops the step. The operator logs out so Hyprland reloads the copied config.
 - ROS 2 runs `sudo corebrum install ros`, then `apt-get install --only-upgrade` for `ros-<distro>-*` packages already installed. That includes `ros-<distro>-rmw-zenoh-cpp`. The row is skipped when ROS 2 is not installed.
+- RealSense runs `sudo /usr/local/lib/corebrum/realsense-install.sh` at the pins in that script. The row is skipped when librealsense is not installed. Operator-owned librealsense builds are not managed here. See `docs/decisions/0112-operator-owned-replacements.md`.
 - Zenoh does not install Eclipse `zenohd`. The router package moves with ROS 2. This row reinstalls `eclipse-zenoh` and `zenoh-cli` at the pins in `scripts/lib/ros.sh` into `/opt/corebrum/zenoh-cli` and recopies `/usr/local/bin/zenoh`. It installs `@corebrum/zenoh-fleet` at the pin in `scripts/desktop/corebrum-zenoh-fleet-menu.sh` whether or not `zenoh-fleet` is already on `PATH`. It does not edit the router or the fleet files in the home directory. The client reinstall is skipped when ROS 2 is not installed.
 - Corebrum Synapse reads `/etc/corebrum/synapse.root`, fetches `origin/main`, deepens a shallow clone when needed so the tips share history, fast-forwards, runs `synapse-install.sh`, and runs `synapse init --yes`. A dirty checkout stops the step. `.mcp.json` is restored first: MCP setup rewrites that tracked file with this machine's ROS wrapper, and init writes it again. The row is skipped when Corebrum Synapse is not installed.
 - AI Agents reruns the existing install command only for CLIs already on `PATH`, then `synapse mcp setup` for each one when Corebrum Synapse is configured.

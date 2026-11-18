@@ -30,6 +30,7 @@ Usage: corebrum <command> [arguments]
   zenoh status|peers|fleet  Router status; fleet join|pull|sync|publish for the mesh
   cortex install|daemon|elect  Build Cortex and join the Zenoh router
   camera list              List RealSense devices, or point at Super+Space
+  apps                     Search, install, and run Corebrum Apps
   agents list|update       Show agent CLIs or point at Super+Space Updates
   agents default           get, set <id>, or clear the Super+A default agent
   update status            List the Updates rows without upgrading
@@ -89,6 +90,9 @@ case "$command_name" in
     ;;
   camera)
     corebrum_cmd_camera "$@"
+    ;;
+  apps)
+    exec python3 "${COREBRUM_ROOT}/scripts/lib/apps.py" "$@"
     ;;
   agents)
     corebrum_cmd_agents "$@"
