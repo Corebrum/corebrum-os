@@ -91,6 +91,8 @@
     "corebrum-arc": {"prefix": "corebrum-arc-action-"}
   },
   "choosers": {
+    "corebrum-skills": {"cmd": "corebrum-skills-menu", "list": "labels", "pick": "pick"},
+    "corebrum-apps": {"cmd": "corebrum-apps-menu", "list": "labels", "pick": "pick"},
     "corebrum-autolock": {"cmd": "corebrum-autolock", "list": "lines", "pick": "pick"},
     "corebrum-autodim": {"cmd": "corebrum-autodim", "list": "lines", "pick": "pick"},
     "corebrum-voice": {"cmd": "corebrum-voice-menu", "list": "labels", "pick": "pick"}

@@ -57,6 +57,23 @@ home="${tmp}/home"
 share="${tmp}/share"
 mkdir -p "${home}/applications" "${share}/applications"
 cp "${ROOT}/apps/corebrum-apps.desktop" "${share}/applications/"
+COREBRUM_SKILLS_STUB=1 COREBRUM_SKILLS_READY=1 XDG_RUNTIME_DIR="$tmp" \
+  "${ROOT}/scripts/desktop/corebrum-skills-menu.sh" refresh
+cp "${tmp}/corebrum/applications/corebrum-skills.desktop" "${share}/applications/"
+python3 - "$menu_tree" "$tmp/menu.json" "$ROOT" <<'PYMENU'
+import json
+from pathlib import Path
+import sys
+
+source, output, root = map(Path, sys.argv[1:])
+menu = json.loads(source.read_text())
+for name in ("apps", "skills"):
+    menu["choosers"][f"corebrum-{name}"]["cmd"] = str(
+        root / f"scripts/desktop/corebrum-{name}-menu.sh"
+    )
+output.write_text(json.dumps(menu))
+PYMENU
+menu_tree="$tmp/menu.json"
 cat >"${share}/applications/corebrum-agents.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
@@ -292,10 +309,25 @@ if ! grep -qx 'ROS >' <<<"$robot_names"; then
   printf '%s\n' "$robot_names" >&2
   exit 1
 fi
-if ! grep -qx 'Corebrum Apps' <<<"$robot_names"; then
+if ! grep -qx 'Corebrum Apps >' <<<"$robot_names"; then
   echo "FAIL: Robot does not list Corebrum Apps" >&2
   exit 1
 fi
+if ! grep -qx 'Corebrum Skills >' <<<"$robot_names"; then
+  echo "FAIL: Robot does not list the Corebrum Skills submenu" >&2
+  exit 1
+fi
+for submenu in apps skills; do
+  submenu_rows="$(COREBRUM_LAUNCHER_ACTIVE="corebrum-$submenu" COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
+  case "$submenu" in
+    apps) expected=$'Search marketplace\nRun installed app' ;;
+    skills) expected=$'List\nSearch\nInstall\nRemove' ;;
+  esac
+  if [[ "$(names <<<"$submenu_rows")" != "$expected" ]]; then
+    echo "FAIL: unexpected actions in Corebrum $submenu" >&2
+    exit 1
+  fi
+done
 if grep -qx 'Corebrum Apps' <<<"$apps_names"; then
   echo "FAIL: Corebrum Apps is duplicated in the generic Apps group" >&2
   exit 1

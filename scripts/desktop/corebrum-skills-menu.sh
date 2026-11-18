@@ -803,20 +803,24 @@ corebrum_skills_terminal() {
   exec /usr/local/bin/corebrum-terminal bash --login -c "$script"
 }
 
+corebrum_skills_pick() {
+  local script
+  corebrum_skills_ready || return 0
+  script="$(corebrum_skills_command "$1")"
+  [[ -n "$script" ]] || return 0
+  corebrum_skills_terminal "$script"
+}
+
 corebrum_skills_open() {
-  local choice="" script
-  if ! corebrum_skills_ready; then
-    return 0
-  fi
+  local choice
+  corebrum_skills_ready || return 0
   if [[ "${COREBRUM_SKILLS_STUB:-0}" == 1 ]]; then
     if [[ -n "${COREBRUM_SKILLS_CHOICE:-}" ]]; then
-      script="$(corebrum_skills_command "$COREBRUM_SKILLS_CHOICE")"
-      [[ -n "$script" ]] || return 0
-      corebrum_skills_terminal "$script"
-      return 0
+      corebrum_skills_pick "$COREBRUM_SKILLS_CHOICE"
+    else
+      corebrum_skills_labels
     fi
-    corebrum_skills_labels
-    return 0
+    return
   fi
   choice="$(corebrum_skills_labels | fuzzel \
     --config /etc/corebrum/fuzzel/fuzzel.ini \
@@ -824,15 +828,12 @@ corebrum_skills_open() {
     --prompt 'Corebrum Skills  ' \
     --width 48 \
     --lines 8)" || return 0
-  [[ -n "$choice" ]] || return 0
-  script="$(corebrum_skills_command "$choice")"
-  [[ -n "$script" ]] || return 0
-  corebrum_skills_terminal "$script"
+  corebrum_skills_pick "$choice"
 }
 
 usage() {
   cat <<'EOF'
-Usage: corebrum-skills-menu refresh|open|dep-hints TEXT|search-rows QUERY|data-dir
+Usage: corebrum-skills-menu refresh|open|labels|pick LABEL|dep-hints TEXT|search-rows QUERY|data-dir
 EOF
 }
 
@@ -840,6 +841,8 @@ cmd="${1:-}"
 case "$cmd" in
   refresh) corebrum_skills_refresh ;;
   open) corebrum_skills_open ;;
+  labels) corebrum_skills_labels ;;
+  pick) corebrum_skills_pick "${2:-}" ;;
   dep-hints) corebrum_skills_dep_hints "${2:-}" ;;
   search-rows) corebrum_skills_search_rows "${2:-}" ;;
   data-dir) corebrum_skills_data_dir ;;
