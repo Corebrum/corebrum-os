@@ -57,7 +57,7 @@ review() {
 }
 
 labels() {
-  printf '%s\n' 'Search marketplace' 'Run installed app'
+  printf '%s\n' 'Search marketplace' 'Run installed app' 'Remove installed app'
 }
 
 case "${1:-open}" in
@@ -78,13 +78,19 @@ case "$choice" in
     app="$(pick_app 'Search Corebrum Apps' "$rows")" || exit 0
     exec corebrum-terminal -- "$0" review "$app"
     ;;
-  'Run installed app')
+  'Run installed app'|'Remove installed app')
     if ! rows="$(corebrum apps list 2>&1)"; then
       notify "$rows"
       exit 1
     fi
     [[ -n "$rows" ]] || { notify 'No Corebrum Apps are installed for this account.'; exit 0; }
-    app="$(pick_app 'Run Corebrum App' "$rows")" || exit 0
-    exec corebrum-terminal --hold -- corebrum apps run "$app"
+    if [[ "$choice" == 'Run installed app' ]]; then
+      app="$(pick_app 'Run Corebrum App' "$rows")" || exit 0
+      exec corebrum-terminal --hold -- corebrum apps run "$app"
+    fi
+    app="$(pick_app 'Remove Corebrum App' "$rows")" || exit 0
+    answer="$(printf '%s\n' 'Cancel' 'Remove all installed releases' | pick "Remove $app?")" || exit 0
+    [[ "$answer" == 'Remove all installed releases' ]] || exit 0
+    exec corebrum-terminal --hold -- corebrum apps remove "$app"
     ;;
 esac

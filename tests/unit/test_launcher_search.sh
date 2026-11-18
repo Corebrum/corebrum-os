@@ -320,7 +320,7 @@ fi
 for submenu in apps skills; do
   submenu_rows="$(COREBRUM_LAUNCHER_ACTIVE="corebrum-$submenu" COREBRUM_LAUNCHER_QUERY= python3 "$ui")"
   case "$submenu" in
-    apps) expected=$'Search marketplace\nRun installed app' ;;
+    apps) expected=$'Search marketplace\nRun installed app\nRemove installed app' ;;
     skills) expected=$'List\nSearch\nInstall\nRemove' ;;
   esac
   if [[ "$(names <<<"$submenu_rows")" != "$expected" ]]; then
