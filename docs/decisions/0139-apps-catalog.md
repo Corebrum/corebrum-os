@@ -1,5 +1,8 @@
 # Corebrum Apps catalog v1
 
+See [Build and publish a Corebrum App](../development/corebrum-apps.md) for a
+worked packaging and submission example.
+
 Corebrum OS owns the app lifecycle. The marketplace serves the reviewed
 catalog at `/apps/v1/catalog.json`. Synapse on Thor resolves to
 `/home/nvidia/synapse` via `/etc/corebrum/synapse.root` and retains its Skills
